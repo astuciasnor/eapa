@@ -44,7 +44,7 @@
     "href": "capitulos/capitulo1/estatistica_descritiva.html",
     "title": "2  Estatística Descritiva",
     "section": "",
-    "text": "2.1 Medidas de Tendência Central",
+    "text": "2.1 Medidas de Tendência Central\nVamos carregar um conjunto de dados com tamanhos de peixes e exibir as primeiras linhas:\n# Caminho relativo a partir deste .qmd\ndados &lt;- read.csv(\"../../dados/tamanhos_peixes.csv\")\nhead(dados)\n\n   especie tamanho_peso\n1 Tambaqui          350\n2 Pirarucu          800\n3 Curimatã          230",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Estatística Descritiva</span>"
     ]

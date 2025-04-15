@@ -8,6 +8,14 @@ A estatística descritiva tem como objetivo resumir e organizar os dados de mane
 -   Mediana
 -   Moda
 
+Vamos carregar um conjunto de dados com tamanhos de peixes e exibir as primeiras linhas:
+
+```{r}
+# Caminho relativo a partir deste .qmd
+dados <- read.csv("../../dados/tamanhos_peixes.csv")
+head(dados)
+```
+
 ## Medidas de Dispersão
 
 -   Amplitude

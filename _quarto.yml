@@ -6,6 +6,7 @@ book:
   title: "Estatística Aplicada à Pesca e Aquicultura"
   author: "Evaldo Martins da Silva"
   date: "14/04/2025"
+  cover-image: capa.png
   chapters:
     - index.qmd
     - intro.qmd

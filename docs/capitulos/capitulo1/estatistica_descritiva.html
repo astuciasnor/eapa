@@ -222,6 +222,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Mediana</li>
 <li>Moda</li>
 </ul>
+<p>Vamos carregar um conjunto de dados com tamanhos de peixes e exibir as primeiras linhas:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Caminho relativo a partir deste .qmd</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>dados <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"../../dados/tamanhos_peixes.csv"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dados)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   especie tamanho_peso
+1 Tambaqui          350
+2 Pirarucu          800
+3 Curimatã          230</code></pre>
+</div>
+</div>
 </section>
 <section id="medidas-de-dispersão" class="level2" data-number="2.2">
 <h2 data-number="2.2" class="anchored" data-anchor-id="medidas-de-dispersão"><span class="header-section-number">2.2</span> Medidas de Dispersão</h2>
@@ -235,13 +247,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="representações-gráficas" class="level2" data-number="2.3">
 <h2 data-number="2.3" class="anchored" data-anchor-id="representações-gráficas"><span class="header-section-number">2.3</span> Representações Gráficas</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Exemplo básico de histograma</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>dados <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">110</span>, <span class="dv">115</span>, <span class="dv">120</span>, <span class="dv">130</span>, <span class="dv">140</span>, <span class="dv">145</span>, <span class="dv">150</span>, <span class="dv">155</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(dados, <span class="at">main =</span> <span class="st">"Distribuição de Tamanhos de Peixes"</span>, <span class="at">xlab =</span> <span class="st">"Tamanho (mm)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Exemplo básico de histograma</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>dados <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">110</span>, <span class="dv">115</span>, <span class="dv">120</span>, <span class="dv">130</span>, <span class="dv">140</span>, <span class="dv">145</span>, <span class="dv">150</span>, <span class="dv">155</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(dados, <span class="at">main =</span> <span class="st">"Distribuição de Tamanhos de Peixes"</span>, <span class="at">xlab =</span> <span class="st">"Tamanho (mm)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="estatistica_descritiva_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="estatistica_descritiva_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
