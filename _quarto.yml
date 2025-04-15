@@ -1,0 +1,24 @@
+project:
+  type: book
+  output-dir: "docs"
+
+book:
+  title: "Estatística Aplicada à Pesca e Aquicultura"
+  author: "Evaldo Martins da Silva"
+  date: "14/04/2025"
+  chapters:
+    - index.qmd
+    - intro.qmd
+    - summary.qmd
+    - references.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme: yeti
+  pdf:
+    documentclass: scrreprt
+
+editor: visual
+
