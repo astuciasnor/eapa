@@ -1,0 +1,27 @@
+# Probabilidades
+
+A teoria das probabilidades fornece uma base para lidar com a incerteza em dados experimentais e populacionais.
+
+![](/images/josi-chiara.png){fig-align="center" width="192"}
+
+## Experimentos Aleatórios
+
+-   Espaço amostral
+-   Evento
+
+## Regras de Probabilidade
+
+-   Adição
+-   Multiplicação
+-   Complementar
+
+## Distribuições Discretas e Contínuas
+
+-   Binomial
+-   Poisson
+-   Normal
+
+```{r}
+# Exemplo de função de densidade normal
+curve(dnorm(x, mean = 0, sd = 1), from = -3, to = 3, main = "Distribuição Normal Padrão")
+```

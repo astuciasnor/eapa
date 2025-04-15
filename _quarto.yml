@@ -9,6 +9,8 @@ book:
   chapters:
     - index.qmd
     - intro.qmd
+    - capitulos/capitulo1/estatistica_descritiva.qmd
+    - capitulos/capitulo2/probabilidades.qmd
     - summary.qmd
     - references.qmd
 
@@ -21,4 +23,5 @@ format:
     documentclass: scrreprt
 
 editor: visual
+
 

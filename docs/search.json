@@ -22,11 +22,11 @@
   {
     "objectID": "summary.html",
     "href": "summary.html",
-    "title": "2  Summary",
+    "title": "4  Summary",
     "section": "",
     "text": "In summary, this book has no content whatsoever.\n\n1 + 1\n\n[1] 2",
     "crumbs": [
-      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Summary</span>"
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Summary</span>"
     ]
   },
   {
@@ -37,6 +37,86 @@
     "text": "Knuth, Donald E. 1984. “Literate Programming.” Comput.\nJ. 27 (2): 97–111. https://doi.org/10.1093/comjnl/27.2.97.",
     "crumbs": [
       "References"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo1/estatistica_descritiva.html",
+    "href": "capitulos/capitulo1/estatistica_descritiva.html",
+    "title": "2  Estatística Descritiva",
+    "section": "",
+    "text": "2.1 Medidas de Tendência Central",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Estatística Descritiva</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo1/estatistica_descritiva.html#medidas-de-tendência-central",
+    "href": "capitulos/capitulo1/estatistica_descritiva.html#medidas-de-tendência-central",
+    "title": "2  Estatística Descritiva",
+    "section": "",
+    "text": "Média\nMediana\nModa",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Estatística Descritiva</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo1/estatistica_descritiva.html#medidas-de-dispersão",
+    "href": "capitulos/capitulo1/estatistica_descritiva.html#medidas-de-dispersão",
+    "title": "2  Estatística Descritiva",
+    "section": "2.2 Medidas de Dispersão",
+    "text": "2.2 Medidas de Dispersão\n\nAmplitude\nDesvio padrão\nVariância\nCoeficiente de variação",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Estatística Descritiva</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo1/estatistica_descritiva.html#representações-gráficas",
+    "href": "capitulos/capitulo1/estatistica_descritiva.html#representações-gráficas",
+    "title": "2  Estatística Descritiva",
+    "section": "2.3 Representações Gráficas",
+    "text": "2.3 Representações Gráficas\n\n# Exemplo básico de histograma\ndados &lt;- c(100, 110, 115, 120, 130, 140, 145, 150, 155)\nhist(dados, main = \"Distribuição de Tamanhos de Peixes\", xlab = \"Tamanho (mm)\")",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Estatística Descritiva</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo2/probabilidades.html",
+    "href": "capitulos/capitulo2/probabilidades.html",
+    "title": "3  Probabilidades",
+    "section": "",
+    "text": "3.1 Experimentos Aleatórios",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Probabilidades</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo2/probabilidades.html#experimentos-aleatórios",
+    "href": "capitulos/capitulo2/probabilidades.html#experimentos-aleatórios",
+    "title": "3  Probabilidades",
+    "section": "",
+    "text": "Espaço amostral\nEvento",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Probabilidades</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo2/probabilidades.html#regras-de-probabilidade",
+    "href": "capitulos/capitulo2/probabilidades.html#regras-de-probabilidade",
+    "title": "3  Probabilidades",
+    "section": "3.2 Regras de Probabilidade",
+    "text": "3.2 Regras de Probabilidade\n\nAdição\nMultiplicação\nComplementar",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Probabilidades</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo2/probabilidades.html#distribuições-discretas-e-contínuas",
+    "href": "capitulos/capitulo2/probabilidades.html#distribuições-discretas-e-contínuas",
+    "title": "3  Probabilidades",
+    "section": "3.3 Distribuições Discretas e Contínuas",
+    "text": "3.3 Distribuições Discretas e Contínuas\n\nBinomial\nPoisson\nNormal\n\n\n# Exemplo de função de densidade normal\ncurve(dnorm(x, mean = 0, sd = 1), from = -3, to = 3, main = \"Distribuição Normal Padrão\")",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Probabilidades</span>"
     ]
   }
 ]

@@ -1,0 +1,24 @@
+# Estatística Descritiva
+
+A estatística descritiva tem como objetivo resumir e organizar os dados de maneira informativa. No contexto da pesca e aquicultura, ela pode ser usada para descrever características como o peso médio dos peixes, a distribuição de tamanho ou a frequência de captura.
+
+## Medidas de Tendência Central
+
+-   Média
+-   Mediana
+-   Moda
+
+## Medidas de Dispersão
+
+-   Amplitude
+-   Desvio padrão
+-   Variância
+-   Coeficiente de variação
+
+## Representações Gráficas
+
+```{r}
+# Exemplo básico de histograma
+dados <- c(100, 110, 115, 120, 130, 140, 145, 150, 155)
+hist(dados, main = "Distribuição de Tamanhos de Peixes", xlab = "Tamanho (mm)")
+```
