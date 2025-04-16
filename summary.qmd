@@ -1,7 +1,17 @@
-# Summary
+# Considerações Finais
 
-In summary, this book has no content whatsoever.
+Este livro apresentou conceitos fundamentais de estatística aplicada à pesca e aquicultura, com ênfase em métodos descritivos e probabilísticos.
 
-```{r}
-1 + 1
-```
+## Aplicações práticas
+
+-   Planejamento de experimentos em viveiros
+-   Avaliação estatística de crescimento de peixes
+-   Análise de captura por unidade de esforço (CPUE)
+
+## Próximos passos
+
+Nos capítulos seguintes, serão incluídas análises inferenciais, regressões e modelagens preditivas voltadas para dados ecológicos e produtivos da aquicultura.
+
+------------------------------------------------------------------------
+
+Agradecemos por acompanhar esta jornada científica!

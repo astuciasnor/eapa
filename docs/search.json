@@ -22,11 +22,11 @@
   {
     "objectID": "summary.html",
     "href": "summary.html",
-    "title": "4  Summary",
+    "title": "4  Considerações Finais",
     "section": "",
-    "text": "In summary, this book has no content whatsoever.\n\n1 + 1\n\n[1] 2",
+    "text": "4.1 Aplicações práticas",
     "crumbs": [
-      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Summary</span>"
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Considerações Finais</span>"
     ]
   },
   {
@@ -117,6 +117,26 @@
     "text": "3.3 Distribuições Discretas e Contínuas\n\nBinomial\nPoisson\nNormal\n\n\n# Exemplo de função de densidade normal\ncurve(dnorm(x, mean = 0, sd = 1), from = -3, to = 3, main = \"Distribuição Normal Padrão\")",
     "crumbs": [
       "<span class='chapter-number'>3</span>  <span class='chapter-title'>Probabilidades</span>"
+    ]
+  },
+  {
+    "objectID": "summary.html#aplicações-práticas",
+    "href": "summary.html#aplicações-práticas",
+    "title": "4  Considerações Finais",
+    "section": "",
+    "text": "Planejamento de experimentos em viveiros\nAvaliação estatística de crescimento de peixes\nAnálise de captura por unidade de esforço (CPUE)",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Considerações Finais</span>"
+    ]
+  },
+  {
+    "objectID": "summary.html#próximos-passos",
+    "href": "summary.html#próximos-passos",
+    "title": "4  Considerações Finais",
+    "section": "4.2 Próximos passos",
+    "text": "4.2 Próximos passos\nNos capítulos seguintes, serão incluídas análises inferenciais, regressões e modelagens preditivas voltadas para dados ecológicos e produtivos da aquicultura.\n\nAgradecemos por acompanhar esta jornada científica!",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Considerações Finais</span>"
     ]
   }
 ]
