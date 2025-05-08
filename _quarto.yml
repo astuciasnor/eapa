@@ -6,7 +6,7 @@ book:
   title: "Estatística Aplicada à Pesca e Aquicultura"
   author: "Evaldo Martins da Silva"
   date: "14/04/2025"
-  cover-image: capa.png
+  cover-image: capa2.png
   chapters:
     - index.qmd
     - intro.qmd
@@ -20,8 +20,10 @@ bibliography: references.bib
 format:
   html:
     theme: yeti
+    lang: pt-BR
   pdf:
     documentclass: scrreprt
+    lang: pt-BR
 
 editor: visual
 
