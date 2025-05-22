@@ -2,7 +2,7 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "Estatística Aplicada à Pesca e Aquicultura",
+    "title": "Estatística Aplicada à Pesca e Aquicultura com R",
     "section": "",
     "text": "Prefácio\nEste livro vem preencher uma lacuna importante no ensino e na aplicação da estatística nas ciências pesqueiras e aquícolas. Ao longo de minha trajetória como professor e pesquisador, percebi a ausência de materiais didáticos que articulassem, de forma clara e aplicada, os fundamentos estatísticos com os desafios enfrentados por profissionais da pesca e da aquicultura. Este trabalho surge, portanto, como uma ferramenta de apoio para estudantes, docentes e técnicos, promovendo uma aprendizagem conectada à realidade do setor pesqueiro, com linguagem acessível e foco na prática.\nA obra percorre temas essenciais da estatística — desde testes de hipóteses, análise de variância (ANOVA) e regressão linear simples até uma introdução à análise multivariada — sempre ilustrados com exemplos contextualizados em situações reais da pesca e da aquicultura. Utiliza-se amplamente a linguagem R, uma poderosa ferramenta estatística de código aberto, que permite explorar os dados de forma reprodutível, flexível e moderna. Além de análises clássicas, o leitor encontrará aplicações envolvendo gráficos avançados, mapas de calor e pictográficos, que enriquecem a interpretação visual dos resultados. Ao integrar teoria, prática e tecnologia, este livro convida o leitor a interpretar dados com sentido crítico e a tomar decisões baseadas em evidências, fundamentais para a sustentabilidade e inovação nas atividades aquícolas.",
     "crumbs": [
