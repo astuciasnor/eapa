@@ -88,5 +88,45 @@
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Introdução</span>"
     ]
+  },
+  {
+    "objectID": "summary.html",
+    "href": "summary.html",
+    "title": "22  Considerações Finais",
+    "section": "",
+    "text": "22.1 Aplicações práticas\nEste livro apresentou conceitos fundamentais de estatística aplicada à pesca e aquicultura, com ênfase em métodos descritivos e probabilísticos.",
+    "crumbs": [
+      "<span class='chapter-number'>22</span>  <span class='chapter-title'>Considerações Finais</span>"
+    ]
+  },
+  {
+    "objectID": "summary.html#aplicações-práticas",
+    "href": "summary.html#aplicações-práticas",
+    "title": "22  Considerações Finais",
+    "section": "",
+    "text": "Planejamento de experimentos em viveiros\nAvaliação estatística de crescimento de peixes\nAnálise de captura por unidade de esforço (CPUE)",
+    "crumbs": [
+      "<span class='chapter-number'>22</span>  <span class='chapter-title'>Considerações Finais</span>"
+    ]
+  },
+  {
+    "objectID": "summary.html#próximos-passos",
+    "href": "summary.html#próximos-passos",
+    "title": "22  Considerações Finais",
+    "section": "22.2 Próximos passos",
+    "text": "22.2 Próximos passos\nNos capítulos seguintes, serão incluídas análises inferenciais, regressões e modelagens preditivas voltadas para dados ecológicos e produtivos da aquicultura.\n\nAgradecemos por acompanhar esta jornada científica!",
+    "crumbs": [
+      "<span class='chapter-number'>22</span>  <span class='chapter-title'>Considerações Finais</span>"
+    ]
+  },
+  {
+    "objectID": "references.html",
+    "href": "references.html",
+    "title": "References",
+    "section": "",
+    "text": "Knuth, Donald E. 1984. “Literate Programming.” Comput.\nJ. 27 (2): 97–111. https://doi.org/10.1093/comjnl/27.2.97.",
+    "crumbs": [
+      "References"
+    ]
   }
 ]

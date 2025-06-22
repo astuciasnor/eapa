@@ -10,7 +10,7 @@ book:
   chapters:
     - index.qmd
     - capitulos/capitulo01/intro.qmd
-    - capitulos/capitulo02/criacao_ambiente_computacional_R.qmd
+    - capitulos/capitulo02/criacao_ambiente_computacional.qmd
     - capitulos/capitulo03/organizacao_projetos_leitura_dados.qmd
     - capitulos/capitulo04/tratamento_basico_dados_visualizacao.qmd
     - capitulos/capitulo05/analise_exploratoria_statistica_descritiva.qmd
