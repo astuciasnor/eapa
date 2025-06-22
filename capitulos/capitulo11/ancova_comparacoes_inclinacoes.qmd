@@ -1,0 +1,5 @@
+---
+title: "Análise de Covariância e Comparação de Inclinações"
+format: html
+---
+

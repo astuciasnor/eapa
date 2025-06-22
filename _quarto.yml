@@ -9,9 +9,25 @@ book:
   cover-image: images/capa3.png
   chapters:
     - index.qmd
-    - intro.qmd
-    - capitulos/capitulo1/estatistica_descritiva.qmd
-    - capitulos/capitulo2/probabilidades.qmd
+    - capitulos/capitulo01/intro.qmd
+    - capitulos/capitulo02/criacao_ambiente_computacional_R.qmd
+    - capitulos/capitulo03/organizacao_projetos_leitura_dados.qmd
+    - capitulos/capitulo04/tratamento_basico_dados_visualizacao.qmd
+    - capitulos/capitulo05/analise_exploratoria_statistica_descritiva.qmd
+    - capitulos/capitulo06/planejamento_amostral_delineamentos_experimentos.qmd
+    - capitulos/capitulo07/testes_parametricos_uma_duas_amostras.qmd
+    - capitulos/capitulo08/nao-parametricos_uma_duas_amostras.qmd
+    - capitulos/capitulo09/regressao_linear_simples_multipla.qmd
+    - capitulos/capitulo10/anova_estudos_observacionais_experimentais.qmd
+    - capitulos/capitulo11/ancova_comparacoes_inclinacoes.qmd
+    - capitulos/capitulo12/analise_correlacao_associacao_variaveis.qmd
+    - capitulos/capitulo13/analise_regressao_nao_linear.qmd
+    - capitulos/capitulo14/analise_series_temporais_medias_moveis.qmd
+    - capitulos/capitulo15/modelos_lineares_generalizados.qmd
+    - capitulos/capitulo16/analise_multivariada_dados.qmd
+    - capitulos/capitulo17/criacao_mapas_em_R.qmd
+    - capitulos/capitulo18/metodologia_superfície_respostas.qmd
+    - capitulos/capitulo21/relatorios_comunicacao_dados_usando_quarto.qmd
     - summary.qmd
     - references.qmd
 

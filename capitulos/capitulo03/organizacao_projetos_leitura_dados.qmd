@@ -203,7 +203,7 @@ dados_lidos <- read_parquet(
 ## Tabela-resumo dos principais comandos
 
 | Ação | Função | Pacote | Exemplo |
-|-----------------|-----------------|-----------------|-----------------------------|
+|----|----|----|----|
 | Detectar raiz projeto | `find_root()` | rprojroot | `root <- find_root(...)` |
 | Caminho de pasta | `fs::path()` | fs | `fs::path(root, "dados", "brutos")` |
 | Ler CSV | `read_csv()` | readr | `read_csv(fs::path(caminho_dados_brutos, "arq.csv"))` |

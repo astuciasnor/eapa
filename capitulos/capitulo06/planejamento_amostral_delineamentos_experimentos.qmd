@@ -1,0 +1,4 @@
+---
+title: "Planejamento Amostral e Delineamentos de Experimentos"
+format: html
+---
