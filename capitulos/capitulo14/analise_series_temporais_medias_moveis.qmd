@@ -1,5 +1,0 @@
----
-title: "Análise de Séries Temporais e Médias Móveis"
-format: html
----
-

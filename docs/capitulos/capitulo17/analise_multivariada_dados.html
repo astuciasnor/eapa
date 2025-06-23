@@ -6,9 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Evaldo Martins da Silva">
 
-<title>Estatística Aplicada à Pesca e Aquicultura com R</title>
+<title>17&nbsp; Análise Multivariada de Dados – Estatística Aplicada à Pesca e Aquicultura com R</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -24,24 +23,25 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<link href="./capitulos/capitulo01/intro.html" rel="next">
-<script src="site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-c39790739b795761a025db3e98f5af6a.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../capitulos/capitulo18/criacao_mapas_em_R.html" rel="next">
+<link href="../../capitulos/capitulo16/analise_modelos_efeitos_mistos.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c39790739b795761a025db3e98f5af6a.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -82,7 +82,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Alternar barra lateral" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Prefácio</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../capitulos/capitulo17/analise_multivariada_dados.html"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Análise Multivariada de Dados</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Alternar barra lateral" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Procurar" onclick="window.quartoOpenSearch();">
@@ -97,7 +97,7 @@ ul.task-list li input[type="checkbox"] {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">Estatística Aplicada à Pesca e Aquicultura com R</a> 
+      <a href="../../">Estatística Aplicada à Pesca e Aquicultura com R</a> 
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -109,145 +109,145 @@ ul.task-list li input[type="checkbox"] {
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active">
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Prefácio</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo01/intro.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo01/intro.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introdução</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo02/criacao_ambiente_computacional.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo02/criacao_ambiente_computacional.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Criação do Ambiente Computacionalde Desenvolvimento para a Linguagem R</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo03/organizacao_projetos_leitura_dados.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo03/organizacao_projetos_leitura_dados.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Organização Estrutural de Projetos de Análise de Dados em R</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo04/tratamento_basico_dados_visualizacao.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo04/tratamento_basico_dados_visualizacao.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Tratamento Básico de Dados e Visualização Gráfica Inicial</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo05/analise_exploratoria_statistica_descritiva.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo05/analise_exploratoria_statistica_descritiva.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Analise Exploratória de Dados e Estatística Descritiva</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo06/planejamento_amostral_delineamentos_experimentos.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo06/planejamento_amostral_delineamentos_experimentos.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Planejamento Amostral e Delineamentos de Experimentos</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo07/testes_parametricos_uma_duas_amostras.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo07/testes_parametricos_uma_duas_amostras.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Testes estatísticos paramétricos para uma e duas amostras</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo08/nao-parametricos_uma_duas_amostras.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo08/nao-parametricos_uma_duas_amostras.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Testes Não-paramétricos para uma e duas amostras</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo09/regressao_linear_simples_multipla.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo09/regressao_linear_simples_multipla.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Regressão Linear Simples e Múultipla.</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo10/analise_correlacao_associacao_variaveis.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo10/analise_correlacao_associacao_variaveis.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Análise de Correlação e Associação entre váriáveis</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo11/anova_estudos_observacionais_experimentais.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo11/anova_estudos_observacionais_experimentais.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Análise de Variância em Estudos Observacionais e Experimentais</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo12/ancova_comparacoes_inclinacoes.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo12/ancova_comparacoes_inclinacoes.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Análise de Covariância e Comparação de Inclinações</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo13/analise_regressao_nao_linear.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo13/analise_regressao_nao_linear.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Análise de Regressão Não Linear</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo14/analise_series_temporais.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo14/analise_series_temporais.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Análise de Séries Temporais</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo15/modelos_lineares_generalizados.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo15/modelos_lineares_generalizados.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Modelos Lineares Generalizados</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo16/analise_modelos_efeitos_mistos.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo16/analise_modelos_efeitos_mistos.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Análise com Modelos de Efeitos Mistos</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo17/analise_multivariada_dados.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo17/analise_multivariada_dados.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Análise Multivariada de Dados</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo18/criacao_mapas_em_R.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo18/criacao_mapas_em_R.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Criação de Mapas em R</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo19/metodologia_superfície_respostas.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo19/metodologia_superfície_respostas.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Análise de Experimentos por Metodologia Superfície de Respostas</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo20/modelos_dinamica_populacional_aplicados.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo20/modelos_dinamica_populacional_aplicados.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">20</span>&nbsp; <span class="chapter-title">Modelos de Dinâmica Populacional Aplicados</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./capitulos/capitulo21/relatorios_comunicacao_dados_usando_quarto.html" class="sidebar-item-text sidebar-link">
+  <a href="../../capitulos/capitulo21/relatorios_comunicacao_dados_usando_quarto.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">21</span>&nbsp; <span class="chapter-title">Relatórios e Comunicação de Dados usando Quarto</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./summary.html" class="sidebar-item-text sidebar-link">
+  <a href="../../summary.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">22</span>&nbsp; <span class="chapter-title">Considerações Finais</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./references.html" class="sidebar-item-text sidebar-link">
+  <a href="../../references.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">References</span></a>
   </div>
 </li>
@@ -256,40 +256,22 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Índice</h2>
-   
-  <ul>
-  <li><a href="#prefácio" id="toc-prefácio" class="nav-link active" data-scroll-target="#prefácio">Prefácio</a></li>
-  </ul>
-</nav>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Estatística Aplicada à Pesca e Aquicultura com R</h1>
+<h1 class="title"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Análise Multivariada de Dados</span></h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Autor</div>
-    <div class="quarto-title-meta-contents">
-             <p>Evaldo Martins da Silva </p>
-          </div>
-  </div>
     
-    <div>
-    <div class="quarto-title-meta-heading">Data de Publicação</div>
-    <div class="quarto-title-meta-contents">
-      <p class="date">4 de fevereiro de 2026</p>
-    </div>
-  </div>
   
     
   </div>
@@ -300,13 +282,7 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<section id="prefácio" class="level1 unnumbered">
-<h1 class="unnumbered">Prefácio</h1><p><img src="images/capa3.png" title="Estatística Aplicada à Pesca e Aquicultura com R" class="quarto-cover-image nolightbox img-fluid"></p>
-<p>Este livro vem preencher uma lacuna importante no ensino e na aplicação da estatística nas ciências pesqueiras e aquícolas. Ao longo de minha trajetória como professor e pesquisador, percebi a ausência de materiais didáticos que articulassem, de forma clara e aplicada, os fundamentos estatísticos com os desafios enfrentados por profissionais da pesca e da aquicultura. Este trabalho surge, portanto, como uma ferramenta de apoio para estudantes, docentes e técnicos, promovendo uma aprendizagem conectada à realidade do setor pesqueiro, com linguagem acessível e foco na prática.</p>
-<p>A obra percorre temas essenciais da estatística — desde testes de hipóteses, análise de variância (ANOVA) e regressão linear simples até uma introdução à análise multivariada — sempre ilustrados com exemplos contextualizados em situações reais da pesca e da aquicultura. Utiliza-se amplamente a linguagem R, uma poderosa ferramenta estatística de código aberto, que permite explorar os dados de forma reprodutível, flexível e moderna. Além de análises clássicas, o leitor encontrará aplicações envolvendo gráficos avançados, mapas de calor e pictográficos, que enriquecem a interpretação visual dos resultados. Ao integrar teoria, prática e tecnologia, este livro convida o leitor a interpretar dados com sentido crítico e a tomar decisões baseadas em evidências, fundamentais para a sustentabilidade e inovação nas atividades aquícolas.</p>
 
-
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -710,10 +686,13 @@ ul.task-list li input[type="checkbox"] {
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
+      <a href="../../capitulos/capitulo16/analise_modelos_efeitos_mistos.html" class="pagination-link" aria-label="Análise com Modelos de Efeitos Mistos">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Análise com Modelos de Efeitos Mistos</span></span>
+      </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./capitulos/capitulo01/intro.html" class="pagination-link" aria-label="Introdução">
-        <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introdução</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="../../capitulos/capitulo18/criacao_mapas_em_R.html" class="pagination-link" aria-label="Criação de Mapas em R">
+        <span class="nav-page-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Criação de Mapas em R</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

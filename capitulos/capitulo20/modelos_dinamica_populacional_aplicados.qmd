@@ -1,0 +1,60 @@
+---
+title: "Modelos de Dinâmica Populacional Aplicados"
+format: html
+---
+
+## Introdução: Traduzindo Estatística em Biologia Pesqueira
+
+Ao longo deste livro, construímos um robusto arsenal de ferramentas estatísticas. Aprendemos a comparar médias, ajustar linhas de regressão, analisar variâncias e até mesmo a modelar estruturas de dados complexas. Agora, neste capítulo, vamos aplicar esse conhecimento para responder a algumas das perguntas mais fundamentais da ciência pesqueira e da aquicultura. Este é o momento em que a estatística deixa de ser uma disciplina abstrata e se torna a linguagem que usamos para descrever a dinâmica da vida aquática.
+
+Como um peixe cresce ao longo da sua vida? Qual a taxa de mortalidade que uma população sofre anualmente? Como a quantidade de peixes adultos (o estoque) influencia a produção de novos juvenis (o recrutamento)? Como podemos estimar o rendimento máximo que podemos extrair de um estoque de forma sustentável?
+
+Essas não são perguntas puramente estatísticas; são questões centrais para a biologia, ecologia e, sobretudo, para a gestão de recursos pesqueiros. Acontece que os modelos desenvolvidos ao longo de décadas para responder a essas perguntas têm uma forte base estatística, frequentemente se apoiando em técnicas como a regressão linear e não linear.
+
+Neste capítulo, faremos a ponte final entre a teoria estatística e a prática aplicada. Vamos explorar alguns dos modelos mais clássicos e importantes da dinâmica populacional, implementando-os passo a passo em R. Você verá como a regressão não linear do Capítulo 13 é a ferramenta perfeita para ajustar o famoso **modelo de crescimento de von Bertalanffy**. Descobrirá como uma simples regressão linear pode ser usada para estimar a mortalidade a partir de uma **curva de captura**. E aprenderá a usar a **seleção de modelos via AIC** para comparar hipóteses concorrentes sobre a relação estoque-recrutamento.
+
+Este capítulo serve como uma síntese, demonstrando o poder das técnicas que você aprendeu e capacitando-o a extrair insights biológicos significativos diretamente dos seus dados.
+
+## Modelando o Crescimento Individual: von Bertalanffy e Além
+
+-   A teoria por trás do modelo de crescimento de von Bertalanffy.
+
+-   Ajustando o modelo com Regressão Não Linear (nls()) em R.
+
+-   Interpretando os parâmetros: L∞, K e t0.
+
+-   **Aplicação da Seleção de Modelos:** Comparando o ajuste do modelo de von Bertalanffy com modelos alternativos (Gompertz, Logístico) usando o Critério de Informação de Akaike (AIC).
+
+## Estimando a Mortalidade Total (Z) com a Curva de Captura por Comprimento Convertido
+
+-   A lógica por trás do método.
+
+-   Passo a passo: Convertendo dados de comprimento em idade relativa.
+
+-   Aplicando a regressão linear para estimar Z.
+
+-   Discussão das importantes premissas do modelo.
+
+## A Relação Estoque-Recrutamento
+
+-   Introdução aos modelos de Beverton-Holt e Ricker.
+
+-   Ajustando ambos os modelos a dados de estoque e recrutamento com nls().
+
+-   Usando AIC para determinar o modelo mais plausível para um dado conjunto de dados.
+
+## Modelos de Produção Excedente para a Gestão Pesqueira
+
+-   O conceito de Rendimento Máximo Sustentável (RMS).
+
+-   O modelo de Schaefer: uma aplicação da regressão linear.
+
+-   Derivando estimativas de RMS e do esforço ótimo (E_RMS).
+
+Breve menção a modelos mais flexíveis (ex: Fox).
+
+## Conclusão: A Estatística como Ferramenta para a Sustentabilidade
+
+-   Recapitulação de como diferentes modelos se encaixam na avaliação de estoques.
+
+-   Sugestões de pacotes especializados em R para análise pesqueira (FSA, TropFishR, etc.) para estudos futuros.

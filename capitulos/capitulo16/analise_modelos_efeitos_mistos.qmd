@@ -1,0 +1,62 @@
+---
+title: "Análise com Modelos de Efeitos Mistos"
+format: html
+---
+
+## **Introdução: Além da Independência**
+
+Nos capítulos anteriores, exploramos uma vasta gama de ferramentas estatísticas, da regressão linear à análise de variância. Todas elas, no entanto, partem de uma premissa fundamental: a de que as nossas observações são independentes umas das outras. O peso de um peixe não deveria influenciar o peso de outro; a taxa de crescimento em um tanque não deveria ter relação com a de outro.
+
+Mas será que essa premissa é sempre verdadeira no mundo real da pesca e da aquicultura?
+
+Imagine um experimento em aquicultura onde testamos três rações diferentes para tilápias. Para garantir poder estatístico, replicamos cada tratamento em quatro tanques, e em cada tanque medimos o crescimento de 20 peixes. Os peixes que compartilham o mesmo tanque também compartilham as mesmas condições de água, a mesma micro-flora, e potenciais interações sociais. É razoável supor que eles sejam mais parecidos entre si do que com peixes de outros tanques. Eles não são observações verdadeiramente independentes. Tratar os 80 peixes de cada tratamento (20 peixes x 4 tanques) como 80 réplicas independentes é um erro conhecido como **pseudo-replicação**, que pode levar a conclusões equivocadas e falsos positivos.
+
+Da mesma forma, em estudos de pesca, ao coletar amostras em diferentes lances de rede em uma mesma área, os peixes de um mesmo lance foram capturados juntos e não representam amostras independentes da população total. Ou, se medirmos o crescimento do mesmo peixe marcado ao longo de vários meses (medidas repetidas), essas medições estão inerentemente correlacionadas.
+
+É para lidar com essa estrutura de dados hierárquica, aninhada ou com medidas repetidas que recorremos aos **Modelos de Efeitos Mistos (MEM)**. Estes modelos são uma extensão poderosa dos modelos lineares que aprendemos, permitindo-nos separar e quantificar diferentes fontes de variação. Eles nos permitem modelar explicitamente a "não independência" dos dados, incluindo o que chamamos de **efeitos aleatórios** (como a variação entre tanques, entre locais de coleta ou entre peixes individuais) juntamente com os **efeitos fixos** que são o nosso principal interesse (como o efeito de diferentes rações ou tratamentos).
+
+Neste capítulo, você aprenderá a identificar situações que exigem modelos mistos, a distinguir entre efeitos fixos e aleatórios e a construir, interpretar e validar esses modelos em R. Dominar os MEMs é um passo crucial para realizar análises estatísticas mais robustas, honestas e representativas da complexa realidade biológica com que trabalhamos.
+
+## Efeitos Fixos vs. Efeitos Aleatórios: A Distinção Fundamental
+
+-   Definindo Efeitos Fixos: Níveis de interesse específico.
+
+-   Definindo Efeitos Aleatórios: Amostras de uma população maior de níveis.
+
+-   Tabela-guia: Como decidir entre fixo e aleatório.
+
+## Modelos Lineares de Efeitos Mistos (LMM) em R com o pacote lme4
+
+-   A sintaxe básica: lmer(resposta \~ fixos + (1 \| aleatorio), data).
+
+-   Modelos de intercepto aleatório: quando cada grupo tem uma linha de base diferente.
+
+Modelos de inclinação aleatória: quando o efeito de um preditor varia entre os grupos.
+
+## Interpretação e Validação de um LMM
+
+-   Analisando a saída do modelo: significância dos efeitos fixos.
+
+-   Quantificando a variação: entendendo as variâncias dos efeitos aleatórios.
+
+-   O Coeficiente de Correlação Intraclasse (ICC): quão semelhantes são as observações dentro de um grupo?
+
+Análise de resíduos para modelos mistos.
+
+## Estudo de Caso 1: Delineamento Aninhado em Aquicultura (Pseudo-replicação)
+
+-   Analisando o experimento de rações em tanques, comparando a análise ingênua (ANOVA simples) com a abordagem correta (LMM).
+
+## Estudo de Caso 2: Medidas Repetidas em Pesca (Crescimento Individual)
+
+Modelando a curva de crescimento de múltiplos peixes marcados ao longo do tempo.
+
+## Modelos Lineares Generalizados Mistos (GLMMs)
+
+-   Quando a resposta não é normal: dados de contagem (Poisson) ou binários (sobrevivência).
+
+-   Introdução à função glmer().
+
+-   Exemplo prático: análise da taxa de sobrevivência de larvas em diferentes lotes.
+
+## Resumo e Boas Práticas

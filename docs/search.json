@@ -8,5 +8,355 @@
     "crumbs": [
       "Prefácio"
     ]
+  },
+  {
+    "objectID": "capitulos/capitulo01/intro.html",
+    "href": "capitulos/capitulo01/intro.html",
+    "title": "1  Introdução",
+    "section": "",
+    "text": "This is a book created from markdown and executable code.\nSee Knuth (1984) for additional discussion of literate programming.\n\n1 + 1\n\n[1] 2\n\n\n\n\n\n\nKnuth, Donald E. 1984. “Literate Programming”. Comput. J. 27 (2): 97–111. https://doi.org/10.1093/comjnl/27.2.97.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Introdução</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html",
+    "href": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html",
+    "title": "3  Organização Estrutural de Projetos de Análise de Dados em R",
+    "section": "",
+    "text": "4 Já passou por isso?",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Organização Estrutural de Projetos de Análise de Dados em R</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#leitura-dos-dados-sempre-em-dadosbrutos",
+    "href": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#leitura-dos-dados-sempre-em-dadosbrutos",
+    "title": "3  Organização Estrutural de Projetos de Análise de Dados em R",
+    "section": "9.1 1. Leitura dos dados (sempre em dados/brutos/)",
+    "text": "9.1 1. Leitura dos dados (sempre em dados/brutos/)\nlibrary(readr)\ndados_csv &lt;- readr::read_csv(fs::path(caminho_dados_brutos, \"exemplo_dados.csv\"))\n\nlibrary(readxl)\ndados_xls &lt;- readxl::read_excel(fs::path(caminho_dados_brutos, \"exemplo_dados.xlsx\"), sheet = 1)\n\n# Ou usando o pacote rio (aceita vários formatos)\nlibrary(rio)\ndados &lt;- rio::import(fs::path(caminho_dados_brutos, \"exemplo_dados.xlsx\"))\n\nComentário didático:\nVocê pode receber dados em diferentes formatos (csv, xlsx, txt, etc). Use o pacote mais adequado — e, se não quiser decorar várias funções, o pacote rio resolve quase tudo!",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Organização Estrutural de Projetos de Análise de Dados em R</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#limpeza-e-organização-inicial",
+    "href": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#limpeza-e-organização-inicial",
+    "title": "3  Organização Estrutural de Projetos de Análise de Dados em R",
+    "section": "9.2 2. Limpeza e organização inicial",
+    "text": "9.2 2. Limpeza e organização inicial\nAntes de analisar, é fundamental padronizar nomes de variáveis, converter tipos de dados (como “idade” para numérico ou “espécie” para fator) e garantir que não há duplicatas.\nlibrary(janitor)\nlibrary(dplyr)\n\ndados_tratados &lt;- dados_csv |&gt; \n  janitor::clean_names() |&gt; \n  mutate(\n    especie = as.factor(especie),\n    peso = as.numeric(peso)\n  ) |&gt; \n  distinct()\n\nPor que fazer isso?\n- Nomes padronizados facilitam a escrita de código limpo. - Tipos de variáveis corretos garantem resultados estatísticos certos. - Remover duplicatas e corrigir inconsistências evita erros e distorções nos resultados.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Organização Estrutural de Projetos de Análise de Dados em R</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#gravação-dos-dados-tratados-em-dadoslimpos",
+    "href": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#gravação-dos-dados-tratados-em-dadoslimpos",
+    "title": "3  Organização Estrutural de Projetos de Análise de Dados em R",
+    "section": "9.3 3. Gravação dos dados tratados em dados/limpos/",
+    "text": "9.3 3. Gravação dos dados tratados em dados/limpos/\nGuarde sempre a versão limpa e tratada dos dados em outra pasta.\nAssim, você mantém o dado bruto intacto e pode sempre “recomeçar” caso precise.\n# Salvar como Excel\nwritexl::write_xlsx(\n  dados_tratados, \n  fs::path(caminho_dados_limpos, \"exemplo_dados_tratados.xlsx\")\n)\n\n# Salvar como CSV\nreadr::write_csv(\n  dados_tratados, \n  fs::path(caminho_dados_limpos, \"exemplo_dados_tratados.csv\")\n)\n\n# Usando rio (flexível para vários formatos)\nrio::export(\n  dados_tratados, \n  fs::path(caminho_dados_limpos, \"exemplo_dados_tratados.xlsx\")\n)\n\nDica prática:\nCom esse padrão, seus scripts sempre terão um ponto de partida confiável (“dados brutos”) e uma base limpa para análise.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Organização Estrutural de Projetos de Análise de Dados em R</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#dica-avançada-salve-seus-dados-sem-perder-as-classes-das-variáveis",
+    "href": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#dica-avançada-salve-seus-dados-sem-perder-as-classes-das-variáveis",
+    "title": "3  Organização Estrutural de Projetos de Análise de Dados em R",
+    "section": "9.4 DICA AVANÇADA: Salve seus dados sem perder as classes das variáveis!",
+    "text": "9.4 DICA AVANÇADA: Salve seus dados sem perder as classes das variáveis!\nSempre que você quiser garantir que as classes das variáveis (como fator, data, inteiro, etc.) sejam mantidas, utilize o formato Parquet com o pacote arrow.\nEsse formato é: - Compacto e eficiente - Compatível com R, Python e outros sistemas modernos - Mantém todas as informações dos tipos das variáveis\nExemplo em R:\nlibrary(arrow)\n\n# Salvar os dados tratados em formato Parquet\nwrite_parquet(\n  dados_tratados,\n  fs::path(caminho_dados_limpos, \"exemplo_dados_tratados.parquet\")\n)\n\n# Ler os dados de volta\ndados_lidos &lt;- read_parquet(\n  fs::path(caminho_dados_limpos, \"exemplo_dados_tratados.parquet\")\n)\n\nResumo: Sempre que quiser compartilhar dados entre R e Python, ou preservar todos os tipos de variáveis, prefira o formato Parquet!",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Organização Estrutural de Projetos de Análise de Dados em R</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#tabela-resumo-dos-principais-comandos",
+    "href": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#tabela-resumo-dos-principais-comandos",
+    "title": "3  Organização Estrutural de Projetos de Análise de Dados em R",
+    "section": "9.5 Tabela-resumo dos principais comandos",
+    "text": "9.5 Tabela-resumo dos principais comandos\n\n\n\n\n\n\n\n\n\nAção\nFunção\nPacote\nExemplo\n\n\n\n\nDetectar raiz projeto\nfind_root()\nrprojroot\nroot &lt;- find_root(...)\n\n\nCaminho de pasta\nfs::path()\nfs\nfs::path(root, \"dados\", \"brutos\")\n\n\nLer CSV\nread_csv()\nreadr\nread_csv(fs::path(caminho_dados_brutos, \"arq.csv\"))\n\n\nLer Excel\nread_excel()\nreadxl\nread_excel(fs::path(caminho_dados_brutos, \"arq.xlsx\"), sheet = 1)\n\n\nLimpar nomes colunas\nclean_names()\njanitor\nclean_names(df)\n\n\nSalvar Excel\nwrite_xlsx()\nwritexl\nwrite_xlsx(df, fs::path(caminho_dados_limpos, \"arq_tratado.xlsx\"))\n\n\nSalvar CSV\nwrite_csv()\nreadr\nwrite_csv(df, fs::path(caminho_dados_limpos, \"arq_tratado.csv\"))\n\n\nImportar/Exportar\nimport()/export()\nrio\nimport(fs::path(caminho_dados_brutos, \"arq.xlsx\")) / export(df, fs::path(...))\n\n\nSalvar Parquet\nwrite_parquet()\narrow\nwrite_parquet(df, fs::path(caminho_dados_limpos, \"arq.parquet\"))\n\n\nLer Parquet\nread_parquet()\narrow\nread_parquet(fs::path(caminho_dados_limpos, \"arq.parquet\"))",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Organização Estrutural de Projetos de Análise de Dados em R</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#exemplo-de-arquivo-csv-para-download",
+    "href": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#exemplo-de-arquivo-csv-para-download",
+    "title": "3  Organização Estrutural de Projetos de Análise de Dados em R",
+    "section": "13.1 Exemplo de arquivo CSV para download",
+    "text": "13.1 Exemplo de arquivo CSV para download\n# Gera um dataframe exemplo para exportar como csv\nexemplo_csv &lt;- data.frame(\n  especie = c(\"Tambaqui\", \"Pirarucu\", \"Piau\"),\n  peso = c(520, 850, 305),\n  comprimento_cm = c(35.5, 40.0, 28.2)\n)\n\n# Salvar para download manual (fora do RMarkdown)\nwrite.csv(exemplo_csv, \"exemplo_dados.csv\", row.names = FALSE)\n\nO arquivo exemplo_dados.csv pode ser usado para testar as funções deste capítulo.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Organização Estrutural de Projetos de Análise de Dados em R</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo19/analise_modelos_efeitos_mistos.html",
+    "href": "capitulos/capitulo19/analise_modelos_efeitos_mistos.html",
+    "title": "19  Análise com Modelos de Efeitos Mistos",
+    "section": "",
+    "text": "19.1 Introdução: Além da Independência\nNos capítulos anteriores, exploramos uma vasta gama de ferramentas estatísticas, da regressão linear à análise de variância. Todas elas, no entanto, partem de uma premissa fundamental: a de que as nossas observações são independentes umas das outras. O peso de um peixe não deveria influenciar o peso de outro; a taxa de crescimento em um tanque não deveria ter relação com a de outro.\nMas será que essa premissa é sempre verdadeira no mundo real da pesca e da aquicultura?\nImagine um experimento em aquicultura onde testamos três rações diferentes para tilápias. Para garantir poder estatístico, replicamos cada tratamento em quatro tanques, e em cada tanque medimos o crescimento de 20 peixes. Os peixes que compartilham o mesmo tanque também compartilham as mesmas condições de água, a mesma micro-flora, e potenciais interações sociais. É razoável supor que eles sejam mais parecidos entre si do que com peixes de outros tanques. Eles não são observações verdadeiramente independentes. Tratar os 80 peixes de cada tratamento (20 peixes x 4 tanques) como 80 réplicas independentes é um erro conhecido como pseudo-replicação, que pode levar a conclusões equivocadas e falsos positivos.\nDa mesma forma, em estudos de pesca, ao coletar amostras em diferentes lances de rede em uma mesma área, os peixes de um mesmo lance foram capturados juntos e não representam amostras independentes da população total. Ou, se medirmos o crescimento do mesmo peixe marcado ao longo de vários meses (medidas repetidas), essas medições estão inerentemente correlacionadas.\nÉ para lidar com essa estrutura de dados hierárquica, aninhada ou com medidas repetidas que recorremos aos Modelos de Efeitos Mistos (MEM). Estes modelos são uma extensão poderosa dos modelos lineares que aprendemos, permitindo-nos separar e quantificar diferentes fontes de variação. Eles nos permitem modelar explicitamente a “não independência” dos dados, incluindo o que chamamos de efeitos aleatórios (como a variação entre tanques, entre locais de coleta ou entre peixes individuais) juntamente com os efeitos fixos que são o nosso principal interesse (como o efeito de diferentes rações ou tratamentos).\nNeste capítulo, você aprenderá a identificar situações que exigem modelos mistos, a distinguir entre efeitos fixos e aleatórios e a construir, interpretar e validar esses modelos em R. Dominar os MEMs é um passo crucial para realizar análises estatísticas mais robustas, honestas e representativas da complexa realidade biológica com que trabalhamos.",
+    "crumbs": [
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>Análise com Modelos de Efeitos Mistos</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo19/analise_modelos_efeitos_mistos.html#efeitos-fixos-vs.-efeitos-aleatórios-a-distinção-fundamental",
+    "href": "capitulos/capitulo19/analise_modelos_efeitos_mistos.html#efeitos-fixos-vs.-efeitos-aleatórios-a-distinção-fundamental",
+    "title": "19  Análise com Modelos de Efeitos Mistos",
+    "section": "19.2 Efeitos Fixos vs. Efeitos Aleatórios: A Distinção Fundamental",
+    "text": "19.2 Efeitos Fixos vs. Efeitos Aleatórios: A Distinção Fundamental\n\nDefinindo Efeitos Fixos: Níveis de interesse específico.\nDefinindo Efeitos Aleatórios: Amostras de uma população maior de níveis.\nTabela-guia: Como decidir entre fixo e aleatório.",
+    "crumbs": [
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>Análise com Modelos de Efeitos Mistos</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo19/analise_modelos_efeitos_mistos.html#modelos-lineares-de-efeitos-mistos-lmm-em-r-com-o-pacote-lme4",
+    "href": "capitulos/capitulo19/analise_modelos_efeitos_mistos.html#modelos-lineares-de-efeitos-mistos-lmm-em-r-com-o-pacote-lme4",
+    "title": "19  Análise com Modelos de Efeitos Mistos",
+    "section": "19.3 Modelos Lineares de Efeitos Mistos (LMM) em R com o pacote lme4",
+    "text": "19.3 Modelos Lineares de Efeitos Mistos (LMM) em R com o pacote lme4\n\nA sintaxe básica: lmer(resposta ~ fixos + (1 | aleatorio), data).\nModelos de intercepto aleatório: quando cada grupo tem uma linha de base diferente.\n\nModelos de inclinação aleatória: quando o efeito de um preditor varia entre os grupos.",
+    "crumbs": [
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>Análise com Modelos de Efeitos Mistos</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo19/analise_modelos_efeitos_mistos.html#interpretação-e-validação-de-um-lmm",
+    "href": "capitulos/capitulo19/analise_modelos_efeitos_mistos.html#interpretação-e-validação-de-um-lmm",
+    "title": "19  Análise com Modelos de Efeitos Mistos",
+    "section": "19.4 Interpretação e Validação de um LMM",
+    "text": "19.4 Interpretação e Validação de um LMM\n\nAnalisando a saída do modelo: significância dos efeitos fixos.\nQuantificando a variação: entendendo as variâncias dos efeitos aleatórios.\nO Coeficiente de Correlação Intraclasse (ICC): quão semelhantes são as observações dentro de um grupo?\n\nAnálise de resíduos para modelos mistos.",
+    "crumbs": [
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>Análise com Modelos de Efeitos Mistos</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo19/analise_modelos_efeitos_mistos.html#estudo-de-caso-1-delineamento-aninhado-em-aquicultura-pseudo-replicação",
+    "href": "capitulos/capitulo19/analise_modelos_efeitos_mistos.html#estudo-de-caso-1-delineamento-aninhado-em-aquicultura-pseudo-replicação",
+    "title": "19  Análise com Modelos de Efeitos Mistos",
+    "section": "19.5 Estudo de Caso 1: Delineamento Aninhado em Aquicultura (Pseudo-replicação)",
+    "text": "19.5 Estudo de Caso 1: Delineamento Aninhado em Aquicultura (Pseudo-replicação)\n\nAnalisando o experimento de rações em tanques, comparando a análise ingênua (ANOVA simples) com a abordagem correta (LMM).",
+    "crumbs": [
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>Análise com Modelos de Efeitos Mistos</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo19/analise_modelos_efeitos_mistos.html#estudo-de-caso-2-medidas-repetidas-em-pesca-crescimento-individual",
+    "href": "capitulos/capitulo19/analise_modelos_efeitos_mistos.html#estudo-de-caso-2-medidas-repetidas-em-pesca-crescimento-individual",
+    "title": "19  Análise com Modelos de Efeitos Mistos",
+    "section": "19.6 Estudo de Caso 2: Medidas Repetidas em Pesca (Crescimento Individual)",
+    "text": "19.6 Estudo de Caso 2: Medidas Repetidas em Pesca (Crescimento Individual)\nModelando a curva de crescimento de múltiplos peixes marcados ao longo do tempo.",
+    "crumbs": [
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>Análise com Modelos de Efeitos Mistos</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo19/analise_modelos_efeitos_mistos.html#modelos-lineares-generalizados-mistos-glmms",
+    "href": "capitulos/capitulo19/analise_modelos_efeitos_mistos.html#modelos-lineares-generalizados-mistos-glmms",
+    "title": "19  Análise com Modelos de Efeitos Mistos",
+    "section": "19.7 Modelos Lineares Generalizados Mistos (GLMMs)",
+    "text": "19.7 Modelos Lineares Generalizados Mistos (GLMMs)\n\nQuando a resposta não é normal: dados de contagem (Poisson) ou binários (sobrevivência).\nIntrodução à função glmer().\nExemplo prático: análise da taxa de sobrevivência de larvas em diferentes lotes.",
+    "crumbs": [
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>Análise com Modelos de Efeitos Mistos</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo19/analise_modelos_efeitos_mistos.html#resumo-e-boas-práticas",
+    "href": "capitulos/capitulo19/analise_modelos_efeitos_mistos.html#resumo-e-boas-práticas",
+    "title": "19  Análise com Modelos de Efeitos Mistos",
+    "section": "19.8 Resumo e Boas Práticas",
+    "text": "19.8 Resumo e Boas Práticas",
+    "crumbs": [
+      "<span class='chapter-number'>19</span>  <span class='chapter-title'>Análise com Modelos de Efeitos Mistos</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo20/modelos_dinamica_populacional_aplicados.html",
+    "href": "capitulos/capitulo20/modelos_dinamica_populacional_aplicados.html",
+    "title": "20  Modelos de Dinâmica Populacional Aplicados",
+    "section": "",
+    "text": "20.1 Introdução: Traduzindo Estatística em Biologia Pesqueira\nAo longo deste livro, construímos um robusto arsenal de ferramentas estatísticas. Aprendemos a comparar médias, ajustar linhas de regressão, analisar variâncias e até mesmo a modelar estruturas de dados complexas. Agora, neste capítulo, vamos aplicar esse conhecimento para responder a algumas das perguntas mais fundamentais da ciência pesqueira e da aquicultura. Este é o momento em que a estatística deixa de ser uma disciplina abstrata e se torna a linguagem que usamos para descrever a dinâmica da vida aquática.\nComo um peixe cresce ao longo da sua vida? Qual a taxa de mortalidade que uma população sofre anualmente? Como a quantidade de peixes adultos (o estoque) influencia a produção de novos juvenis (o recrutamento)? Como podemos estimar o rendimento máximo que podemos extrair de um estoque de forma sustentável?\nEssas não são perguntas puramente estatísticas; são questões centrais para a biologia, ecologia e, sobretudo, para a gestão de recursos pesqueiros. Acontece que os modelos desenvolvidos ao longo de décadas para responder a essas perguntas têm uma forte base estatística, frequentemente se apoiando em técnicas como a regressão linear e não linear.\nNeste capítulo, faremos a ponte final entre a teoria estatística e a prática aplicada. Vamos explorar alguns dos modelos mais clássicos e importantes da dinâmica populacional, implementando-os passo a passo em R. Você verá como a regressão não linear do Capítulo 13 é a ferramenta perfeita para ajustar o famoso modelo de crescimento de von Bertalanffy. Descobrirá como uma simples regressão linear pode ser usada para estimar a mortalidade a partir de uma curva de captura. E aprenderá a usar a seleção de modelos via AIC para comparar hipóteses concorrentes sobre a relação estoque-recrutamento.\nEste capítulo serve como uma síntese, demonstrando o poder das técnicas que você aprendeu e capacitando-o a extrair insights biológicos significativos diretamente dos seus dados.",
+    "crumbs": [
+      "<span class='chapter-number'>20</span>  <span class='chapter-title'>Modelos de Dinâmica Populacional Aplicados</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo20/modelos_dinamica_populacional_aplicados.html#modelando-o-crescimento-individual-von-bertalanffy-e-além",
+    "href": "capitulos/capitulo20/modelos_dinamica_populacional_aplicados.html#modelando-o-crescimento-individual-von-bertalanffy-e-além",
+    "title": "20  Modelos de Dinâmica Populacional Aplicados",
+    "section": "20.2 Modelando o Crescimento Individual: von Bertalanffy e Além",
+    "text": "20.2 Modelando o Crescimento Individual: von Bertalanffy e Além\n\nA teoria por trás do modelo de crescimento de von Bertalanffy.\nAjustando o modelo com Regressão Não Linear (nls()) em R.\nInterpretando os parâmetros: L∞, K e t0.\nAplicação da Seleção de Modelos: Comparando o ajuste do modelo de von Bertalanffy com modelos alternativos (Gompertz, Logístico) usando o Critério de Informação de Akaike (AIC).",
+    "crumbs": [
+      "<span class='chapter-number'>20</span>  <span class='chapter-title'>Modelos de Dinâmica Populacional Aplicados</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo20/modelos_dinamica_populacional_aplicados.html#estimando-a-mortalidade-total-z-com-a-curva-de-captura-por-comprimento-convertido",
+    "href": "capitulos/capitulo20/modelos_dinamica_populacional_aplicados.html#estimando-a-mortalidade-total-z-com-a-curva-de-captura-por-comprimento-convertido",
+    "title": "20  Modelos de Dinâmica Populacional Aplicados",
+    "section": "20.3 Estimando a Mortalidade Total (Z) com a Curva de Captura por Comprimento Convertido",
+    "text": "20.3 Estimando a Mortalidade Total (Z) com a Curva de Captura por Comprimento Convertido\n\nA lógica por trás do método.\nPasso a passo: Convertendo dados de comprimento em idade relativa.\nAplicando a regressão linear para estimar Z.\nDiscussão das importantes premissas do modelo.",
+    "crumbs": [
+      "<span class='chapter-number'>20</span>  <span class='chapter-title'>Modelos de Dinâmica Populacional Aplicados</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo20/modelos_dinamica_populacional_aplicados.html#a-relação-estoque-recrutamento",
+    "href": "capitulos/capitulo20/modelos_dinamica_populacional_aplicados.html#a-relação-estoque-recrutamento",
+    "title": "20  Modelos de Dinâmica Populacional Aplicados",
+    "section": "20.4 A Relação Estoque-Recrutamento",
+    "text": "20.4 A Relação Estoque-Recrutamento\n\nIntrodução aos modelos de Beverton-Holt e Ricker.\nAjustando ambos os modelos a dados de estoque e recrutamento com nls().\nUsando AIC para determinar o modelo mais plausível para um dado conjunto de dados.",
+    "crumbs": [
+      "<span class='chapter-number'>20</span>  <span class='chapter-title'>Modelos de Dinâmica Populacional Aplicados</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo20/modelos_dinamica_populacional_aplicados.html#modelos-de-produção-excedente-para-a-gestão-pesqueira",
+    "href": "capitulos/capitulo20/modelos_dinamica_populacional_aplicados.html#modelos-de-produção-excedente-para-a-gestão-pesqueira",
+    "title": "20  Modelos de Dinâmica Populacional Aplicados",
+    "section": "20.5 Modelos de Produção Excedente para a Gestão Pesqueira",
+    "text": "20.5 Modelos de Produção Excedente para a Gestão Pesqueira\n\nO conceito de Rendimento Máximo Sustentável (RMS).\nO modelo de Schaefer: uma aplicação da regressão linear.\nDerivando estimativas de RMS e do esforço ótimo (E_RMS).\n\nBreve menção a modelos mais flexíveis (ex: Fox).",
+    "crumbs": [
+      "<span class='chapter-number'>20</span>  <span class='chapter-title'>Modelos de Dinâmica Populacional Aplicados</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo20/modelos_dinamica_populacional_aplicados.html#conclusão-a-estatística-como-ferramenta-para-a-sustentabilidade",
+    "href": "capitulos/capitulo20/modelos_dinamica_populacional_aplicados.html#conclusão-a-estatística-como-ferramenta-para-a-sustentabilidade",
+    "title": "20  Modelos de Dinâmica Populacional Aplicados",
+    "section": "20.6 Conclusão: A Estatística como Ferramenta para a Sustentabilidade",
+    "text": "20.6 Conclusão: A Estatística como Ferramenta para a Sustentabilidade\n\nRecapitulação de como diferentes modelos se encaixam na avaliação de estoques.\nSugestões de pacotes especializados em R para análise pesqueira (FSA, TropFishR, etc.) para estudos futuros.",
+    "crumbs": [
+      "<span class='chapter-number'>20</span>  <span class='chapter-title'>Modelos de Dinâmica Populacional Aplicados</span>"
+    ]
+  },
+  {
+    "objectID": "summary.html",
+    "href": "summary.html",
+    "title": "22  Considerações Finais",
+    "section": "",
+    "text": "22.1 Aplicações práticas\nEste livro apresentou conceitos fundamentais de estatística aplicada à pesca e aquicultura, com ênfase em métodos descritivos e probabilísticos.",
+    "crumbs": [
+      "<span class='chapter-number'>22</span>  <span class='chapter-title'>Considerações Finais</span>"
+    ]
+  },
+  {
+    "objectID": "summary.html#aplicações-práticas",
+    "href": "summary.html#aplicações-práticas",
+    "title": "22  Considerações Finais",
+    "section": "",
+    "text": "Planejamento de experimentos em viveiros\nAvaliação estatística de crescimento de peixes\nAnálise de captura por unidade de esforço (CPUE)",
+    "crumbs": [
+      "<span class='chapter-number'>22</span>  <span class='chapter-title'>Considerações Finais</span>"
+    ]
+  },
+  {
+    "objectID": "summary.html#próximos-passos",
+    "href": "summary.html#próximos-passos",
+    "title": "22  Considerações Finais",
+    "section": "22.2 Próximos passos",
+    "text": "22.2 Próximos passos\nNos capítulos seguintes, serão incluídas análises inferenciais, regressões e modelagens preditivas voltadas para dados ecológicos e produtivos da aquicultura.\n\nAgradecemos por acompanhar esta jornada científica!",
+    "crumbs": [
+      "<span class='chapter-number'>22</span>  <span class='chapter-title'>Considerações Finais</span>"
+    ]
+  },
+  {
+    "objectID": "references.html",
+    "href": "references.html",
+    "title": "References",
+    "section": "",
+    "text": "Knuth, Donald E. 1984. “Literate Programming.” Comput.\nJ. 27 (2): 97–111. https://doi.org/10.1093/comjnl/27.2.97.",
+    "crumbs": [
+      "References"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo16/analise_modelos_efeitos_mistos.html",
+    "href": "capitulos/capitulo16/analise_modelos_efeitos_mistos.html",
+    "title": "16  Análise com Modelos de Efeitos Mistos",
+    "section": "",
+    "text": "16.1 Introdução: Além da Independência\nNos capítulos anteriores, exploramos uma vasta gama de ferramentas estatísticas, da regressão linear à análise de variância. Todas elas, no entanto, partem de uma premissa fundamental: a de que as nossas observações são independentes umas das outras. O peso de um peixe não deveria influenciar o peso de outro; a taxa de crescimento em um tanque não deveria ter relação com a de outro.\nMas será que essa premissa é sempre verdadeira no mundo real da pesca e da aquicultura?\nImagine um experimento em aquicultura onde testamos três rações diferentes para tilápias. Para garantir poder estatístico, replicamos cada tratamento em quatro tanques, e em cada tanque medimos o crescimento de 20 peixes. Os peixes que compartilham o mesmo tanque também compartilham as mesmas condições de água, a mesma micro-flora, e potenciais interações sociais. É razoável supor que eles sejam mais parecidos entre si do que com peixes de outros tanques. Eles não são observações verdadeiramente independentes. Tratar os 80 peixes de cada tratamento (20 peixes x 4 tanques) como 80 réplicas independentes é um erro conhecido como pseudo-replicação, que pode levar a conclusões equivocadas e falsos positivos.\nDa mesma forma, em estudos de pesca, ao coletar amostras em diferentes lances de rede em uma mesma área, os peixes de um mesmo lance foram capturados juntos e não representam amostras independentes da população total. Ou, se medirmos o crescimento do mesmo peixe marcado ao longo de vários meses (medidas repetidas), essas medições estão inerentemente correlacionadas.\nÉ para lidar com essa estrutura de dados hierárquica, aninhada ou com medidas repetidas que recorremos aos Modelos de Efeitos Mistos (MEM). Estes modelos são uma extensão poderosa dos modelos lineares que aprendemos, permitindo-nos separar e quantificar diferentes fontes de variação. Eles nos permitem modelar explicitamente a “não independência” dos dados, incluindo o que chamamos de efeitos aleatórios (como a variação entre tanques, entre locais de coleta ou entre peixes individuais) juntamente com os efeitos fixos que são o nosso principal interesse (como o efeito de diferentes rações ou tratamentos).\nNeste capítulo, você aprenderá a identificar situações que exigem modelos mistos, a distinguir entre efeitos fixos e aleatórios e a construir, interpretar e validar esses modelos em R. Dominar os MEMs é um passo crucial para realizar análises estatísticas mais robustas, honestas e representativas da complexa realidade biológica com que trabalhamos.",
+    "crumbs": [
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Análise com Modelos de Efeitos Mistos</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo16/analise_modelos_efeitos_mistos.html#efeitos-fixos-vs.-efeitos-aleatórios-a-distinção-fundamental",
+    "href": "capitulos/capitulo16/analise_modelos_efeitos_mistos.html#efeitos-fixos-vs.-efeitos-aleatórios-a-distinção-fundamental",
+    "title": "16  Análise com Modelos de Efeitos Mistos",
+    "section": "16.2 Efeitos Fixos vs. Efeitos Aleatórios: A Distinção Fundamental",
+    "text": "16.2 Efeitos Fixos vs. Efeitos Aleatórios: A Distinção Fundamental\n\nDefinindo Efeitos Fixos: Níveis de interesse específico.\nDefinindo Efeitos Aleatórios: Amostras de uma população maior de níveis.\nTabela-guia: Como decidir entre fixo e aleatório.",
+    "crumbs": [
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Análise com Modelos de Efeitos Mistos</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo16/analise_modelos_efeitos_mistos.html#modelos-lineares-de-efeitos-mistos-lmm-em-r-com-o-pacote-lme4",
+    "href": "capitulos/capitulo16/analise_modelos_efeitos_mistos.html#modelos-lineares-de-efeitos-mistos-lmm-em-r-com-o-pacote-lme4",
+    "title": "16  Análise com Modelos de Efeitos Mistos",
+    "section": "16.3 Modelos Lineares de Efeitos Mistos (LMM) em R com o pacote lme4",
+    "text": "16.3 Modelos Lineares de Efeitos Mistos (LMM) em R com o pacote lme4\n\nA sintaxe básica: lmer(resposta ~ fixos + (1 | aleatorio), data).\nModelos de intercepto aleatório: quando cada grupo tem uma linha de base diferente.\n\nModelos de inclinação aleatória: quando o efeito de um preditor varia entre os grupos.",
+    "crumbs": [
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Análise com Modelos de Efeitos Mistos</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo16/analise_modelos_efeitos_mistos.html#interpretação-e-validação-de-um-lmm",
+    "href": "capitulos/capitulo16/analise_modelos_efeitos_mistos.html#interpretação-e-validação-de-um-lmm",
+    "title": "16  Análise com Modelos de Efeitos Mistos",
+    "section": "16.4 Interpretação e Validação de um LMM",
+    "text": "16.4 Interpretação e Validação de um LMM\n\nAnalisando a saída do modelo: significância dos efeitos fixos.\nQuantificando a variação: entendendo as variâncias dos efeitos aleatórios.\nO Coeficiente de Correlação Intraclasse (ICC): quão semelhantes são as observações dentro de um grupo?\n\nAnálise de resíduos para modelos mistos.",
+    "crumbs": [
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Análise com Modelos de Efeitos Mistos</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo16/analise_modelos_efeitos_mistos.html#estudo-de-caso-1-delineamento-aninhado-em-aquicultura-pseudo-replicação",
+    "href": "capitulos/capitulo16/analise_modelos_efeitos_mistos.html#estudo-de-caso-1-delineamento-aninhado-em-aquicultura-pseudo-replicação",
+    "title": "16  Análise com Modelos de Efeitos Mistos",
+    "section": "16.5 Estudo de Caso 1: Delineamento Aninhado em Aquicultura (Pseudo-replicação)",
+    "text": "16.5 Estudo de Caso 1: Delineamento Aninhado em Aquicultura (Pseudo-replicação)\n\nAnalisando o experimento de rações em tanques, comparando a análise ingênua (ANOVA simples) com a abordagem correta (LMM).",
+    "crumbs": [
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Análise com Modelos de Efeitos Mistos</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo16/analise_modelos_efeitos_mistos.html#estudo-de-caso-2-medidas-repetidas-em-pesca-crescimento-individual",
+    "href": "capitulos/capitulo16/analise_modelos_efeitos_mistos.html#estudo-de-caso-2-medidas-repetidas-em-pesca-crescimento-individual",
+    "title": "16  Análise com Modelos de Efeitos Mistos",
+    "section": "16.6 Estudo de Caso 2: Medidas Repetidas em Pesca (Crescimento Individual)",
+    "text": "16.6 Estudo de Caso 2: Medidas Repetidas em Pesca (Crescimento Individual)\nModelando a curva de crescimento de múltiplos peixes marcados ao longo do tempo.",
+    "crumbs": [
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Análise com Modelos de Efeitos Mistos</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo16/analise_modelos_efeitos_mistos.html#modelos-lineares-generalizados-mistos-glmms",
+    "href": "capitulos/capitulo16/analise_modelos_efeitos_mistos.html#modelos-lineares-generalizados-mistos-glmms",
+    "title": "16  Análise com Modelos de Efeitos Mistos",
+    "section": "16.7 Modelos Lineares Generalizados Mistos (GLMMs)",
+    "text": "16.7 Modelos Lineares Generalizados Mistos (GLMMs)\n\nQuando a resposta não é normal: dados de contagem (Poisson) ou binários (sobrevivência).\nIntrodução à função glmer().\nExemplo prático: análise da taxa de sobrevivência de larvas em diferentes lotes.",
+    "crumbs": [
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Análise com Modelos de Efeitos Mistos</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo16/analise_modelos_efeitos_mistos.html#resumo-e-boas-práticas",
+    "href": "capitulos/capitulo16/analise_modelos_efeitos_mistos.html#resumo-e-boas-práticas",
+    "title": "16  Análise com Modelos de Efeitos Mistos",
+    "section": "16.8 Resumo e Boas Práticas",
+    "text": "16.8 Resumo e Boas Práticas",
+    "crumbs": [
+      "<span class='chapter-number'>16</span>  <span class='chapter-title'>Análise com Modelos de Efeitos Mistos</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo14/analise_series_temporais.html",
+    "href": "capitulos/capitulo14/analise_series_temporais.html",
+    "title": "14  Análise de Séries Temporais",
+    "section": "",
+    "text": "e Médias Móveis",
+    "crumbs": [
+      "<span class='chapter-number'>14</span>  <span class='chapter-title'>Análise de Séries Temporais</span>"
+    ]
   }
 ]

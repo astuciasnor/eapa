@@ -1,0 +1,6 @@
+---
+title: "Análise de Séries Temporais"
+format: html
+---
+
+e Médias Móveis

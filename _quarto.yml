@@ -18,17 +18,17 @@ book:
     - capitulos/capitulo07/testes_parametricos_uma_duas_amostras.qmd
     - capitulos/capitulo08/nao-parametricos_uma_duas_amostras.qmd
     - capitulos/capitulo09/regressao_linear_simples_multipla.qmd
-    - capitulos/capitulo10/anova_estudos_observacionais_experimentais.qmd
-    - capitulos/capitulo11/ancova_comparacoes_inclinacoes.qmd
-    - capitulos/capitulo12/analise_correlacao_associacao_variaveis.qmd
+    - capitulos/capitulo10/analise_correlacao_associacao_variaveis.qmd
+    - capitulos/capitulo11/anova_estudos_observacionais_experimentais.qmd
+    - capitulos/capitulo12/ancova_comparacoes_inclinacoes.qmd
     - capitulos/capitulo13/analise_regressao_nao_linear.qmd
-    - capitulos/capitulo14/analise_series_temporais_medias_moveis.qmd
+    - capitulos/capitulo14/analise_series_temporais.qmd
     - capitulos/capitulo15/modelos_lineares_generalizados.qmd
-    - capitulos/capitulo16/analise_multivariada_dados.qmd
-    - capitulos/capitulo17/criacao_mapas_em_R.qmd
-    - capitulos/capitulo18/metodologia_superfície_respostas.qmd
-    - capitulos/capitulo19/tema_nao_definido1.qmd
-    - capitulos/capitulo20/tema_nao_definido2.qmd
+    - capitulos/capitulo16/analise_modelos_efeitos_mistos.qmd
+    - capitulos/capitulo17/analise_multivariada_dados.qmd
+    - capitulos/capitulo18/criacao_mapas_em_R.qmd
+    - capitulos/capitulo19/metodologia_superfície_respostas.qmd
+    - capitulos/capitulo20/modelos_dinamica_populacional_aplicados.qmd
     - capitulos/capitulo21/relatorios_comunicacao_dados_usando_quarto.qmd
     - summary.qmd
     - references.qmd
