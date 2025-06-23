@@ -24,7 +24,7 @@
     "href": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html",
     "title": "3  Organização Estrutural de Projetos de Análise de Dados em R",
     "section": "",
-    "text": "4 Já passou por isso?",
+    "text": "3.1 Já passou por isso?",
     "crumbs": [
       "<span class='chapter-number'>3</span>  <span class='chapter-title'>Organização Estrutural de Projetos de Análise de Dados em R</span>"
     ]
@@ -83,8 +83,8 @@
     "objectID": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#exemplo-de-arquivo-csv-para-download",
     "href": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#exemplo-de-arquivo-csv-para-download",
     "title": "3  Organização Estrutural de Projetos de Análise de Dados em R",
-    "section": "13.1 Exemplo de arquivo CSV para download",
-    "text": "13.1 Exemplo de arquivo CSV para download\n# Gera um dataframe exemplo para exportar como csv\nexemplo_csv &lt;- data.frame(\n  especie = c(\"Tambaqui\", \"Pirarucu\", \"Piau\"),\n  peso = c(520, 850, 305),\n  comprimento_cm = c(35.5, 40.0, 28.2)\n)\n\n# Salvar para download manual (fora do RMarkdown)\nwrite.csv(exemplo_csv, \"exemplo_dados.csv\", row.names = FALSE)\n\nO arquivo exemplo_dados.csv pode ser usado para testar as funções deste capítulo.",
+    "section": "3.11 Exemplo de arquivo CSV para download",
+    "text": "3.11 Exemplo de arquivo CSV para download\n# Gera um dataframe exemplo para exportar como csv\nexemplo_csv &lt;- data.frame(\n  especie = c(\"Tambaqui\", \"Pirarucu\", \"Piau\"),\n  peso = c(520, 850, 305),\n  comprimento_cm = c(35.5, 40.0, 28.2)\n)\n\n# Salvar para download manual (fora do RMarkdown)\nwrite.csv(exemplo_csv, \"exemplo_dados.csv\", row.names = FALSE)\n\nO arquivo exemplo_dados.csv pode ser usado para testar as funções deste capítulo.",
     "crumbs": [
       "<span class='chapter-number'>3</span>  <span class='chapter-title'>Organização Estrutural de Projetos de Análise de Dados em R</span>"
     ]
@@ -357,6 +357,106 @@
     "text": "e Médias Móveis",
     "crumbs": [
       "<span class='chapter-number'>14</span>  <span class='chapter-title'>Análise de Séries Temporais</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#já-passou-por-isso",
+    "href": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#já-passou-por-isso",
+    "title": "3  Organização Estrutural de Projetos de Análise de Dados em R",
+    "section": "",
+    "text": "Você já se viu perdido entre arquivos, sem saber onde está o dado bruto ou a figura final? Este capítulo vai mostrar como evitar esse caos e ganhar produtividade em análise de dados!",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Organização Estrutural de Projetos de Análise de Dados em R</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#estrutura-recomendada-de-diretórios",
+    "href": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#estrutura-recomendada-de-diretórios",
+    "title": "3  Organização Estrutural de Projetos de Análise de Dados em R",
+    "section": "3.2 Estrutura recomendada de diretórios",
+    "text": "3.2 Estrutura recomendada de diretórios\nOrganize sempre seu projeto em uma estrutura clara, separando dados brutos, dados tratados, scripts, imagens, resultados e documentos. Por exemplo:\n├── dados/\n│   ├── brutos/\n│   └── limpos/\n├── imagens/\n├── scripts/\n├── resultados/\n├── README.md\n\nPor que essa organização?\nTer pastas separadas impede que você misture arquivos originais e processados, além de facilitar muito o entendimento para qualquer pessoa que precisar reutilizar ou revisar seu projeto. Lembre-se: projetos científicos são (ou deveriam ser) sempre reprodutíveis!",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Organização Estrutural de Projetos de Análise de Dados em R</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#como-construir-caminhos-robustos-nos-seus-scripts",
+    "href": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#como-construir-caminhos-robustos-nos-seus-scripts",
+    "title": "3  Organização Estrutural de Projetos de Análise de Dados em R",
+    "section": "3.3 Como construir caminhos robustos nos seus scripts",
+    "text": "3.3 Como construir caminhos robustos nos seus scripts\nEm vez de usar caminhos fixos (como C:/meus_dados/dados.csv), use sempre caminhos relativos à raiz do projeto, assim seu script vai funcionar em qualquer computador — inclusive de colaboradores.\nPara isso, utilize os pacotes rprojroot e fs:\nlibrary(rprojroot)\nlibrary(fs)\n\nroot &lt;- rprojroot::find_root(\n  rprojroot::is_rstudio_project |\n  rprojroot::is_git_root |\n  rprojroot::has_file(\"README.md\")\n)\n\ncaminho_dados_brutos &lt;- fs::path(root, \"dados\", \"brutos\")\ncaminho_dados_limpos &lt;- fs::path(root, \"dados\", \"limpos\")\ncaminho_imagens      &lt;- fs::path(root, \"imagens\")\n\nDica didática:\nIsso permite que você envie seu projeto para o GitHub, Dropbox ou até mesmo um colega por e-mail e ele rode tudo sem precisar editar caminhos de arquivo!",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Organização Estrutural de Projetos de Análise de Dados em R</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#caixa-de-destaque",
+    "href": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#caixa-de-destaque",
+    "title": "3  Organização Estrutural de Projetos de Análise de Dados em R",
+    "section": "3.4 Caixa de Destaque",
+    "text": "3.4 Caixa de Destaque\n\nDica: Estruturar o projeto dessa forma evita dores de cabeça na hora de compartilhar, revisar ou publicar análises!",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Organização Estrutural de Projetos de Análise de Dados em R</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#como-acessar-seus-arquivos-de-dados",
+    "href": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#como-acessar-seus-arquivos-de-dados",
+    "title": "3  Organização Estrutural de Projetos de Análise de Dados em R",
+    "section": "3.5 Como acessar seus arquivos de dados",
+    "text": "3.5 Como acessar seus arquivos de dados\nAcesse sempre os arquivos usando os caminhos definidos acima.\nVeja como fica fácil para ler seus dados:\n# Para ler um arquivo CSV dos dados brutos:\ndados_brutos &lt;- readr::read_csv(fs::path(caminho_dados_brutos, \"meus_dados.csv\"))\n\n# Para ler uma planilha Excel, aba 3:\ndados_excel &lt;- readxl::read_excel(fs::path(caminho_dados_brutos, \"dados_amostras.xlsx\"), sheet = 3)\n\nPor que isso é importante?\nQuando você mantém dados brutos separados, evita sobrescrever arquivos originais por acidente e mantém um “histórico” do dado exatamente como foi recebido/coletado.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Organização Estrutural de Projetos de Análise de Dados em R</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#leitura-gravação-e-limpeza-de-dados-no-projeto-estruturado",
+    "href": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#leitura-gravação-e-limpeza-de-dados-no-projeto-estruturado",
+    "title": "3  Organização Estrutural de Projetos de Análise de Dados em R",
+    "section": "3.6 Leitura, gravação e limpeza de dados no projeto estruturado",
+    "text": "3.6 Leitura, gravação e limpeza de dados no projeto estruturado\nEste é o passo a passo moderno para trazer seus dados para a análise, limpá-los e garantir que tudo está pronto para ser analisado — tudo isso usando a estrutura do projeto.\n\n3.6.1 Leitura dos dados (sempre em dados/brutos/)\nlibrary(readr)\ndados_csv &lt;- readr::read_csv(fs::path(caminho_dados_brutos, \"exemplo_dados.csv\"))\n\nlibrary(readxl)\ndados_xls &lt;- readxl::read_excel(fs::path(caminho_dados_brutos, \"exemplo_dados.xlsx\"), sheet = 1)\n\n# Ou usando o pacote rio (aceita vários formatos)\nlibrary(rio)\ndados &lt;- rio::import(fs::path(caminho_dados_brutos, \"exemplo_dados.xlsx\"))\n\nComentário didático:\nVocê pode receber dados em diferentes formatos (csv, xlsx, txt, etc). Use o pacote mais adequado — e, se não quiser decorar várias funções, o pacote rio resolve quase tudo!\n\n\n\n3.6.2 Limpeza e organização inicial\nAntes de analisar, é fundamental padronizar nomes de variáveis, converter tipos de dados (como “idade” para numérico ou “espécie” para fator) e garantir que não há duplicatas.\nlibrary(janitor)\nlibrary(dplyr)\n\ndados_tratados &lt;- dados_csv |&gt; \n  janitor::clean_names() |&gt; \n  mutate(\n    especie = as.factor(especie),\n    peso = as.numeric(peso)\n  ) |&gt; \n  distinct()\n\nPor que fazer isso?\n- Nomes padronizados facilitam a escrita de código limpo. - Tipos de variáveis corretos garantem resultados estatísticos certos. - Remover duplicatas e corrigir inconsistências evita erros e distorções nos resultados.\n\n\n\n3.6.3 Gravação dos dados tratados em dados/limpos/\nGuarde sempre a versão limpa e tratada dos dados em outra pasta.\nAssim, você mantém o dado bruto intacto e pode sempre “recomeçar” caso precise.\n# Salvar como Excel\nwritexl::write_xlsx(\n  dados_tratados, \n  fs::path(caminho_dados_limpos, \"exemplo_dados_tratados.xlsx\")\n)\n\n# Salvar como CSV\nreadr::write_csv(\n  dados_tratados, \n  fs::path(caminho_dados_limpos, \"exemplo_dados_tratados.csv\")\n)\n\n# Usando rio (flexível para vários formatos)\nrio::export(\n  dados_tratados, \n  fs::path(caminho_dados_limpos, \"exemplo_dados_tratados.xlsx\")\n)\n\nDica prática:\nCom esse padrão, seus scripts sempre terão um ponto de partida confiável (“dados brutos”) e uma base limpa para análise.\n\n\n\n\n3.6.4 DICA AVANÇADA: Salve seus dados sem perder as classes das variáveis!\nSempre que você quiser garantir que as classes das variáveis (como fator, data, inteiro, etc.) sejam mantidas, utilize o formato Parquet com o pacote arrow.\nEsse formato é: - Compacto e eficiente - Compatível com R, Python e outros sistemas modernos - Mantém todas as informações dos tipos das variáveis\nExemplo em R:\nlibrary(arrow)\n\n# Salvar os dados tratados em formato Parquet\nwrite_parquet(\n  dados_tratados,\n  fs::path(caminho_dados_limpos, \"exemplo_dados_tratados.parquet\")\n)\n\n# Ler os dados de volta\ndados_lidos &lt;- read_parquet(\n  fs::path(caminho_dados_limpos, \"exemplo_dados_tratados.parquet\")\n)\n\nResumo: Sempre que quiser compartilhar dados entre R e Python, ou preservar todos os tipos de variáveis, prefira o formato Parquet!\n\n\n\n\n3.6.5 Tabela-resumo dos principais comandos\n\n\n\n\n\n\n\n\n\nAção\nFunção\nPacote\nExemplo\n\n\n\n\nDetectar raiz projeto\nfind_root()\nrprojroot\nroot &lt;- find_root(...)\n\n\nCaminho de pasta\nfs::path()\nfs\nfs::path(root, \"dados\", \"brutos\")\n\n\nLer CSV\nread_csv()\nreadr\nread_csv(fs::path(caminho_dados_brutos, \"arq.csv\"))\n\n\nLer Excel\nread_excel()\nreadxl\nread_excel(fs::path(caminho_dados_brutos, \"arq.xlsx\"), sheet = 1)\n\n\nLimpar nomes colunas\nclean_names()\njanitor\nclean_names(df)\n\n\nSalvar Excel\nwrite_xlsx()\nwritexl\nwrite_xlsx(df, fs::path(caminho_dados_limpos, \"arq_tratado.xlsx\"))\n\n\nSalvar CSV\nwrite_csv()\nreadr\nwrite_csv(df, fs::path(caminho_dados_limpos, \"arq_tratado.csv\"))\n\n\nImportar/Exportar\nimport()/export()\nrio\nimport(fs::path(caminho_dados_brutos, \"arq.xlsx\")) / export(df, fs::path(...))\n\n\nSalvar Parquet\nwrite_parquet()\narrow\nwrite_parquet(df, fs::path(caminho_dados_limpos, \"arq.parquet\"))\n\n\nLer Parquet\nread_parquet()\narrow\nread_parquet(fs::path(caminho_dados_limpos, \"arq.parquet\"))",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Organização Estrutural de Projetos de Análise de Dados em R</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#como-inserir-imagens-nos-relatórios",
+    "href": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#como-inserir-imagens-nos-relatórios",
+    "title": "3  Organização Estrutural de Projetos de Análise de Dados em R",
+    "section": "3.7 Como inserir imagens nos relatórios",
+    "text": "3.7 Como inserir imagens nos relatórios\nUse sempre a pasta de imagens do projeto para manter tudo organizado.\nNo Quarto ou R Markdown, utilize:\n\nknitr::include_graphics(as.character(fs::path(caminho_imagens, \"estrutura_pastas_atualizada.png\")))\n\n\nDica: Sempre use as.character() em fs::path para garantir compatibilidade com funções do R base ou knitr.\n\nMantenha as imagens em formato PNG ou SVG para qualidade nos relatórios científicos..",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Organização Estrutural de Projetos de Análise de Dados em R</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#dados-em-formato-tidy",
+    "href": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#dados-em-formato-tidy",
+    "title": "3  Organização Estrutural de Projetos de Análise de Dados em R",
+    "section": "3.8 Dados em formato tidy",
+    "text": "3.8 Dados em formato tidy\n\nDefinição didática:\n- Cada variável deve estar em uma coluna - Cada observação em uma linha - Cada valor em uma célula\n\nOrganizar dados nesse formato facilita qualquer análise estatística e visualização posterior.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Organização Estrutural de Projetos de Análise de Dados em R</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#controle-de-versões-com-git",
+    "href": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#controle-de-versões-com-git",
+    "title": "3  Organização Estrutural de Projetos de Análise de Dados em R",
+    "section": "3.9 Controle de versões com Git",
+    "text": "3.9 Controle de versões com Git\nO uso de Git (e plataformas como GitHub) não é só para programadores:\n- Permite rastrear mudanças em scripts e até dados (preferencialmente dados pequenos). - Facilita a colaboração. - Garante que você nunca perderá versões importantes do seu trabalho.\n\nDica: Adote o versionamento desde o início. Seu “eu do futuro” agradece!",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Organização Estrutural de Projetos de Análise de Dados em R</span>"
+    ]
+  },
+  {
+    "objectID": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#dicas-finais",
+    "href": "capitulos/capitulo03/organizacao_projetos_leitura_dados.html#dicas-finais",
+    "title": "3  Organização Estrutural de Projetos de Análise de Dados em R",
+    "section": "3.10 Dicas finais",
+    "text": "3.10 Dicas finais\n\nSempre mantenha os dados brutos intactos.\nDocumente todas as etapas de limpeza/tratamento em scripts próprios.\nUse scripts reprodutíveis e caminhos relativos sempre que possível.\nCompartilhe seus projetos com estrutura clara para facilitar colaborações e revisões.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Organização Estrutural de Projetos de Análise de Dados em R</span>"
     ]
   }
 ]
