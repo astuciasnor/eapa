@@ -1,12 +1,107 @@
 ---
 title: "Introdução"
 format: html
+editor_options: 
+  chunk_output_type: console
 ---
 
-This is a book created from markdown and executable code.
+O R tem se tornado uma ferramenta analítica poderosa nas Ciência de Dados. Neste contexto, como o próprio diz, o intuito de escrever "***Estatística Aplicada à Pesca e Aquiculura com R***" foi de produzir um livro texto que permita a pesquisadores e estudantes realizar análises estatísticas facilmente com essa linguagem de programação, de forma aplicada a problemas e questões relacionadas às Ciências Agrárias em geral, e também em alguns tópicos de Ciências Biológicas.
 
-See @knuth84 for additional discussion of literate programming.
+Desde muito tempo, a Linguagem R ganhou popularidade entre muitos usuários de software livre e talvez seja uma das plataformas mais bem sucedida neste setor, com grande número de entusiasmados desenvolvedores de soluções estatísticas em todo o mundo. O R é uma linguagem de programação e um ambiente de software para análise de dados e estatísticas e criação de gráficos (Cotton, 2013). O R (a linguagem) foi criado no início dos anos 1990 por Ross Ihaka e Robert Gentleman da Universidade de Auckland (Nova Zelândia) e é baseado na linguagem S que foi desenvolvida nos Laboratórios Bell na década de 1970. O R (o software) é um projeto baseado na filosofia GNU, refletindo seu status como importante software de código aberto e gratuito, o que significa que os usuários têm a liberdade de executar o programa como desejar; de copiá-lo e dá-lo a quem quiser; de modificar o programa como desejar e, com isso, ajudar a construir uma comunidade em torno do produto. Tanto a linguagem quanto o software são agora desenvolvidos por um grupo de mais de 35 pessoas conhecido como o *R Core Team*.
 
-```{r}
-1 + 1
-```
+Segundo (Cotton, 2013), o trunfo de uma linguagem/software com código aberto e licença livre é que se você acha que uma análise ou procedimento feito no R não lhe é adequado, você pode desenvolver um pacote ou função (ou script) da maneira que você deseja. Porém, como muitas pessoas têm feito isso ao longo de muito tempo, a questão agora é praticamente saber qual das implementações disponíveis se deve usar.
+
+O R é uma linguagem interpretável (às vezes chamada de linguagem de script), o que significa que seu código não precisa ser compilado antes de ser executado. É uma linguagem de alto nível em que você não tem acesso ao funcionamento interno do computador em que está executando seu código; tudo é projetado para ajudá-lo a analisar dados.
+
+Destacam-se entre as principais características do R, a eficiência na manipulação de dados e armazenamento; um conjunto de operadores para cálculos em arrays, em particular as matrizes; possui uma coleção grande, coerente e integrada de ferramentas intermediárias para análise de dados; apresenta recursos gráficos para análise e exibição de dados e; é uma linguagem de programação bem desenvolvida, simples e eficaz.
+
+**Objetivos do livro**
+
+O desafio a que nos propusemos foi tanto de criar e compilar scripts com conteúdos relevantes nas áreas de Ciências Agrárias e Biológicas e torná-los acessíveis e atraentes a alunos de graduação e pós-graduação e que esses scripts sejam bem analisados e testados, estando prontos para gerar resultados a serem apresentados em manuscritos e artigos científicos, bem como para uso em apresentações para uma maior audiência. Não tem a pretensão de cobrir todos os tópicos, tampouco de aprofundar e esgotar cada tema, mas sim de servir como um guia para realizar as análises estatísticas usando esta poderosa linguagem de programação e manter um banco de scripts das diferentes análises. A inspiração veio da minha experiência em sala de aula e laboratório de informática com as atividades curriculares de estatística voltadas para cursos de graduação e pós-graduação relacionados dessas áreas e da dificuldade de se obter scripts "completos" para produzir resultados publicáveis.
+
+Além dos motivos já mencionados, a escolha da linguagem R foi motivada por outras características, tais como: 1) Os alunos não podem arcar com seus custos elevados de softwares proprietários; 2) a facilidade de encontrar ajuda sobre as diversas análises estatísticas pois possui um vasto material didático (incluindo livros, páginas de internet e vídeos tutoriais); 3)  possui milhares de pacotes que podem ser agregados à estrutura de base; 4) Tem sido bem desenvolvido e testado por vários estatísticos, matemáticos, biólogos, químicos, engenheiros, economistas, etc, formando uma imensa comunidade de desenvolvedores; 5) está disponível para computadores pessoais, podendo ser rodado nos sistemas operacionais Windows, Mac OS e Linux (Ubuntu/Debian, Arch, Fedora, etc) e ; 6) vem sendo reconhecido e incorporado por diversas empresas que possuem programas de código fechado para solução de problemas que seus testes ainda não fazem.
+
+Outro aspecto importantíssimo é que o R sofreu melhorias em usabilidade graças às suas interfaces gráficas (GUI, Graphical User Interface), sendo a do RStudio uma das mais amigáveis e em está constante atualização, parecendo-se muito com o formato de janelas da linguagem de programação Matlab. Isto dá maior capacidade aos usuários novatos de se familiarizam com o R e se iniciarem a uma linguagem de programação interpretável. Além disso, com o uso do pacote Rmarkdown e Quarto, há possibilidades de escrever scripts incluindo textos e códigos (Computação Literária), tornando-se uma ferramenta muito útilpara geração de relatórios dinâmicos de análise em vários formatos (html, pdf, word, etc).
+
+O RStudio traz atualmente boa integração com outras linguagens de programação (principalmente com Python), sendo muito útil ao ensino de programação e de estatística.
+
+**Áreas de aplicação e pré-requisitos**
+
+Os problemas práticos enfocados neste livro são questões relacionadas às Ciências Agrárias, a qual engloba campos como Agronomia, Agroecologia, Engenharia Florestal, Engenharia de Pesca, Medicina Veterinária, Zootecnia, Engenharia Agropecuária, Ciência e Tecnologia de Alimentos e Engenharia de Aquicultura, etc. Se do ponto de vista técnico e científico, essas áreas visam ao aprimoramento técnico, aumento produtivo e melhorias no manejo e preservação dos recursos naturais, do ponto de vista estatístico, elas compartilham formas similares de análises estatísticas de dados e realização de planejamentos amostrais e experimentais. Além disso, esses cursos de graduação dessa área têm caráter multidisciplinar, como a Engenharia de Alimentos, Engenharia de Pesca e Agronomia. Por exemplo, abordam diversas subáreas como a qualidade dos alimentos produzidos (análises físicas, química, microbiológica, nutricional e sensorial de animais e vegetais), tecnologia de alimentos, análises físicas, químicas e ecológicas dos habitats das espécies, cultivo de animais e seus diversos delineamentos experimentais e análise, bem como aspectos bioecológicos. Dessa forma, este material poderá ser útil a alunos de outras áreas como a Nutrição Animal, Biologia, Química, etc, bastando saber adaptar os exemplos estudados ao contexto de seu estudo próprio.
+
+Como pré-requisitos, este livro parte do princípio de que os alunos tenham um mínimo de conhecimento básico do R e RStudio, como o uso de operações matemáticas básicas, criação de objetos (vetores, matrizes, arrays e listas), criação de scripts, ajustes de diretórios, uso das funções e dados presentes nos pacotes e com os dados presentes no ambiente de variáveis do RStudio.
+
+A decisão por essa abordagem é que existem uma enorme quantidade de materiais didáticos para esses assuntos introdutórios e que sua inclusão neste livro o tornaria muito extenso, fugindo ao escopo desse livro.
+
+**Organização do texto**
+
+O primeiro capítulo deste livro foi cuidadosamente elaborado com o intuito de criar um ambiente computacional para usuários do Windows que fosse o mais robusto possível, propiciando o mínimo de dificuldades na usabilidade do R e seus pacotes. Começa desde a instalação do R, Rtools, Rstudio e Rcommander, sendo complementado com dicas de instalação dos principais pacotes de análises estatística e visualização gráfica.
+
+Em seguida, apresenta a criação e características de dois dos principais tipos de objetos usados pelo R na hora da entrada e saída de resultados, ou seja, os dataframes e listas. Por fim, as mais eficientes formas entrada e manipulação de dados são apresentadas de forma sucinta e clara que o leitor irá precisar saber para usar em cada uma de suas análises estatísticas. Terminamos o Capítulo 1 com apresentação da potencialidade e flexibilidade do R em análises estatísticas e apresentações gráficas.
+
+Os capítulos seguintes lidam com as análises estatísticas. Abordaremos a estatística descritiva, os testes de inferência estatística paramétricos e não paramétricos, regressões lineares e não lineares, análises multivariadas e principais delineamento de experimentos (complementar com os outros tópicos importantes). Sempre que possível, cada capítulo termina com a visualização de gráficos científicos usando o pacote ggplot2 que possam ser usados em apresentações e para as publicações científicas.
+
+Quanto à apresentação das teorias de cada método, tentou-se utilizar um mínimo possível, citando os livros de referência para que o aluno possa se aprofundar. Isso foi feito com o intuito de não se afastar da meta principal deste livro, que é uso prático da linguagem R e a interpretação de seus resultados.
+
+**Características Especiais, Material de apoio na internet e subsídios pedagógicos**
+
+O Texto traz as seguintes caraterísticas especiais e material de apoio pedagógico, que foram pensados para torná-lo mais útil e agradável aos usuários:
+
+-   Optou-se por trabalhar, na maioria dos casos, com o Editor de scripts, a fim de que os alunos ganhem mais familiaridades com a programação. Sempre que possível, usaremos o pacote rmarkdown, que serve para a criação fácil de documentos dinâmicos, apresentações e relatórios do R. O Rmarkdown combina a sintaxe central de markdown (um formato de texto simples de fácil escrita) com blocos de código do R embutidos que são executados para que a saída de resultados possa ser inclusa no documento final.
+
+-   Com relação aos dados usados nestes livros, criamos o pacote de dados chamado `EAPADados` [@EAPADados] , o qual pode ser instalado no R e seus dados serem acessados facilmente. Os conjuntos de dados podem ser usados por mais de um tipo de análise estatística.
+
+    ```{r}
+    #| eval: false
+    #| echo: true
+
+
+    # Para Windows (binário .zip), rode no R/RStudio:
+    install.packages("https://github.com/astuciasnor/EAPADados/releases/download/v0.1.1/EAPADados_0.1.1.zip",
+                     repos = NULL,
+                     type = "win.binary")
+
+    library(EAPADados)
+    ```
+
+    ```{r}
+    #| eval: false
+    #| echo: true
+
+    # Para Linux e MacOS (fonte .tar.gz)
+
+    install.packages("https://github.com/astuciasnor/EAPADados/releases/download/v0.1.1/EAPADados_0.1.1.tar.gz",
+                     repos = NULL,
+                     type = "source")
+
+    library(EAPADados)
+    ```
+
+-   Conjunto de dados extras (planilha de dados, arquivos csv, txt, etc) para uso nas análises estatísticas estão disponíveis através do link no github:
+
+    ```{r}
+    #| eval: false
+    #| echo: true
+
+    library(readxl)
+    library(curl)
+
+    # Pode usar o seu link normalmente
+    url <- "https://github.com/astuciasnor/EAPADados/raw/refs/heads/main/brutos.xlsx"
+    tmpfile <- tempfile(fileext = ".xlsx")
+    curl::curl_download(url, tmpfile)
+
+    # Ver as sheets (opcional) e usar seu nome abaixo, por exemplo, "3.crabs"
+    readxl::excel_sheets(tmpfile)
+
+    # Ler a planilha desejada
+    dados <- readxl::read_excel(tmpfile, sheet = "3.crabs")
+    ```
+
+**Agradecimentos**
+
+-   Agradeço aos alunos de graduação e pós-graduação da Universidade Federal do Pará, que colaboraram como "cobaias" no aperfeiçoamento do ensino de estatística.
+
+-   Agradecemos aos professores da UFPA que gentilmente cederam seus scripts e resultados de pesquisa, adaptados e incluídos como dados de apoio nas análises deste livro didático.
+
+-   À Editora da UFPA por sua valiosa ajuda na editoração deste material, garantindo um acabamento de alta qualidade.

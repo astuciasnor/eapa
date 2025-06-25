@@ -2,3 +2,10 @@
 title: "Planejamento Amostral e Delineamentos de Experimentos"
 format: html
 ---
+
+Trazer aquele textto sobre captur de camarões de dados do eduardo e que mostrei na sala de aula para a turma de 2022. \
+Projeto camarão
+
+Incluir sobre o capítulo de pseudo-réplica e aplicar a uma pesquisa de conjutno de dados.
+
+Incluir DIC. DBC , DQL e DF

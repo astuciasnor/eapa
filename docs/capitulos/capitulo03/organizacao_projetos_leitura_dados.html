@@ -6,7 +6,6 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Seu Nome">
 
 <title>3&nbsp; Organização Estrutural de Projetos de Análise de Dados em R – Estatística Aplicada à Pesca e Aquicultura com R</title>
 <style>
@@ -77,7 +76,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../../site_libs/quarto-html/quarto-syntax-highlighting-e1a5c8363afafaef2c763b6775fbf3ca.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-364982630eef5352dd1537128a8ed5cb.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-c39790739b795761a025db3e98f5af6a.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -296,13 +295,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Índice</h2>
    
-  <ul class="collapse">
+  <ul>
   <li><a href="#já-passou-por-isso" id="toc-já-passou-por-isso" class="nav-link active" data-scroll-target="#já-passou-por-isso"><span class="header-section-number">3.1</span> Já passou por isso?</a></li>
   <li><a href="#estrutura-recomendada-de-diretórios" id="toc-estrutura-recomendada-de-diretórios" class="nav-link" data-scroll-target="#estrutura-recomendada-de-diretórios"><span class="header-section-number">3.2</span> Estrutura recomendada de diretórios</a></li>
   <li><a href="#como-construir-caminhos-robustos-nos-seus-scripts" id="toc-como-construir-caminhos-robustos-nos-seus-scripts" class="nav-link" data-scroll-target="#como-construir-caminhos-robustos-nos-seus-scripts"><span class="header-section-number">3.3</span> Como construir caminhos robustos nos seus scripts</a></li>
   <li><a href="#caixa-de-destaque" id="toc-caixa-de-destaque" class="nav-link" data-scroll-target="#caixa-de-destaque"><span class="header-section-number">3.4</span> Caixa de Destaque</a></li>
   <li><a href="#como-acessar-seus-arquivos-de-dados" id="toc-como-acessar-seus-arquivos-de-dados" class="nav-link" data-scroll-target="#como-acessar-seus-arquivos-de-dados"><span class="header-section-number">3.5</span> Como acessar seus arquivos de dados</a></li>
-  <li><a href="#leitura-gravação-e-limpeza-de-dados-no-projeto-estruturado" id="toc-leitura-gravação-e-limpeza-de-dados-no-projeto-estruturado" class="nav-link" data-scroll-target="#leitura-gravação-e-limpeza-de-dados-no-projeto-estruturado"><span class="header-section-number">3.6</span> Leitura, gravação e limpeza de dados no projeto estruturado</a></li>
+  <li><a href="#leitura-gravação-e-limpeza-de-dados-no-projeto-estruturado" id="toc-leitura-gravação-e-limpeza-de-dados-no-projeto-estruturado" class="nav-link" data-scroll-target="#leitura-gravação-e-limpeza-de-dados-no-projeto-estruturado"><span class="header-section-number">3.6</span> Leitura, gravação e limpeza de dados no projeto estruturado</a>
+  <ul class="collapse">
+  <li><a href="#leitura-dos-dados-sempre-em-dadosbrutos" id="toc-leitura-dos-dados-sempre-em-dadosbrutos" class="nav-link" data-scroll-target="#leitura-dos-dados-sempre-em-dadosbrutos"><span class="header-section-number">3.6.1</span> Leitura dos dados (sempre em <code>dados/brutos/</code>)</a></li>
+  <li><a href="#limpeza-e-organização-inicial" id="toc-limpeza-e-organização-inicial" class="nav-link" data-scroll-target="#limpeza-e-organização-inicial"><span class="header-section-number">3.6.2</span> Limpeza e organização inicial</a></li>
+  <li><a href="#gravação-dos-dados-tratados-em-dadoslimpos" id="toc-gravação-dos-dados-tratados-em-dadoslimpos" class="nav-link" data-scroll-target="#gravação-dos-dados-tratados-em-dadoslimpos"><span class="header-section-number">3.6.3</span> Gravação dos dados tratados em <code>dados/limpos/</code></a></li>
+  <li><a href="#dica-avançada-salve-seus-dados-sem-perder-as-classes-das-variáveis" id="toc-dica-avançada-salve-seus-dados-sem-perder-as-classes-das-variáveis" class="nav-link" data-scroll-target="#dica-avançada-salve-seus-dados-sem-perder-as-classes-das-variáveis"><span class="header-section-number">3.6.4</span> DICA AVANÇADA: Salve seus dados sem perder as classes das variáveis!</a></li>
+  <li><a href="#tabela-resumo-dos-principais-comandos" id="toc-tabela-resumo-dos-principais-comandos" class="nav-link" data-scroll-target="#tabela-resumo-dos-principais-comandos"><span class="header-section-number">3.6.5</span> Tabela-resumo dos principais comandos</a></li>
+  </ul></li>
   <li><a href="#como-inserir-imagens-nos-relatórios" id="toc-como-inserir-imagens-nos-relatórios" class="nav-link" data-scroll-target="#como-inserir-imagens-nos-relatórios"><span class="header-section-number">3.7</span> Como inserir imagens nos relatórios</a></li>
   <li><a href="#dados-em-formato-tidy" id="toc-dados-em-formato-tidy" class="nav-link" data-scroll-target="#dados-em-formato-tidy"><span class="header-section-number">3.8</span> Dados em formato tidy</a></li>
   <li><a href="#controle-de-versões-com-git" id="toc-controle-de-versões-com-git" class="nav-link" data-scroll-target="#controle-de-versões-com-git"><span class="header-section-number">3.9</span> Controle de versões com Git</a></li>
@@ -324,19 +330,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Autor</div>
-    <div class="quarto-title-meta-contents">
-             <p>Seu Nome </p>
-          </div>
-  </div>
     
-    <div>
-    <div class="quarto-title-meta-heading">Data de Publicação</div>
-    <div class="quarto-title-meta-contents">
-      <p class="date">19 de maio de 2024</p>
-    </div>
-  </div>
   
     
   </div>
