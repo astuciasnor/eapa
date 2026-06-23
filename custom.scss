@@ -1,0 +1,43 @@
+/*-- scss:defaults --*/
+// Reduz um pouco o tamanho dos títulos de seção (livro inteiro)
+$h1-font-size: 1.80rem;
+$h2-font-size: 1.40rem;
+$h3-font-size: 1.18rem;
+$h4-font-size: 1.05rem;
+$h5-font-size: 0.95rem;
+
+/*-- scss:rules --*/
+// Bloco de título e subtítulo do capítulo (cabeçalho do Quarto)
+.quarto-title .title {
+  font-size: 1.9rem;
+  line-height: 1.2;
+}
+.quarto-title .subtitle {
+  font-size: 1.05rem;
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+/* Callout de destaque (gancho de abertura "Já passou por isso?") — rosé acinzentado */
+.callout.destaque {
+  border-left-color: #b07a86 !important;
+}
+.callout.destaque .callout-header {
+  background-color: #ead8dd !important;
+}
+.callout.destaque,
+.callout.destaque .callout-body-container,
+.callout.destaque .callout-body {
+  background-color: #f5edef !important;
+}
+.callout.destaque .callout-title-container {
+  font-weight: 600;
+}
+
+/* Menos espaço entre o título/subtítulo do capítulo e o início do texto */
+header#title-block-header {
+  margin-block-end: 0.6rem;
+}
+.quarto-title-block .quarto-title {
+  margin-bottom: 0.25rem;
+}

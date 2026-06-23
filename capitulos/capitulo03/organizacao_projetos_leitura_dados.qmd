@@ -1,236 +1,163 @@
 ---
-title: "Organização Estrutural de Projetos de Análise de Dados em R"
-subtitle: "Ou: Como Deixar Seus Arquivos em Ordem e Nunca Mais se Perder em Pastas!"
+title: "Organização de um Projeto de Análise"
+subtitle: "Ou: como deixar os arquivos em ordem e nunca mais se perder em pastas"
+lang: pt-BR
+execute:
+  warning: false
+  message: false
 ---
 
+::: {.callout-note .destaque icon=false}
 ## Já passou por isso?
 
-> Você já se viu perdido entre arquivos, sem saber onde está o dado bruto ou a figura final? Este capítulo vai mostrar como evitar esse caos e ganhar produtividade em análise de dados!
+Três meses depois de terminar uma análise, você abre a pasta do projeto e encontra `dados.csv`, `dados2.csv`, `dados_final.csv`, `dados_final_AGORA.csv` e um script que lê "aquele arquivo", mas qual? A figura que entrou no artigo sumiu, e ninguém (nem você) lembra de onde veio o número da tabela. Não é falta de capricho; é falta de **estrutura**. E estrutura, felizmente, se monta uma vez e dura o projeto inteiro.
+:::
 
-## Estrutura recomendada de diretórios
+Organizar um projeto não é burocracia: é o que separa uma análise que **se reproduz** de um amontoado de arquivos que só funciona na sua máquina, hoje, com sorte. Neste capítulo montamos um esqueleto simples de pastas, aprendemos a escrever caminhos que não quebram quando o projeto muda de computador, e percorremos o caminho do dado **bruto** até o dado **limpo**, pronto para analisar.
 
-Organize sempre seu projeto em uma estrutura clara, separando dados brutos, dados tratados, scripts, imagens, resultados e documentos. Por exemplo:
+## Um lugar para cada coisa
 
-```         
-├── dados/
-│   ├── brutos/
-│   └── limpos/
-├── imagens/
-├── scripts/
-├── resultados/
-├── README.md
+Pense numa cozinha profissional. Os ingredientes crus ficam de um lado, os preparados de outro, as panelas num lugar, os pratos prontos noutro. Ninguém guarda peixe fresco na gaveta dos talheres. Um projeto de análise funciona igual: cada tipo de arquivo tem seu lugar, e isso sozinho já evita metade das dores de cabeça. A @fig-estrutura mostra o esqueleto que recomendamos.
+
+![Estrutura recomendada de um projeto de análise (na raiz, a pasta `projeto-analise/`), item a item: o `.Rproj` que abre tudo no RStudio, o `README` que serve de mapa, e as pastas que separam os dados (brutos e limpos), os scripts, as imagens, os resultados e os relatórios, com o que cada uma serve e exemplos do que guarda. O projeto que a CatalyseR exporta segue o mesmo espírito, em versão enxuta.](../../images/estrutura_projeto.png){#fig-estrutura width=100%}
+
+A lógica é direta. Os **dados brutos** — o arquivo exatamente como você recebeu ou coletou — entram em `dados/brutos/` e **nunca** são editados; são a sua fonte original, o equivalente ao peixe fresco que você não estraga. Os **dados limpos**, depois de tratados, vão para `dados/limpos/`: assim, se algo der errado, você sempre pode recomeçar do bruto. Em `scripts/` mora o código `.R` que faz o trabalho; `imagens/` guarda as figuras exportadas; `resultados/` guarda tabelas e modelos salvos; e `relatorios/` reúne os documentos finais: o `.qmd`, o `.docx`, o `.pdf`.
+
+E o **`README`** (aquele arquivo que parece supérfluo) é o **mapa** do projeto. Em poucas linhas, ele diz o que o projeto faz, de onde vieram os dados e como rodar a análise. Parece exagero hoje; mas é o bilhete que o seu "eu do futuro" (ou um colega que herdar o projeto) vai agradecer quando abrir a pasta sem lembrar de mais nada. Não é obrigatório para um rascunho de cinco minutos, mas é o seguro mais barato da reprodutibilidade.
+
+> **Do mouse ao código.** Quando você termina uma análise na CatalyseR e pede para **exportar o Projeto R (.zip)**, ela entrega exatamente nesse espírito: um `projeto_analise.Rproj`, a pasta `dados/` (com os dados limpos), `scripts/` (o código e as funções) e `relatorios/` (o `.qmd` e o modelo de Word), mais um `README`. A estrutura deste capítulo é a versão completa, para os seus próprios projetos; a que a IDE baixa é o subconjunto enxuto, pronto para uma análise específica.
+
+## Caminhos que não quebram: o pacote `here`
+
+Aqui mora um dos erros mais comuns — e mais frustrantes — de quem começa. É tentador escrever o caminho completo de um arquivo:
+
+```r
+dados <- readr::read_csv("C:/Users/voce/Documents/projeto/dados/brutos/capturas.csv")
 ```
 
-> **Por que essa organização?**\
-> Ter pastas separadas impede que você misture arquivos originais e processados, além de facilitar muito o entendimento para qualquer pessoa que precisar reutilizar ou revisar seu projeto. Lembre-se: projetos científicos são (ou deveriam ser) sempre reprodutíveis!
+Esse caminho funciona... na sua máquina, nesta pasta, hoje. Mande o projeto para um colega, mova a pasta de lugar, ou só troque de computador, e ele quebra. Há um problema mais sutil ainda: o R tem uma "pasta de trabalho" (o *working directory*), e ela **muda** dependendo de como você roda o código: em especial quando o Quarto renderiza um relatório, ele roda a partir da pasta do próprio `.qmd`, não da raiz do projeto. Resultado: o mesmo `read_csv("dados/brutos/...")` funciona quando você testa no console e falha na hora de renderizar.
 
-## Como construir caminhos robustos nos seus scripts
+O pacote **`here`** resolve isso com uma ideia simples: ele **encontra a raiz do projeto** (a pasta onde está o `.Rproj`) e monta todos os caminhos a partir dela, sempre os mesmos, não importa de onde o R esteja rodando.
 
-Em vez de usar caminhos fixos (como `C:/meus_dados/dados.csv`), use sempre caminhos relativos à raiz do projeto, assim seu script vai funcionar em qualquer computador — inclusive de colaboradores.\
-Para isso, utilize os pacotes `rprojroot` e `fs`:
+```r
+library(here)
 
-``` r
-library(rprojroot)
-library(fs)
+# A partir da raiz do projeto, sempre:
+here::here("dados", "brutos", "capturas.csv")
+#> "C:/Users/voce/Documents/projeto/dados/brutos/capturas.csv"
 
-root <- rprojroot::find_root(
-  rprojroot::is_rstudio_project |
-  rprojroot::is_git_root |
-  rprojroot::has_file("README.md")
-)
-
-caminho_dados_brutos <- fs::path(root, "dados", "brutos")
-caminho_dados_limpos <- fs::path(root, "dados", "limpos")
-caminho_imagens      <- fs::path(root, "imagens")
+dados <- readr::read_csv(here::here("dados", "brutos", "capturas.csv"))
 ```
 
-> **Dica didática:**\
-> Isso permite que você envie seu projeto para o GitHub, Dropbox ou até mesmo um colega por e-mail e ele rode tudo sem precisar editar caminhos de arquivo!
+Você descreve o caminho em "peças" (`"dados"`, `"brutos"`, `"capturas.csv"`) e o `here` junta tudo corretamente para o seu sistema, funcione ele no Windows, no Mac ou no Linux. É a diferença entre um caminho que **descreve onde o arquivo está dentro do projeto** e um que **fixa onde a pasta estava naquele dia**.
 
-## Caixa de Destaque
+> **A pegadinha das imagens.** Aqui está o ponto que mais confunde. Para o **R ler** algo (um `.csv`, ou exibir uma figura com `knitr::include_graphics()`), use o `here`; ele é robusto. Mas para **inserir** uma imagem direto no texto com a sintaxe de Markdown, `![legenda](caminho)`, quem resolve o caminho é o **Quarto**, e ele o faz **relativo ao arquivo `.qmd`**, não pelo `here`. São dois mundos: o caminho que o R enxerga (resolvido pelo `here`, a partir da raiz) e o caminho que o Markdown enxerga (relativo ao documento). Misturar os dois é a causa nº 1 de "a imagem não aparece". A regra prática: imagem **estática no texto** → caminho relativo ao `.qmd`; imagem **gerada ou inserida por código R** → `knitr::include_graphics(here::here("imagens", "fig.png"))`.
 
-> **Dica:** Estruturar o projeto dessa forma evita dores de cabeça na hora de compartilhar, revisar ou publicar análises!
+## Uma planilha que o R entende: o formato *tidy*
 
-## Como acessar seus arquivos de dados
+Antes de falar em ler dados, vale falar em **digitá-los direito**. A maior parte do sofrimento numa análise não nasce no R, nasce na planilha de campo, montada para o olho humano e não para o computador. Título mesclado no topo, a unidade colada no número ("612 g"), uma linha de "média" no meio das observações, duas mini-tabelas lado a lado, cor amarela marcando "isso aqui é especial". Tudo isso é informação que **você** entende, mas que o R não tem como ler.
 
-Acesse sempre os arquivos usando os caminhos definidos acima.\
-Veja como fica fácil para ler seus dados:
+A receita que resolve quase tudo se chama **dados *tidy*** (dados "arrumados"), e cabe em três regras: **cada variável é uma coluna**, **cada observação é uma linha**, e há **um único cabeçalho**, na primeira linha. A @fig-tidy mostra a mesma biometria de peixes nos dois mundos: a planilha bonita para humanos (e ilegível para o R) e a planilha *tidy*.
 
-``` r
-# Para ler um arquivo CSV dos dados brutos:
-dados_brutos <- readr::read_csv(fs::path(caminho_dados_brutos, "meus_dados.csv"))
+![A mesma biometria de campo em dois formatos. À esquerda, a planilha "para humanos": título mesclado, unidades dentro das células, um total no meio dos dados e cor como informação, que o R não consegue ler. À direita, o formato *tidy*: uma variável por coluna, um peixe por linha, cabeçalho único e valores puros. Digite os dados brutos já assim.](../../images/tidy_dados.png){#fig-tidy width=100%}
 
-# Para ler uma planilha Excel, aba 3:
-dados_excel <- readxl::read_excel(fs::path(caminho_dados_brutos, "dados_amostras.xlsx"), sheet = 3)
+Repare que, no formato *tidy*, o que antes estava na cor ou no título virou **coluna**: o local de coleta deixou de ser um cabeçalho amarelo e passou a ser a variável `local`; a data, que estava só no título, virou a coluna `data`. Nada se perde: tudo vira dado. E uma planilha *tidy* não é só mais limpa: é a forma que o `ggplot2`, o `dplyr` e as funções da CatalyseR **esperam** receber. Organizar na entrada economiza horas de remendo depois.
+
+## Do bruto ao limpo
+
+Com a estrutura no lugar e os caminhos resolvidos, o fluxo de trabalho fica natural: **ler** o dado bruto, **limpar**, e **gravar** a versão tratada. Tudo apontando para as pastas certas.
+
+A leitura aceita vários formatos. Para um `.csv`, o `readr`; para uma planilha do Excel, o `readxl`; e se você não quiser decorar funções, o `rio` importa quase tudo com um comando só:
+
+```r
+library(readr); library(readxl); library(rio)
+
+dados <- readr::read_csv(here::here("dados", "brutos", "capturas.csv"))
+# ou, de uma planilha (aba 1):
+dados <- readxl::read_excel(here::here("dados", "brutos", "capturas.xlsx"), sheet = 1)
+# ou deixe o rio adivinhar o formato:
+dados <- rio::import(here::here("dados", "brutos", "capturas.xlsx"))
 ```
 
-> **Por que isso é importante?**\
-> Quando você mantém dados brutos separados, evita sobrescrever arquivos originais por acidente e mantém um “histórico” do dado exatamente como foi recebido/coletado.
+Antes de analisar, vale **arrumar a casa**: padronizar os nomes das colunas, acertar os tipos das variáveis (espécie vira fator, peso vira número) e remover duplicatas. O `janitor` cuida dos nomes; o `dplyr`, do resto:
 
-## Leitura, gravação e limpeza de dados no projeto estruturado
+```r
+library(dplyr); library(janitor)
 
-Este é o passo a passo moderno para trazer seus dados para a análise, limpá-los e garantir que tudo está pronto para ser analisado — tudo isso usando a estrutura do projeto.
-
-### Leitura dos dados (sempre em `dados/brutos/`)
-
-``` r
-library(readr)
-dados_csv <- readr::read_csv(fs::path(caminho_dados_brutos, "exemplo_dados.csv"))
-
-library(readxl)
-dados_xls <- readxl::read_excel(fs::path(caminho_dados_brutos, "exemplo_dados.xlsx"), sheet = 1)
-
-# Ou usando o pacote rio (aceita vários formatos)
-library(rio)
-dados <- rio::import(fs::path(caminho_dados_brutos, "exemplo_dados.xlsx"))
+dados_limpos <- dados |>
+  janitor::clean_names() |>                 # nomes padronizados, sem acento/espaço
+  mutate(especie = as.factor(especie),
+         peso_g  = as.numeric(peso_g)) |>
+  distinct()                                 # fora as duplicatas
 ```
 
-> **Comentário didático:**\
-> Você pode receber dados em diferentes formatos (csv, xlsx, txt, etc). Use o pacote mais adequado — e, se não quiser decorar várias funções, o pacote `rio` resolve quase tudo!
+E então **grave a versão limpa** numa pasta separada, preservando o bruto intacto:
 
-### Limpeza e organização inicial
-
-Antes de analisar, é fundamental padronizar nomes de variáveis, converter tipos de dados (como “idade” para numérico ou “espécie” para fator) e garantir que não há duplicatas.
-
-``` r
-library(janitor)
-library(dplyr)
-
-dados_tratados <- dados_csv |> 
-  janitor::clean_names() |> 
-  mutate(
-    especie = as.factor(especie),
-    peso = as.numeric(peso)
-  ) |> 
-  distinct()
+```r
+rio::export(dados_limpos, here::here("dados", "limpos", "capturas.csv"))
 ```
 
-> **Por que fazer isso?**\
-> - Nomes padronizados facilitam a escrita de código limpo. - Tipos de variáveis corretos garantem resultados estatísticos certos. - Remover duplicatas e corrigir inconsistências evita erros e distorções nos resultados.
+Há um detalhe que o `.csv` não resolve: ele **esquece os tipos**. Como é só texto separado por vírgulas, na próxima leitura uma coluna que era fator vira texto, uma data vira texto, e você precisa rearrumar tudo de novo. Quando o trabalho vai continuar **dentro do R**, a melhor escolha é o formato nativo dele, o **`.rda`** (ou o `.rds`, sua versão de um objeto só). Ele guarda o objeto exatamente como está na memória (classes, fatores, níveis, atributos) e carrega num piscar de olhos. É inclusive o formato em que vivem os dados do `EAPADados`:
 
-### Gravação dos dados tratados em `dados/limpos/`
+```r
+# salvar e ler um único objeto (recomendado): .rds
+saveRDS(dados_limpos, here::here("dados", "limpos", "capturas.rds"))
+dados <- readRDS(here::here("dados", "limpos", "capturas.rds"))
 
-Guarde sempre a versão limpa e tratada dos dados em outra pasta.\
-Assim, você mantém o dado bruto intacto e pode sempre “recomeçar” caso precise.
-
-``` r
-# Salvar como Excel
-writexl::write_xlsx(
-  dados_tratados, 
-  fs::path(caminho_dados_limpos, "exemplo_dados_tratados.xlsx")
-)
-
-# Salvar como CSV
-readr::write_csv(
-  dados_tratados, 
-  fs::path(caminho_dados_limpos, "exemplo_dados_tratados.csv")
-)
-
-# Usando rio (flexível para vários formatos)
-rio::export(
-  dados_tratados, 
-  fs::path(caminho_dados_limpos, "exemplo_dados_tratados.xlsx")
-)
+# salvar objetos com nome (um ou vários): .rda
+save(dados_limpos, file = here::here("dados", "limpos", "capturas.rda"))
+load(here::here("dados", "limpos", "capturas.rda"))   # devolve 'dados_limpos'
 ```
 
-> **Dica prática:**\
-> Com esse padrão, seus scripts sempre terão um ponto de partida confiável (“dados brutos”) e uma base limpa para análise.
+**E se você também usa Python?** O `.rda`/`.rds` é perfeito para quem fica no R, mas só o R o entende. Se precisar trocar dados com o Python (ou outras ferramentas) sem perder os tipos, salve em **Parquet**, com o pacote `arrow`. O mesmo arquivo, depois, abre direto no pandas, do lado do Python:
 
-------------------------------------------------------------------------
-
-### DICA AVANÇADA: Salve seus dados sem perder as classes das variáveis!
-
-Sempre que você quiser garantir que as **classes** das variáveis (como fator, data, inteiro, etc.) sejam mantidas, utilize o formato **Parquet** com o pacote `arrow`.\
-Esse formato é: - Compacto e eficiente - Compatível com R, Python e outros sistemas modernos - Mantém todas as informações dos tipos das variáveis
-
-**Exemplo em R:**
-
-``` r
+```r
 library(arrow)
 
-# Salvar os dados tratados em formato Parquet
-write_parquet(
-  dados_tratados,
-  fs::path(caminho_dados_limpos, "exemplo_dados_tratados.parquet")
-)
+# salvar preservando os tipos (lê em R e em Python)
+arrow::write_parquet(dados_limpos, here::here("dados", "limpos", "capturas.parquet"))
 
-# Ler os dados de volta
-dados_lidos <- read_parquet(
-  fs::path(caminho_dados_limpos, "exemplo_dados_tratados.parquet")
-)
+# ler de volta: cada coluna volta com o tipo certo
+dados <- arrow::read_parquet(here::here("dados", "limpos", "capturas.parquet"))
 ```
 
-> **Resumo:** Sempre que quiser compartilhar dados entre R e Python, ou preservar todos os tipos de variáveis, prefira o formato Parquet!
+## Tabela-resumo dos principais comandos
 
-------------------------------------------------------------------------
+Para consulta rápida, a @tbl-comandos reúne os comandos deste capítulo.
 
-### Tabela-resumo dos principais comandos
+::: {.landscape}
 
 | Ação | Função | Pacote | Exemplo |
-|----|----|----|----|
-| Detectar raiz projeto | `find_root()` | rprojroot | `root <- find_root(...)` |
-| Caminho de pasta | `fs::path()` | fs | `fs::path(root, "dados", "brutos")` |
-| Ler CSV | `read_csv()` | readr | `read_csv(fs::path(caminho_dados_brutos, "arq.csv"))` |
-| Ler Excel | `read_excel()` | readxl | `read_excel(fs::path(caminho_dados_brutos, "arq.xlsx"), sheet = 1)` |
-| Limpar nomes colunas | `clean_names()` | janitor | `clean_names(df)` |
-| Salvar Excel | `write_xlsx()` | writexl | `write_xlsx(df, fs::path(caminho_dados_limpos, "arq_tratado.xlsx"))` |
-| Salvar CSV | `write_csv()` | readr | `write_csv(df, fs::path(caminho_dados_limpos, "arq_tratado.csv"))` |
-| Importar/Exportar | `import()`/`export()` | rio | `import(fs::path(caminho_dados_brutos, "arq.xlsx"))` / `export(df, fs::path(...))` |
-| Salvar Parquet | `write_parquet()` | arrow | `write_parquet(df, fs::path(caminho_dados_limpos, "arq.parquet"))` |
-| Ler Parquet | `read_parquet()` | arrow | `read_parquet(fs::path(caminho_dados_limpos, "arq.parquet"))` |
+|:---|:---|:---|:---|
+| Caminho a partir da raiz | `here()` | here | `here::here("dados", "brutos", "arq.csv")` |
+| Ler CSV | `read_csv()` | readr | `read_csv(here::here("dados", "brutos", "arq.csv"))` |
+| Ler Excel | `read_excel()` | readxl | `read_excel(here::here("dados", "brutos", "arq.xlsx"), sheet = 1)` |
+| Importar (qualquer formato) | `import()` | rio | `import(here::here("dados", "brutos", "arq.xlsx"))` |
+| Limpar nomes de colunas | `clean_names()` | janitor | `clean_names(dados)` |
+| Exportar (qualquer formato) | `export()` | rio | `export(dados_limpos, here::here("dados", "limpos", "arq.csv"))` |
+| Salvar preservando tipos | `write_parquet()` | arrow | `write_parquet(dados_limpos, here::here("dados", "limpos", "arq.parquet"))` |
+| Ler Parquet | `read_parquet()` | arrow | `read_parquet(here::here("dados", "limpos", "arq.parquet"))` |
+: Principais comandos de organização, leitura e gravação de dados no projeto. {#tbl-comandos tbl-colwidths="[20,16,9,55]"}
 
-## Como inserir imagens nos relatórios
+:::
 
-Use sempre a pasta de imagens do projeto para manter tudo organizado.\
-No Quarto ou R Markdown, utilize:
+## Versione desde o primeiro dia
 
-```{r}
-#| eval: false
-#| label: fig-estrutura-pastas
-#| fig-cap: "Estrutura de pastas recomendada para projetos reprodutíveis."
+Por fim, uma recomendação que vale ouro: use **Git** desde o início, mesmo sozinho. Ele guarda o histórico das mudanças nos seus scripts, permite voltar a qualquer versão e torna a colaboração simples. Versionar **código** é regra; versionar **dados** só vale para arquivos pequenos (os grandes ficam de fora, anotados no `README`). Não é coisa só de programador, é a sua máquina do tempo.
 
-knitr::include_graphics(as.character(fs::path(caminho_imagens, "estrutura_pastas_atualizada.png")))
-```
+## Resumo do capítulo {.unnumbered}
 
-> **Dica:** Sempre use `as.character()` em `fs::path` para garantir compatibilidade com funções do R base ou knitr.\
->
-> Mantenha as imagens em formato PNG ou SVG para qualidade nos relatórios científicos..
+> Dê a cada arquivo um lugar: **brutos** intocados, **limpos** tratados, e pastas
+> separadas para scripts, imagens, resultados e relatórios, com um **README** de
+> mapa. Escreva caminhos com **`here`**, que parte da raiz do projeto e funciona em
+> qualquer máquina (lembrando que imagem no texto Markdown segue o caminho relativo
+> ao `.qmd`). Siga o fluxo **ler → limpar → gravar**, mantendo o bruto intacto, e
+> prefira **Parquet** quando quiser preservar os tipos. É o mesmo espírito do
+> projeto que a CatalyseR exporta para você completar no RStudio.
 
-## Dados em formato tidy
+## Para praticar {.unnumbered}
 
-> **Definição didática:**\
-> - Cada variável deve estar em uma coluna - Cada observação em uma linha - Cada valor em uma célula
-
-Organizar dados nesse formato facilita qualquer análise estatística e visualização posterior.
-
-## Controle de versões com Git
-
-O uso de Git (e plataformas como GitHub) não é só para programadores:\
-- Permite rastrear mudanças em scripts e até dados (preferencialmente dados pequenos). - Facilita a colaboração. - Garante que você nunca perderá versões importantes do seu trabalho.
-
-> **Dica:** Adote o versionamento desde o início. Seu “eu do futuro” agradece!
-
-## Dicas finais
-
--   Sempre mantenha os dados brutos intactos.
--   Documente todas as etapas de limpeza/tratamento em scripts próprios.
--   Use scripts reprodutíveis e caminhos relativos sempre que possível.
--   Compartilhe seus projetos com estrutura clara para facilitar colaborações e revisões.
-
-------------------------------------------------------------------------
-
-## Exemplo de arquivo CSV para download
-
-``` r
-# Gera um dataframe exemplo para exportar como csv
-exemplo_csv <- data.frame(
-  especie = c("Tambaqui", "Pirarucu", "Piau"),
-  peso = c(520, 850, 305),
-  comprimento_cm = c(35.5, 40.0, 28.2)
-)
-
-# Salvar para download manual (fora do RMarkdown)
-write.csv(exemplo_csv, "exemplo_dados.csv", row.names = FALSE)
-```
-
-> O arquivo `exemplo_dados.csv` pode ser usado para testar as funções deste capítulo.
+1. Crie um projeto no RStudio (com `.Rproj`) e monte as pastas da @fig-estrutura. Escreva um `README` de três linhas: o que é, de onde vêm os dados, como rodar.
+2. Coloque um `.csv` qualquer em `dados/brutos/`, leia-o com `here::here(...)`, padronize os nomes com `janitor::clean_names()` e grave a versão limpa em `dados/limpos/`.
+3. Salve o mesmo dado em `.csv` e em `.parquet`. Leia os dois de volta e compare as classes das colunas com `str()`; veja o que o Parquet preserva e o CSV esquece.
+4. Pegue a planilha "para humanos" da @fig-tidy (à esquerda) e **reorganize-a** no formato *tidy* (à direita): uma coluna por variável, um peixe por linha, cabeçalho único, sem unidades nem cores. Depois leia o resultado no R e confira com `str()` se cada coluna ficou com o tipo certo.

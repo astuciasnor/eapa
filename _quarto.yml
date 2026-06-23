@@ -6,7 +6,7 @@ book:
   title: "Estatística Aplicada à Pesca e Aquicultura com R"
   author: "Evaldo Martins da Silva"
   date: "14/04/2025"
-  cover-image: images/capa3.png
+  cover-image: images/capa-livro-eapa.png
   chapters:
     - index.qmd
     - capitulos/capitulo01/intro.qmd
@@ -23,12 +23,9 @@ book:
     - capitulos/capitulo12/ancova_comparacoes_inclinacoes.qmd
     - capitulos/capitulo13/analise_regressao_nao_linear.qmd
     - capitulos/capitulo14/analise_series_temporais.qmd
-    - capitulos/capitulo15/modelos_lineares_generalizados.qmd
-    - capitulos/capitulo16/analise_modelos_efeitos_mistos.qmd
     - capitulos/capitulo17/analise_multivariada_dados.qmd
     - capitulos/capitulo18/criacao_mapas_em_R.qmd
     - capitulos/capitulo19/metodologia_superfície_respostas.qmd
-    - capitulos/capitulo20/modelos_dinamica_populacional_aplicados.qmd
     - capitulos/capitulo21/relatorios_comunicacao_dados_usando_quarto.qmd
     - summary.qmd
     - references.qmd
@@ -38,11 +35,22 @@ csl: abnt.csl
 
 format:
   html:
-    theme: yeti
+    theme: [yeti, custom.scss]
     lang: pt-BR
   pdf:
     documentclass: scrreprt
     lang: pt-BR
+  typst:
+    keep-typ: true
+    include-in-header:
+      - cover.typ
+      - estilo-typst.typ
+    papersize: a4
+    margin:
+      x: 2.5cm
+      y: 2.5cm
+    lang: pt-BR
+    toc: true
 
 editor: visual
 

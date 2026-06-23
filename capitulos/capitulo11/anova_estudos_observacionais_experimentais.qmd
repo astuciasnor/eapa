@@ -1,5 +1,239 @@
 ---
-title: "Análise de Variância em Estudos Observacionais e Experimentais"
-format: html
+title: "Análise de Variância (ANOVA) em Estudos Observacionais e Experimentais"
+subtitle: "Ou: como descobrir se uma ração realmente faz o peixe crescer mais — e provar isso"
+lang: pt-BR
+execute:
+  warning: false
+  message: false
 ---
 
+```{r setup}
+#| include: false
+library(EAPADados)   # dados e funções canônicas do ecossistema EAPA
+library(ggplot2)
+library(flextable)
+
+# Paleta da identidade visual Ocean Gradient
+ocean <- c("#0F3B5F", "#2E7D8F", "#62B6B7", "#E89B3C", "#E76F51")
+
+data(isoproteica_bagre)
+dados <- isoproteica_bagre
+```
+
+::: {.callout-note .destaque icon=false}
+## Já passou por isso?
+
+Você testou quatro rações no seu cultivo, anotou o peso final dos peixes em cada tanque e agora bate aquela dúvida: a ração C **realmente** fez os peixes crescerem mais, ou foi só sorte da amostra? Olhar para as médias não basta — é preciso um teste que separe o **efeito do tratamento** do **acaso**.
+:::
+
+Quando queremos comparar as médias de **três ou mais grupos** independentes, o teste *t* já não serve (ele compara só dois de cada vez, e repeti-lo inflaciona o erro). A ferramenta certa é a **Análise de Variância (ANOVA)**. O nome engana um pouco: apesar de falar em *variância*, o objetivo é comparar **médias**. A ideia genial de R. A. Fisher foi: se a variação **entre** os grupos for muito maior do que a variação **dentro** dos grupos, então pelo menos um tratamento se destaca do acaso.
+
+Nas ciências da pesca e aquicultura, a ANOVA está em toda parte: comparar dietas, densidades de estocagem, salinidades, locais de coleta, formulações de ração — sempre que há **um fator** com vários níveis e **uma resposta numérica**.
+
+## O experimento: quatro rações iso-proteicas para bagres
+
+Vamos usar um conjunto de dados clássico, disponível no pacote `EAPADados` como `isoproteica_bagre`, reproduzido de @bhujel2011 (Tabela 7.4). Quatro **rações comerciais iso-proteicas** (mesmo teor de proteína, mas níveis diferentes de lipídio) foram comparadas. Em um único tanque grande, instalaram-se gaiolas com 50 peixes cada; cada ração teve 5 gaiolas (réplicas). Durante o manejo, os peixes de **uma** gaiola da ração **C** escaparam — por isso esse nível tem só 4 réplicas, e o experimento fica **desbalanceado** (19 observações no total). Cada valor é o **peso médio final (g)** dos peixes de uma gaiola. A @fig-experimento resume todo o desenho do experimento.
+
+![Esquema do experimento de comparação de quatro rações iso-proteicas para bagres em delineamento inteiramente casualizado (DIC): um único tanque com gaiolas-rede dispostas em quatro tratamentos (A–D) e cinco réplicas, alimentação com as quatro rações, pesagem final (g) e comparação das médias por ANOVA. Elaborado a partir de @bhujel2011 (Tabela 7.4).](../../images/experimento_anova_bagres.png){#fig-experimento width=85%}
+
+```{r}
+#| label: estrutura
+str(dados)
+```
+
+> **Atenção à unidade experimental.** A unidade experimental é a **gaiola**, não o peixe. Cada réplica resume 50 peixes em um único número. Tratar cada peixe como observação independente seria *pseudo-replicação* — um erro comum e grave.
+
+Este é um **Delineamento Inteiramente Casualizado (DIC)**: um único fator (a ração, com 4 níveis), tratamentos atribuídos ao acaso e demais condições mantidas constantes. O modelo é:
+
+$$
+Y_{ij} = m + T_i + R_{ij}
+$$
+
+em que $m$ é a média geral, $T_i$ o efeito da ração $i$ e $R_{ij}$ o erro aleatório. As hipóteses são:
+
+$$
+H_0: \mu_A = \mu_B = \mu_C = \mu_D \qquad \text{vs.} \qquad H_1: \text{ao menos uma média difere.}
+$$
+
+### Um olhar exploratório antes da conta
+
+Sempre **veja** os dados antes de testar. Médias e dispersão por ração:
+
+```{r}
+#| label: tbl-medias
+#| tbl-cap: "Totais, número de réplicas e médias por ração (conferem com a Tabela 7.4 do livro)."
+resumo <- aggregate(peso_g ~ racao, data = dados,
+                    FUN = function(x) c(n = length(x),
+                                        total = sum(x),
+                                        media = round(mean(x), 2)))
+resumo <- do.call(data.frame, resumo)
+names(resumo) <- c("Ração", "n", "Total (g)", "Média (g)")
+flextable_ocean(resumo)
+```
+
+```{r}
+#| label: fig-boxplot
+#| fig-cap: "Distribuição do peso final por ração. A ração C se destaca visualmente."
+#| fig-width: 6
+#| fig-height: 4
+ggplot(dados, aes(racao, peso_g, fill = racao)) +
+  geom_boxplot(alpha = 0.85, width = 0.6, colour = "grey30") +
+  geom_jitter(width = 0.1, size = 2, alpha = 0.6, colour = "grey20") +
+  scale_fill_manual(values = ocean[1:4]) +
+  labs(x = "Ração", y = "Peso médio final (g)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+O boxplot já sugere que a ração **C** puxa o crescimento para cima. Mas "sugerir" não é "provar" — vamos à ANOVA.
+
+## Por dentro da conta: a ANOVA na mão
+
+Antes de apertar o botão do R, vale entender **o que** ele calcula. A ANOVA particiona a variação total em duas partes: a que vem do **fator** (entre rações) e a que sobra como **erro** (dentro das rações). Reproduzimos aqui exatamente os passos de @bhujel2011.
+
+```{r}
+#| label: calculo-manual
+N  <- nrow(dados)                       # total de observações = 19
+k  <- nlevels(dados$racao)              # número de rações = 4
+G  <- sum(dados$peso_g)                 # grande total = 1748
+
+# Fator de correção
+CF <- G^2 / N
+
+# Soma de quadrados total
+SQ_total <- sum(dados$peso_g^2) - CF
+
+# Soma de quadrados do tratamento (entre rações)
+totais <- tapply(dados$peso_g, dados$racao, sum)
+ns     <- tapply(dados$peso_g, dados$racao, length)
+SQ_trat <- sum(totais^2 / ns) - CF
+
+# Soma de quadrados do erro (por diferença)
+SQ_erro <- SQ_total - SQ_trat
+
+# Graus de liberdade e quadrados médios
+gl_trat <- k - 1
+gl_erro <- N - k
+QM_trat <- SQ_trat / gl_trat
+QM_erro <- SQ_erro / gl_erro
+F_obs   <- QM_trat / QM_erro
+
+round(c(CF = CF, SQ_total = SQ_total, SQ_trat = SQ_trat,
+        SQ_erro = SQ_erro, QM_trat = QM_trat, QM_erro = QM_erro,
+        F = F_obs), 2)
+```
+
+> **Uma lição sobre a "fonte da verdade".** Fazendo as contas à mão e **arredondando** no caminho, o livro publica $SQ_{trat} = 665$, $SQ_{erro} = 128$ e $F = 26$. O R, sem arredondar, devolve $SQ_{trat} = 662{,}20$, $SQ_{erro} = 135{,}80$ e $F = 24{,}38$ (o próprio livro traz a soma de quadrados total como 161.609, quando o valor exato é 161.614). As diferenças são pequenas e **não mudam a conclusão**, mas ilustram um princípio do nosso ecossistema: quem manda no número final é o **código**, não a conta de papel. É por isso que a CatalyseR e este livro derivam tudo da **mesma** função.
+
+O valor crítico tabelado é $F_{3;\,15;\,0{,}01} = 5{,}42$. Como $F_{obs} = 24{,}4 \gg 5{,}42$, já antecipamos a rejeição de $H_0$. Vejamos isso pelo caminho prático.
+
+## A ANOVA com o R (e com a CatalyseR)
+
+Na prática, ninguém calcula somas de quadrados na mão. A função `aov()` faz tudo:
+
+```{r}
+#| label: aov-base
+modelo <- aov(peso_g ~ racao, data = dados)
+summary(modelo)
+```
+
+No ecossistema EAPA, porém, não paramos no `summary()`. A função canônica **`calcular_anova()`** do `EAPADados` executa o ajuste, **valida os pressupostos** e roda o **pós-teste de Tukey** de uma vez, devolvendo um objeto que alimenta as tabelas, os gráficos e o relato — **a mesma função que a IDE CatalyseR usa** para gerar o relatório `.docx`. Esse é o "entrosamento": uma definição única, vários consumidores.
+
+```{r}
+#| label: calcular
+r <- calcular_anova(dados, dep_var = "peso_g", ind_var = "racao")
+```
+
+A tabela de ANOVA formatada na identidade **Ocean Gradient**:
+
+```{r}
+#| label: tbl-anova
+#| tbl-cap: "Tabela de Análise de Variância (ANOVA) para o peso final por ração."
+flextable_ocean(mostrar_anova(r))
+```
+
+## Os pressupostos: a ANOVA tem letras miúdas
+
+Uma ANOVA só é confiável se os **resíduos** forem aproximadamente normais e as **variâncias** dos grupos forem parecidas (homocedasticidade). Verificamos isso com Shapiro-Wilk e Bartlett — e, principalmente, com os olhos.
+
+```{r}
+#| label: tbl-pressupostos
+#| tbl-cap: "Validação dos pressupostos: normalidade dos resíduos e homogeneidade de variâncias."
+flextable_ocean(mostrar_pressupostos(r))
+```
+
+```{r}
+#| label: fig-qq
+#| fig-cap: "Normalidade dos resíduos: quanto mais perto da linha, melhor."
+#| fig-width: 5
+#| fig-height: 3.5
+diag <- data.frame(residuos = r$residuals, ajustados = r$fitted)
+ggplot(diag, aes(sample = residuos)) +
+  stat_qq(colour = ocean[2]) +
+  stat_qq_line(colour = ocean[5]) +
+  labs(x = "Quantis teóricos", y = "Resíduos") +
+  theme_minimal()
+```
+
+```{r}
+#| label: fig-residuos
+#| fig-cap: "Resíduos vs. valores ajustados: uma nuvem sem padrão (sem 'funil') indica variâncias homogêneas."
+#| fig-width: 5
+#| fig-height: 3.5
+ggplot(diag, aes(ajustados, residuos)) +
+  geom_hline(yintercept = 0, linetype = 2, colour = ocean[5]) +
+  geom_point(colour = ocean[1], size = 2, alpha = 0.7) +
+  labs(x = "Valores ajustados", y = "Resíduos") +
+  theme_minimal()
+```
+
+> **Como ler.** No Q-Q plot, pontos próximos da linha indicam resíduos normais. No gráfico de resíduos vs. ajustados, uma nuvem sem padrão indica variâncias homogêneas. Aqui, **ambos os testes passam** ($p > 0{,}05$): a ANOVA está autorizada.
+
+## Onde estão as diferenças? O pós-teste de Tukey
+
+A ANOVA diz **que existe** diferença, mas não **onde**. Para descobrir quais rações diferem entre si, usamos o **Tukey HSD**, que compara todos os pares controlando o erro global.
+
+```{r}
+#| label: tbl-tukey
+#| tbl-cap: "Comparações múltiplas de Tukey HSD entre as rações."
+flextable_ocean(mostrar_tukey(r))
+```
+
+```{r}
+#| label: fig-tukey
+#| fig-cap: "Diferença entre médias (Tukey HSD) com IC de 95%. Intervalos que cruzam o zero indicam pares sem diferença significativa."
+#| fig-width: 6
+#| fig-height: 4
+tk <- r$tukey_df
+tk$cor <- ifelse(tk$Significativo, ocean[5], ocean[3])
+ggplot(tk, aes(x = Diferenca, y = reorder(Comparacao, Diferenca))) +
+  geom_vline(xintercept = 0, linetype = 2, colour = "grey50") +
+  geom_errorbarh(aes(xmin = Lwr, xmax = Upr, colour = cor), height = 0.25) +
+  geom_point(aes(colour = cor), size = 3) +
+  scale_colour_identity() +
+  labs(x = "Diferença de médias (g)", y = "Comparação") +
+  theme_minimal()
+```
+
+## O relato automático
+
+Toda essa análise se resume em uma frase científica, gerada pela função **`relatar_anova()`** — a mesma que entra no relatório `.docx` exportado pela CatalyseR:
+
+> `r relatar_anova(r)`
+
+## E daí? Da significância à decisão
+
+Estatística é meio, não fim. @bhujel2011 faz uma ressalva importante: a ração C dá o **maior crescimento**, mas a recomendação prática depende do **custo**. Só vale adotar a ração mais cara se o ganho de produção pagar a diferença de preço. A significância estatística responde "há efeito?"; a decisão de manejo precisa também de "compensa?".
+
+> **Resumo do capítulo.** (1) Use ANOVA para comparar 3+ médias; (2) confira os pressupostos **antes** de confiar no $p$; (3) se a ANOVA for significativa, use Tukey para localizar as diferenças; (4) traduza o resultado em uma recomendação prática. No ecossistema EAPA, os passos 1–3 nascem de uma única função (`calcular_anova`), que serve igualmente à IDE, ao relatório `.docx` e a este livro.
+
+## Para praticar
+
+1. Refaça a ANOVA **sem** a ração C e veja se as conclusões sobre A, B e D mudam.
+2. O que aconteceria com a tabela de pressupostos se um valor de C fosse, digamos, 130 g (um *outlier*)? Teste e interprete.
+3. Troque o pós-teste de Tukey por comparações com `pairwise.t.test()` e compare as conclusões.
+
+## Referências {.unnumbered}
+
+::: {#refs}
+:::
