@@ -41,3 +41,11 @@ header#title-block-header {
 .quarto-title-block .quarto-title {
   margin-bottom: 0.25rem;
 }
+
+/* Legendas de figura justificadas (melhor para legendas longas) */
+figcaption,
+.figure-caption,
+.quarto-figure figcaption,
+figure > figcaption {
+  text-align: justify;
+}

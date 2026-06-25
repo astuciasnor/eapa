@@ -121,6 +121,94 @@ arrow::write_parquet(dados_limpos, here::here("dados", "limpos", "capturas.parqu
 dados <- arrow::read_parquet(here::here("dados", "limpos", "capturas.parquet"))
 ```
 
+## Tratamento na prática: capturas de pescada-amarela
+
+A teoria do "ler → limpar → gravar" fica muito mais clara num dado de verdade — com a sujeira de verdade. Vamos usar um conjunto real do nosso grupo de pesquisa: registros de **captura de pescada-amarela** por sete embarcações (B1 a B7), mês a mês, entre 2019 e 2021, com a CPUE de cada viagem, o esforço (dias ao mar, pessoal embarcado), o aparelho de pesca e variáveis ambientais como precipitação e período sazonal. São dados ainda não publicados, exatamente como saíram do campo — e é por isso que servem tão bem: trazem os defeitos que todo dado real tem. Eles acompanham o pacote `EAPADados` em duas versões irmãs: a **bruta** (`captura_pescada_amarela_bruta`), que vamos limpar aqui, e a **tratada** (`captura_pescada_amarela`), usada nas análises das Unidades IV e V.
+
+Vamos lê-lo e olhar de perto.
+
+```r
+library(dplyr); library(janitor); library(stringr); library(lubridate)
+
+# o conjunto BRUTO vive no EAPADados, mantido de propósito com os defeitos de campo
+data("captura_pescada_amarela_bruta", package = "EAPADados")
+bruto <- captura_pescada_amarela_bruta
+
+names(bruto)
+#> "Embarcacao"  "Tamanho (m)"  "Precipitação"  "Mês"  "Ano"
+#> "Período sazonal"  "Mês/ano"  "Data de Saida" ...
+```
+
+O primeiro problema está logo nos **nomes das colunas**: acento em "Precipitação" e "Mês", espaço e parêntese em "Tamanho (m)", uma barra em "Mês/ano". Nomes assim obrigam você a escrever `` dados$`Tamanho (m)` `` com crases pelo resto da vida. O `janitor::clean_names()` resolve tudo de uma vez:
+
+```r
+dados <- bruto |> janitor::clean_names()
+names(dados)
+#> "embarcacao"  "tamanho_m"  "precipitacao"  "mes"  "ano"
+#> "periodo_sazonal"  "mes_ano"  "data_de_saida" ...
+```
+
+Agora o defeito mais traiçoeiro — e mais comum. Vamos contar as categorias de `periodo_sazonal`:
+
+```r
+table(dados$periodo_sazonal)
+#> chuvoso  chuvoso     seco    seco 
+#>     105       21      105      21 
+```
+
+Quatro categorias?! Deveriam ser **duas**. Acontece que algumas células foram digitadas com um **espaço sobrando** no fim — "chuvoso " (com espaço) é diferente de "chuvoso" para o computador, ainda que idênticas para você. O olho não vê, mas o R conta como grupos distintos, e isso bagunçaria qualquer comparação por estação. O mesmo ocorre com o aparelho de pesca ("Espinhel " vs. "Espinhel"). A cura é aparar os espaços com `str_squish()`, que remove sobras no começo, no fim e duplicadas no meio:
+
+```r
+dados <- dados |>
+  mutate(
+    periodo_sazonal     = str_squish(periodo_sazonal),
+    nome_aparelho_pesca = str_squish(nome_aparelho_pesca)
+  )
+
+table(dados$periodo_sazonal)
+#> chuvoso    seco
+#>     126     126
+```
+
+Duas categorias, como deveria ser. Esse é o tipo de erro que não dá mensagem nenhuma: ele só aparece se você **olhar** as categorias — mais uma razão para a etapa exploratória da Unidade II.
+
+Em seguida, as **datas**. Ao converter a data de chegada, o `lubridate` reclama de um valor:
+
+```r
+dados <- dados |> mutate(data_de_chegada = dmy(data_de_chegada))
+#> Warning: 1 failed to parse.
+```
+
+Um aviso desses nunca deve ser ignorado. Procurando o culpado, achamos um `"15/10//2020"` — uma barra digitada a mais. Sem saber o que fazer com aquilo, o R o transformou em `NA`. Identificado o erro, corrige-se na origem (ou no código) e relê-se. A lição vale por todo o livro: **avisos de *parsing* são pistas, não ruído.**
+
+Faltam os **tipos**. O mês veio como texto, e texto se ordena em ordem alfabética — "Abril" antes de "Janeiro" —, o que deixaria qualquer gráfico mensal sem sentido. Declaramos `mes` como um **fator ordenado** no calendário; de passagem, transformamos em fator as demais categóricas e arredondamos a CPUE, que veio com casas decimais demais:
+
+```r
+meses <- c("Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+           "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro")
+
+dados <- dados |>
+  mutate(
+    embarcacao          = as.factor(embarcacao),
+    periodo_sazonal     = as.factor(periodo_sazonal),
+    nome_aparelho_pesca = as.factor(nome_aparelho_pesca),
+    mes  = factor(mes, levels = meses),   # ordem de calendário, não alfabética
+    cpue = round(cpue, 2)                 # casas decimais sob controle
+  )
+```
+
+Com a casa arrumada, grava-se a versão limpa — e o que entrou como uma planilha cheia de armadilhas sai como um conjunto *tidy*, tipado e pronto para a análise. É exatamente essa a versão que o `EAPADados` disponibiliza como `captura_pescada_amarela`, pronta para `data(captura_pescada_amarela)` nos capítulos seguintes:
+
+```r
+saveRDS(dados, here::here("dados", "limpos", "captura_pescada_amarela.rds"))
+```
+
+::: {.callout-tip .destaque icon=false}
+## A régua do dado limpo
+
+Antes de analisar, passe esta régua: nomes de coluna padronizados; categorias sem espaços fantasmas nem grafias repetidas; datas e números no tipo certo (e fatores ordinais com a ordem certa); avisos de leitura investigados, não ignorados. Cinco minutos aqui poupam horas de análise refeita.
+:::
+
 ## Tabela-resumo dos principais comandos
 
 Para consulta rápida, a @tbl-comandos reúne os comandos deste capítulo.
@@ -137,6 +225,9 @@ Para consulta rápida, a @tbl-comandos reúne os comandos deste capítulo.
 | Exportar (qualquer formato) | `export()` | rio | `export(dados_limpos, here::here("dados", "limpos", "arq.csv"))` |
 | Salvar preservando tipos | `write_parquet()` | arrow | `write_parquet(dados_limpos, here::here("dados", "limpos", "arq.parquet"))` |
 | Ler Parquet | `read_parquet()` | arrow | `read_parquet(here::here("dados", "limpos", "arq.parquet"))` |
+| Aparar espaços de texto | `str_squish()` | stringr | `str_squish(periodo_sazonal)` |
+| Converter data | `dmy()` | lubridate | `dmy(data_de_chegada)` |
+| Fator com ordem definida | `factor()` | base | `factor(mes, levels = meses)` |
 : Principais comandos de organização, leitura e gravação de dados no projeto. {#tbl-comandos tbl-colwidths="[20,16,9,55]"}
 
 :::

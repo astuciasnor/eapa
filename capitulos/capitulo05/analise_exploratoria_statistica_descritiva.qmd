@@ -1,4 +1,170 @@
 ---
-title: "Analise Exploratória de Dados e Estatística Descritiva"
-format: html
+title: "Análise Exploratória e Estatística Descritiva"
+subtitle: "Ou: antes de testar qualquer coisa, conheça quem são os seus dados"
+lang: pt-BR
+execute:
+  warning: false
+  message: false
 ---
+
+```{r setup}
+#| include: false
+library(EAPADados)   # dados e funções canônicas do ecossistema EAPA
+library(ggplot2)
+library(dplyr)
+library(flextable)
+
+# Paleta da identidade visual Ocean Gradient
+ocean <- c(NAVY = "#0F3B5F", TEAL = "#2E7D8F", SEAFOAM = "#62B6B7",
+           AMBER = "#E89B3C", CORAL = "#E76F51")
+
+data(biometria_caranguejos)
+caranguejos <- biometria_caranguejos
+```
+
+::: {.callout-note .destaque icon=false}
+## Já passou por isso?
+
+Você recebe uma planilha com quase mil caranguejos medidos no mangue de Bragança e sente o impulso de já rodar um teste, traçar uma reta, cravar uma conclusão. Calma. Antes de qualquer cálculo, há uma pergunta que decide todo o resto: **de que tipo é cada coluna desses dados?** Quem responde isso primeiro raramente erra o teste depois.
+:::
+
+Estatística começa com curiosidade, não com fórmula. Antes de comparar médias ou ajustar modelos, a gente **olha** os dados: quantas observações há, que variáveis foram medidas, como elas se distribuem, se há buracos (valores ausentes) ou números que destoam. Essa etapa tem nome — **análise exploratória de dados** — e ela existe para uma coisa muito prática: descobrir o que os dados *permitem* perguntar. É aqui que a **estatística descritiva** entra, resumindo um monte de números em poucas medidas que cabem na cabeça.
+
+Mais do que descrever, este capítulo ensina a **reconhecer o tipo de cada variável**. Esse conhecimento é o que vai, lá na frente, dizer qual análise é possível, quais pressupostos ela exige e até como os dados deveriam ter sido coletados. Guarde essa ideia: **o tipo da variável é a bússola que aponta o teste**. Voltaremos a ela na Unidade III, quando falarmos de planejamento.
+
+## Os dados: caranguejos do mangue de Bragança
+
+Vamos trabalhar com o conjunto `biometria_caranguejos`, do pacote `EAPADados`. São medidas reais de caranguejos-uçá capturados em Bragança (Pará): para cada indivíduo, registrou-se o **local** de captura, a **estação** do ano, o **sexo** e duas medidas da carapaça — a **largura** (LC) e o **comprimento** (CC), em milímetros.
+
+```{r}
+#| label: estrutura
+glimpse(caranguejos)
+```
+
+Repare na primeira coluna da saída: ao lado de cada variável, o R já anuncia o seu tipo (`<fct>` para fator, `<dbl>` para número real). Esse rótulo discreto é a informação mais importante da tela.
+
+## O que cada coluna é, de verdade
+
+Nem todo número é "numérico" e nem todo texto é "categórico". O tipo de uma variável não é uma formalidade do R — é a natureza do que foi medido. Dá para organizar tudo em duas grandes famílias.
+
+As **variáveis categóricas (qualitativas)** classificam o indivíduo em grupos. Quando os grupos não têm ordem natural, são **nominais** — é o caso de `Local` (Ajuruteua ou Caratateua) e `Sexo` (Macho ou Fêmea): ninguém é "mais" que o outro, são só rótulos. Quando existe uma ordem, são **ordinais** — pense em classes de tamanho "pequeno < médio < grande", onde a sequência importa mas a distância entre as classes não é fixa. No nosso conjunto, `Estacao` (Seca, Chuvosa) é nominal, mas poderia virar ordinal se a tratássemos como um ciclo.
+
+As **variáveis numéricas (quantitativas)** medem quanto. Quando resultam de contagem e só assumem valores inteiros, são **discretas** — o número de ovos numa desova, a quantidade de caranguejos por armadilha. Quando podem assumir qualquer valor dentro de um intervalo, limitadas só pela precisão do instrumento, são **contínuas** — é o caso de `LC` e `CC`, que poderiam ser 62 mm, 62,3 mm ou 62,37 mm.
+
+Por que isso importa tanto? Porque **a família da variável decide o que se pode calcular e qual teste faz sentido**. Média e desvio padrão só têm significado para variáveis numéricas; para categóricas, o que se conta é frequência. Comparar a largura média entre machos e fêmeas pede um teste *t*; verificar se sexo e estação estão associados pede um qui-quadrado. Errar o tipo da variável é errar a análise inteira — por isso começamos por aqui.
+
+```{r}
+#| label: tipos
+# o R distingue fatores de variáveis numéricas
+sapply(caranguejos, class)
+```
+
+## Resumindo as variáveis numéricas
+
+Para `LC` e `CC`, queremos as **medidas de tendência central** (onde os dados se concentram) e as de **dispersão** (o quanto se espalham). A média e a mediana respondem à primeira pergunta; o desvio padrão e o coeficiente de variação, à segunda.
+
+```{r}
+#| label: descritiva-num
+caranguejos |>
+  summarise(
+    n        = sum(!is.na(LC)),
+    media_LC = mean(LC, na.rm = TRUE),
+    mediana_LC = median(LC, na.rm = TRUE),
+    dp_LC    = sd(LC, na.rm = TRUE),
+    cv_LC    = sd(LC, na.rm = TRUE) / mean(LC, na.rm = TRUE) * 100
+  )
+```
+
+Um detalhe que parece bobo e não é: quando a **média e a mediana ficam próximas**, a distribuição é mais ou menos simétrica; quando se afastam, há assimetria — sinal de que medidas baseadas na média (como o desvio padrão) podem enganar. Esse diagnóstico, feito a olho, já antecipa se um teste paramétrico vai se sentir confortável com esses dados.
+
+## Contando as variáveis categóricas
+
+Para as qualitativas, o resumo é a **tabela de frequência**: quantos indivíduos caem em cada categoria.
+
+```{r}
+#| label: descritiva-cat
+table(caranguejos$Sexo)
+prop.table(table(caranguejos$Sexo)) |> round(3)
+```
+
+## Gráficos que dão pistas sobre a análise
+
+Aqui está o segredo da análise exploratória: **cada gráfico sugere um teste**. Não desenhamos por enfeite — desenhamos para enxergar a pergunta certa antes de respondê-la.
+
+Comece pela distribuição de uma variável numérica. O **histograma** mostra a forma: se ela lembra um sino simétrico, métodos paramétricos (que assumem normalidade) tendem a funcionar; se é torta ou tem duas corcovas, acenda o alerta.
+
+```{r}
+#| label: fig-hist
+#| fig-cap: "Distribuição da largura da carapaça. Uma forma aproximadamente simétrica é o primeiro sinal verde para testes paramétricos."
+ggplot(caranguejos, aes(x = LC)) +
+  geom_histogram(bins = 30, fill = ocean["TEAL"], color = "white") +
+  labs(x = "Largura da carapaça (mm)", y = "Frequência") +
+  theme_minimal()
+```
+
+Agora cruze a numérica com uma categórica. O **boxplot** da largura por sexo compara grupos de um golpe: se as caixas estão claramente deslocadas, há indício de diferença de médias — e o próximo passo natural é um **teste *t*** (dois grupos) ou uma **ANOVA** (três ou mais). Esse gráfico é, literalmente, o rascunho do capítulo seguinte.
+
+```{r}
+#| label: fig-box
+#| fig-cap: "Largura da carapaça por sexo. Caixas deslocadas sugerem diferença de médias — pista para um teste t."
+ggplot(caranguejos, aes(x = Sexo, y = LC, fill = Sexo)) +
+  geom_boxplot(alpha = 0.85) +
+  scale_fill_manual(values = unname(ocean[c("TEAL", "AMBER")])) +
+  labs(x = NULL, y = "Largura da carapaça (mm)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+Por fim, cruze duas numéricas. O **diagrama de dispersão** entre largura e comprimento revela se uma cresce junto com a outra: uma nuvem que sobe em linha é o convite para **correlação e regressão** — assunto da Unidade V. Colorir por sexo ainda insinua se a relação muda entre grupos.
+
+```{r}
+#| label: fig-disp
+#| fig-cap: "Largura versus comprimento da carapaça, por sexo. Uma nuvem alongada e ascendente é pista para correlação e regressão."
+ggplot(caranguejos, aes(x = LC, y = CC, color = Sexo)) +
+  geom_point(alpha = 0.5) +
+  scale_color_manual(values = unname(ocean[c("TEAL", "CORAL")])) +
+  labs(x = "Largura da carapaça (mm)", y = "Comprimento da carapaça (mm)") +
+  theme_minimal()
+```
+
+Em três gráficos, os dados já sussurraram três análises possíveis. Essa é a função da etapa exploratória: ela não conclui nada sozinha, mas aponta para onde olhar.
+
+## Quando as duas variáveis são categóricas: a tabela de contingência
+
+E se quisermos cruzar **duas variáveis qualitativas** — por exemplo, será que a proporção de machos e fêmeas muda entre a estação seca e a chuvosa? A ferramenta é a **tabela de contingência**, que conta quantos indivíduos caem em cada combinação de categorias.
+
+```{r}
+#| label: tab-cont-bruta
+table(caranguejos$Sexo, caranguejos$Estacao)
+```
+
+A tabela crua resolve, mas não comunica. Para um relatório ou para o livro, vale apresentá-la no padrão visual do ecossistema EAPA — o tema **Ocean Gradient**, com cabeçalho navy — usando a mesma função `flextable_ocean()` que a IDE CatalyseR emprega ao gerar os relatórios `.docx`.
+
+```{r}
+#| label: tbl-contingencia
+#| tbl-cap: "Distribuição de caranguejos por sexo e estação do ano (frequências absolutas), no mangue de Bragança (PA)."
+tab <- table(caranguejos$Sexo, caranguejos$Estacao)
+
+# transformar a tabela em data frame com rótulos e total por linha
+tab_df <- as.data.frame.matrix(tab)
+tab_df <- cbind(Sexo = rownames(tab_df), tab_df, Total = rowSums(tab_df))
+rownames(tab_df) <- NULL
+
+flextable_ocean(tab_df)
+```
+
+Repare: até aqui apenas **descrevemos** a associação — contamos e organizamos. A tabela sugere que a divisão entre sexos parece semelhante nas duas estações, mas "parecer" não é "ser". Para decidir se essa associação é real ou fruto do acaso amostral, precisamos de um **teste de hipótese** — o **qui-quadrado de independência** —, e ele exige a lógica da inferência. Por isso ele fica para a Unidade IV, onde reencontraremos exatamente esta tabela e finalmente a colocaremos à prova.
+
+::: {.callout-tip .destaque icon=false}
+## Resumo do capítulo
+
+Antes de testar, conheça os dados. Toda variável pertence a uma família — **categórica** (nominal ou ordinal) ou **numérica** (discreta ou contínua) — e é essa família que decide o que se pode calcular e qual teste faz sentido. A estatística descritiva resume as numéricas com medidas de centro e dispersão, e as categóricas com tabelas de frequência. Os gráficos não enfeitam: o histograma fala de normalidade, o boxplot insinua diferença de médias, o diagrama de dispersão aponta relações. E quando cruzamos duas categóricas, a tabela de contingência descreve a associação — cujo teste formal virá na inferência.
+:::
+
+::: {.callout-note icon=false}
+## Para praticar
+
+1. Troque `LC` por `CC` nos resumos e gráficos. A forma da distribuição muda? E a conclusão sobre simetria?
+2. Construa a tabela de contingência de `Local` por `Estacao`. Qual combinação concentra mais capturas?
+3. Classifique cada variável de `biometria_caranguejos` como nominal, ordinal, discreta ou contínua — e, para cada uma, anote que tipo de análise ela tornaria possível.
+:::

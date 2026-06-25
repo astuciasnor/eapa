@@ -31,6 +31,19 @@ A ordem importa: o Rtools precisa **casar** com a versão do R. Instale assim:
 
 Feche e reabra o RStudio depois de instalar o Rtools: assim ele "enxerga" a caixa de ferramentas nova.
 
+::: {.callout-important .destaque icon=false}
+## Atenção no Windows: biblioteca gravável e instalação como administrador
+
+Duas precauções evitam a maioria das dores de cabeça com permissões no Windows.
+
+Primeiro, **instale o R numa pasta gravável**. No caminho padrão (`C:\Program Files\R\...`), a pasta da biblioteca de pacotes fica protegida pelo sistema, e o `install.packages()` acaba caindo numa "biblioteca pessoal" escondida — ou falhando com erros de permissão (`'lib = ...' is not writable`). A solução mais tranquila é criar uma pasta simples, como **`C:\R`**, e apontar o instalador do R para ela (no instalador, troque o diretório de destino para `C:\R\R-4.x.x`). Assim a sua biblioteca fica sob seu controle, sem pedir privilégios a cada novo pacote.
+
+Segundo, **instale as quatro peças como administrador** (clique com o botão direito no instalador → *Executar como administrador*): o **R**, o **RStudio**, o **Rtools** e o **Quarto**. Isso garante que os atalhos, as variáveis de ambiente e o registro do Windows fiquem corretos para todos os programas se encontrarem.
+
+Se, mesmo assim, a pasta `...\R\R-4.x.x` continuar protegida, abra as **Propriedades** dela → aba *Segurança* e conceda **Controle total** (escrita) ao seu usuário.
+:::
+
+
 ## Testando o Rtools (com um único pacote)
 
 Não confie; **verifique**. Em vez de descobrir que o Rtools não funciona só lá na frente, testamos agora. Instalamos **um** pacote — o `pkgbuild` — e pedimos a ele que tente compilar um programinha. Se a oficina estiver completa, ele responde que sim.

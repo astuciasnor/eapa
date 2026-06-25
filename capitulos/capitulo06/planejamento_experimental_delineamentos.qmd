@@ -1,0 +1,71 @@
+---
+title: "Planejamento Experimental"
+subtitle: "Ou: quando observar não basta e é preciso intervir"
+lang: pt-BR
+execute:
+  warning: false
+  message: false
+---
+
+```{r setup}
+#| include: false
+library(EAPADados)
+library(dplyr)
+```
+
+::: {.callout-note .destaque icon=false}
+## Já passou por isso?
+
+Você quer saber se uma ração nova faz o peixe crescer mais. Coloca a ração num tanque, a antiga em outro, pesa tudo no fim e — surpresa — o tanque da ração nova rendeu mais. Conclusão: ração nova é melhor? Talvez. Ou talvez aquele tanque pegasse mais sol, tivesse água melhor, peixes de outra origem. Sem **planejar o experimento**, você nunca saberá se mediu a ração ou o acaso.
+
+:::
+
+No capítulo anterior, observamos a natureza sem tocá-la. Agora **intervimos**: atribuímos tratamentos, controlamos condições e medimos a resposta. Essa é a essência do **experimento** — e é o que permite falar em **causa**, não apenas em associação. Mas intervir tem regras. Um experimento mal planejado produz dados que nenhuma análise salva; um bem planejado entrega, de bandeja, a ANOVA que veremos na Unidade IV.
+
+Três princípios sustentam todo bom experimento. A **repetição** (réplicas) nos dá uma medida do acaso, sem a qual não há como julgar se um efeito é real. A **casualização** (sortear quem recebe cada tratamento) protege contra vieses que não controlamos. E o **controle local** (blocos) isola fontes de variação conhecidas, como a posição no viveiro ou o dia da medição. Os delineamentos clássicos são apenas combinações inteligentes desses três princípios.
+
+## A armadilha da pseudo-replicação
+
+Antes dos delineamentos, um aviso que vale por um capítulo inteiro. Réplica de verdade é a **unidade experimental independente** — aquela que recebeu o tratamento de forma autônoma. Se você aplica uma ração a **um** tanque e depois pesa 50 peixes desse tanque, você **não** tem 50 réplicas: tem uma só. Os 50 peixes compartilham a mesma água, a mesma temperatura, a mesma história. Tratá-los como independentes é cometer **pseudo-replicação** — um erro tão comum quanto grave, que infla artificialmente o tamanho da amostra e produz significâncias falsas.
+
+A pergunta que desarma a armadilha é simples: *o que, exatamente, recebeu o tratamento de forma independente?* A resposta é a sua unidade experimental — e é ela que você conta como réplica.
+
+## Os delineamentos clássicos
+
+O **Delineamento Inteiramente Casualizado (DIC)** é o mais simples: os tratamentos são sorteados livremente entre as unidades experimentais, sem restrição. Exige condições homogêneas — faz sentido num laboratório ou num conjunto de gaiolas idênticas num mesmo tanque. É o desenho do experimento das rações iso-proteicas para bagres que analisaremos por ANOVA na Unidade IV.
+
+```{r}
+#| label: dic
+# esqueleto de um DIC: 4 tratamentos (rações), 5 réplicas, sorteio aleatório
+set.seed(2026)
+tratamentos <- rep(c("A", "B", "C", "D"), each = 5)
+plano_dic <- data.frame(
+  gaiola    = 1:20,
+  racao     = sample(tratamentos)   # casualização
+)
+head(plano_dic)
+```
+
+O **Delineamento em Blocos Casualizados (DBC)** entra quando há uma fonte de variação conhecida que não queremos confundir com o tratamento — uma corrente que varia ao longo do viveiro, lotes de animais de idades diferentes. Agrupamos as unidades em **blocos** homogêneos e, dentro de cada bloco, sorteamos todos os tratamentos. Assim, a variação entre blocos é isolada e removida da comparação.
+
+O **Delineamento em Quadrado Latino (DQL)** controla **duas** fontes de variação ao mesmo tempo (por exemplo, linha e coluna de uma bancada), dispondo os tratamentos de modo que cada um apareça uma vez em cada linha e em cada coluna. E os **delineamentos fatoriais (DF)** estudam **mais de um fator de uma vez** — ração *e* densidade de estocagem, por exemplo — revelando não só o efeito de cada um, mas a **interação** entre eles, algo que experimentos separados jamais capturariam.
+
+::: {.callout-note icon=false}
+## Em construção
+
+Esta seção receberá, na sequência da redação do livro, o estudo de caso do **projeto camarão** (dados de captura de camarões trabalhados em sala com a turma de 2022) como exemplo aplicado de delineamento, ligando o planejamento aqui descrito à análise por ANOVA da Unidade IV.
+:::
+
+::: {.callout-tip .destaque icon=false}
+## Resumo do capítulo
+
+Experimentar é intervir para falar de causa, e isso só funciona sob três princípios: **repetição**, **casualização** e **controle local**. A maior cilada é a **pseudo-replicação** — confundir subamostras com réplicas verdadeiras; a unidade experimental é o que recebeu o tratamento de forma independente. Os delineamentos clássicos combinam os três princípios: o **DIC** para condições homogêneas, o **DBC** para isolar uma fonte de variação, o **DQL** para isolar duas, e os **fatoriais** para estudar vários fatores e suas interações. Todo experimento bem planejado já nasce pedindo a ANOVA que veremos a seguir.
+:::
+
+::: {.callout-note icon=false}
+## Para praticar
+
+1. Num cultivo, você testa 3 dietas em 12 tanques. Monte, em R, o plano de um DIC com casualização.
+2. Explique, com suas palavras, por que pesar 30 peixes de um único tanque tratado não gera 30 réplicas.
+3. Você suspeita que a posição no galpão (fundo x entrada) afeta o crescimento. Qual delineamento usaria, e por quê?
+:::

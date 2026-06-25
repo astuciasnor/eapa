@@ -1,0 +1,263 @@
+---
+title: "Criando Gráficos: a galeria da visualização"
+subtitle: "Ou: cada pergunta tem o seu gráfico — e o R desenha todos"
+lang: pt-BR
+execute:
+  warning: false
+  message: false
+---
+
+```{r setup}
+#| include: false
+library(EAPADados)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+# Paleta da identidade visual Ocean Gradient
+ocean <- c(NAVY = "#0F3B5F", TEAL = "#2E7D8F", SEAFOAM = "#62B6B7",
+           AMBER = "#E89B3C", CORAL = "#E76F51")
+
+theme_set(theme_minimal(base_size = 11))
+
+data(biometria_caranguejos)
+data(captura_petrechos)
+data(captura_pescada_amarela)
+data(pinguins)
+```
+
+::: {.callout-note .destaque icon=false}
+## Já passou por isso?
+
+Você tem os dados na mão, a análise pronta, e na hora de mostrar o resultado bate a dúvida: barras ou linhas? pizza ou colunas? Escolher o gráfico errado é como contar uma boa história no tom errado — a informação está lá, mas ninguém entende. Este capítulo é um catálogo prático: para cada pergunta, o gráfico certo e o código que o desenha.
+:::
+
+Na Unidade II, os gráficos foram **pistas** — o histograma sussurrando normalidade, o boxplot insinuando diferença de médias. Aqui o objetivo é outro: **comunicar**. É o mesmo espírito do menu *Visualizando Dados* da IDE CatalyseR, que monta gráfico de dispersão, de linhas e de barras apontando e clicando — e entrega o código `ggplot2` por trás. Vamos percorrer essa galeria e ampliá-la, agrupando os gráficos pela **pergunta** que cada um responde.
+
+Todos seguem a mesma gramática do `ggplot2`: você começa com os dados e um `aes()` (o que vai em cada eixo, cor, grupo), e empilha **camadas** (`geom_*`) com `+`. Trocar o tipo de gráfico é, quase sempre, trocar uma camada.
+
+## A distribuição de uma variável
+
+Quando a pergunta é "como esses valores se espalham?", o gráfico fala de **forma**: simetria, caudas, picos.
+
+O **histograma** divide a variável em faixas e conta quantas observações caem em cada uma.
+
+```{r}
+#| label: fig-hist
+#| fig-cap: "Histograma da largura da carapaça dos caranguejos."
+ggplot(biometria_caranguejos, aes(x = LC)) +
+  geom_histogram(bins = 30, fill = ocean["TEAL"], color = "white") +
+  labs(x = "Largura da carapaça (mm)", y = "Frequência")
+```
+
+A **curva de densidade** é a versão suavizada do histograma — boa para comparar a forma de dois grupos sobrepostos.
+
+```{r}
+#| label: fig-densidade
+#| fig-cap: "Densidade da largura por sexo: a forma das duas distribuições, lado a lado."
+ggplot(biometria_caranguejos, aes(x = LC, fill = Sexo)) +
+  geom_density(alpha = 0.5) +
+  scale_fill_manual(values = unname(ocean[c("TEAL", "AMBER")])) +
+  labs(x = "Largura da carapaça (mm)", y = "Densidade")
+```
+
+O **boxplot** resume a distribuição em cinco números (mínimo, quartis, máximo) e destaca os possíveis *outliers*; o **gráfico de violino** acrescenta a forma da densidade às laterais. Ambos brilham na comparação entre grupos.
+
+```{r}
+#| label: fig-violino
+#| fig-cap: "Violino com boxplot embutido: distribuição da largura por sexo."
+ggplot(biometria_caranguejos, aes(x = Sexo, y = LC, fill = Sexo)) +
+  geom_violin(alpha = 0.6) +
+  geom_boxplot(width = 0.15, fill = "white", outlier.size = 0.6) +
+  scale_fill_manual(values = unname(ocean[c("TEAL", "AMBER")])) +
+  labs(x = NULL, y = "Largura da carapaça (mm)") +
+  theme(legend.position = "none")
+```
+
+## A relação entre duas variáveis
+
+Quando a pergunta é "uma anda com a outra?", o gráfico fala de **associação**.
+
+O **gráfico de dispersão** (o primeiro do menu da IDE) põe uma variável em cada eixo e desenha um ponto por observação. Uma reta de tendência ajuda a enxergar o padrão.
+
+```{r}
+#| label: fig-dispersao
+#| fig-cap: "Dispersão de largura versus comprimento da carapaça, com reta de tendência."
+ggplot(biometria_caranguejos, aes(x = LC, y = CC)) +
+  geom_point(alpha = 0.4, color = ocean["TEAL"]) +
+  geom_smooth(method = "lm", se = FALSE, color = ocean["CORAL"]) +
+  labs(x = "Largura da carapaça (mm)", y = "Comprimento da carapaça (mm)")
+```
+
+Quando há **muitas** variáveis numéricas, o **mapa de calor** (*heatmap*) das correlações mostra, num relance, quais andam juntas: cores quentes para correlação positiva, frias para negativa.
+
+```{r}
+#| label: fig-heatmap
+#| fig-cap: "Mapa de calor das correlações entre as medidas morfométricas dos pinguins."
+medidas <- pinguins |>
+  select(comprimento_bico_mm, profundidade_bico_mm,
+         comprimento_nadadeira_mm, massa_g) |>
+  na.omit()
+
+cor(medidas) |>
+  as.data.frame() |>
+  tibble::rownames_to_column("var1") |>
+  pivot_longer(-var1, names_to = "var2", values_to = "r") |>
+  ggplot(aes(var1, var2, fill = r)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = round(r, 2)), size = 3) +
+  scale_fill_gradient2(low = ocean["CORAL"], mid = "white", high = ocean["NAVY"],
+                       midpoint = 0, limits = c(-1, 1)) +
+  labs(x = NULL, y = NULL, fill = "r") +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```
+
+## A evolução no tempo
+
+Quando o eixo é o **tempo** (ou qualquer sequência ordenada), o gráfico fala de **tendência**.
+
+O **gráfico de linhas** (segundo do menu da IDE) liga os pontos na ordem, revelando subidas e quedas. Aqui, a CPUE média de pescada-amarela mês a mês.
+
+```{r}
+#| label: fig-linhas
+#| fig-cap: "Gráfico de linhas: CPUE média de pescada-amarela ao longo dos meses."
+cpue_mes <- captura_pescada_amarela |>
+  group_by(mes) |>
+  summarise(cpue_media = mean(cpue))
+
+ggplot(cpue_mes, aes(x = mes, y = cpue_media, group = 1)) +
+  geom_line(color = ocean["NAVY"], linewidth = 1) +
+  geom_point(color = ocean["NAVY"]) +
+  labs(x = NULL, y = "CPUE média") +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```
+
+O **gráfico de área** é uma linha com o "chão" preenchido — útil para enfatizar volume acumulado ou magnitude ao longo do tempo, como a precipitação média mensal.
+
+```{r}
+#| label: fig-area
+#| fig-cap: "Gráfico de área: precipitação média por mês."
+chuva_mes <- captura_pescada_amarela |>
+  group_by(mes) |>
+  summarise(prec_media = mean(precipitacao))
+
+ggplot(chuva_mes, aes(x = mes, y = prec_media, group = 1)) +
+  geom_area(fill = ocean["SEAFOAM"], alpha = 0.6) +
+  geom_line(color = ocean["TEAL"], linewidth = 0.8) +
+  labs(x = NULL, y = "Precipitação média (mm)") +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```
+
+## A comparação entre categorias
+
+Quando a pergunta é "qual grupo tem mais?", o gráfico fala de **magnitude por categoria**.
+
+O **gráfico de barras** (terceiro do menu da IDE) é o cavalo de batalha: uma barra por categoria, altura proporcional ao valor. Use `geom_col()` quando você já tem o valor calculado, e `geom_bar()` quando quer que o R **conte** as ocorrências.
+
+```{r}
+#| label: fig-barras
+#| fig-cap: "Gráfico de barras: número de viagens por aparelho de pesca."
+ggplot(captura_pescada_amarela, aes(x = nome_aparelho_pesca,
+                                    fill = nome_aparelho_pesca)) +
+  geom_bar() +
+  scale_fill_manual(values = unname(ocean[c("TEAL", "AMBER")])) +
+  labs(x = NULL, y = "Nº de viagens") +
+  theme(legend.position = "none")
+```
+
+O **gráfico de pizza** mostra **composição** — a fatia de cada categoria no todo. É, na verdade, um gráfico de barras "enrolado" num círculo (`coord_polar`). Funciona bem com **poucas** categorias; com muitas, vira um disco confuso e as barras comunicam melhor.
+
+```{r}
+#| label: fig-pizza
+#| fig-cap: "Gráfico de pizza: composição das viagens por aparelho de pesca."
+composicao <- captura_pescada_amarela |>
+  count(nome_aparelho_pesca) |>
+  mutate(prop = n / sum(n))
+
+ggplot(composicao, aes(x = "", y = prop, fill = nome_aparelho_pesca)) +
+  geom_col(width = 1, color = "white") +
+  coord_polar(theta = "y") +
+  scale_fill_manual(values = unname(ocean[c("TEAL", "AMBER")])) +
+  geom_text(aes(label = scales::percent(prop, accuracy = 1)),
+            position = position_stack(vjust = 0.5), color = "white") +
+  labs(x = NULL, y = NULL, fill = "Aparelho") +
+  theme_void()
+```
+
+Quando a comparação envolve **médias com incerteza**, o **gráfico de barras de erro** (média ± erro padrão) é o mais honesto: ele mostra o valor central e o quanto ele pode oscilar.
+
+```{r}
+#| label: fig-erro
+#| fig-cap: "Médias da largura da carapaça por local, com barras de erro (± 1 erro padrão)."
+resumo <- biometria_caranguejos |>
+  group_by(Local) |>
+  summarise(media = mean(LC),
+            ep = sd(LC) / sqrt(n()))
+
+ggplot(resumo, aes(x = Local, y = media, color = Local)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = media - ep, ymax = media + ep), width = 0.15) +
+  scale_color_manual(values = unname(ocean[c("TEAL", "CORAL")])) +
+  labs(x = NULL, y = "Largura média (mm)") +
+  theme(legend.position = "none")
+```
+
+## O perfil multivariado
+
+Quando você quer comparar **vários atributos de uma vez** entre poucos grupos, o **gráfico de radar** (ou *spider*) desenha um polígono por grupo sobre eixos que partem de um centro comum. É ótimo para "perfis" — por exemplo, comparar as três espécies de pinguim em quatro medidas, padronizadas de 0 a 1 para caberem na mesma escala.
+
+```{r}
+#| label: fig-radar
+#| fig-cap: "Gráfico de radar: perfil morfométrico médio das três espécies de pinguim (medidas reescaladas de 0 a 1)."
+reescala <- function(x) (x - min(x)) / (max(x) - min(x))
+
+perfil <- pinguins |>
+  na.omit() |>
+  group_by(especie) |>
+  summarise(across(c(comprimento_bico_mm, profundidade_bico_mm,
+                     comprimento_nadadeira_mm, massa_g), mean)) |>
+  mutate(across(-especie, reescala)) |>
+  pivot_longer(-especie, names_to = "eixo", values_to = "valor")
+
+ggplot(perfil, aes(x = eixo, y = valor, group = especie, color = especie)) +
+  geom_polygon(fill = NA, linewidth = 1) +
+  geom_point() +
+  coord_polar() +
+  scale_color_manual(values = unname(ocean[c("NAVY", "AMBER", "CORAL")])) +
+  labs(x = NULL, y = NULL, color = "Espécie") +
+  theme(axis.text.y = element_blank())
+```
+
+Um aviso de uso: o radar é sedutor, mas só funciona com **poucos grupos e poucos eixos**; além disso, depende da ordem dos eixos. Para muitas variáveis, prefira o mapa de calor ou um painel de boxplots.
+
+## Escolhendo o gráfico certo
+
+A @tbl-escolha resume a galeria pela pergunta que cada gráfico responde.
+
+| A sua pergunta | Gráfico | Camada principal (`ggplot2`) |
+|:---|:---|:---|
+| Como uma variável se distribui? | histograma, densidade | `geom_histogram()`, `geom_density()` |
+| Como comparo distribuições? | boxplot, violino | `geom_boxplot()`, `geom_violin()` |
+| Duas variáveis andam juntas? | dispersão | `geom_point()` + `geom_smooth()` |
+| Quais variáveis se correlacionam? | mapa de calor | `geom_tile()` |
+| Como evolui no tempo? | linhas, área | `geom_line()`, `geom_area()` |
+| Qual categoria tem mais? | barras | `geom_bar()`, `geom_col()` |
+| Qual a composição do todo? | pizza | `geom_col()` + `coord_polar()` |
+| Médias com incerteza? | barras de erro | `geom_errorbar()` |
+| Perfil de poucos grupos em vários atributos? | radar | `geom_polygon()` + `coord_polar()` |
+
+: Da pergunta ao gráfico: um guia rápido da galeria. {#tbl-escolha tbl-colwidths="[40,25,35]"}
+
+::: {.callout-tip .destaque icon=false}
+## Resumo do capítulo
+
+Visualizar é comunicar, e cada pergunta tem o seu gráfico. Para **distribuição**, histograma, densidade, boxplot e violino; para **relação**, dispersão e mapa de calor; para **tempo**, linhas e área; para **comparar categorias**, barras, pizza e barras de erro; para **perfis multivariados**, radar. Tudo na mesma gramática do `ggplot2` — dados, `aes()` e camadas `geom_*` empilhadas com `+` —, exatamente o código que o menu *Visualizando Dados* da CatalyseR gera para você. Escolha pela mensagem, não pela aparência: o melhor gráfico é o que faz a informação saltar aos olhos.
+:::
+
+::: {.callout-note icon=false}
+## Para praticar
+
+1. Refaça o gráfico de barras usando `captura_petrechos`: número de registros por `Petrecho`. Depois transforme-o num gráfico de pizza. Qual comunica melhor com três categorias?
+2. Faça um gráfico de linhas da CPUE média por mês, mas separando por `nome_aparelho_pesca` (uma linha para cada). Use `color = nome_aparelho_pesca` e remova o `group = 1`.
+3. Monte um radar comparando as embarcações `B1` a `B7` em três métricas (CPUE média, precipitação média, dias ao mar médios). O que muda quando você reordena os eixos?
+:::

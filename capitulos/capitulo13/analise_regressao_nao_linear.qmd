@@ -1,5 +1,147 @@
 ---
 title: "Análise de Regressão Não Linear"
-format: html
+subtitle: "Ou: quando a relação entre as coisas não é uma reta"
+lang: pt-BR
+execute:
+  warning: false
+  message: false
 ---
 
+```{r setup}
+#| include: false
+library(EAPADados)
+library(ggplot2)
+library(dplyr)
+
+ocean <- c(NAVY = "#0F3B5F", TEAL = "#2E7D8F", SEAFOAM = "#62B6B7",
+           AMBER = "#E89B3C", CORAL = "#E76F51")
+theme_set(theme_minimal(base_size = 11))
+
+data(cangulo_crescimento)
+```
+
+::: {.callout-note .destaque icon=false}
+## Já passou por isso?
+
+Você mede o comprimento e o peso de vários peixes, joga tudo num gráfico e... a nuvem de pontos não sobe em linha reta: ela **encurva**, cada vez mais íngreme. Forçar uma reta ali seria mentir sobre a biologia. É que peso e comprimento não têm relação linear — têm uma relação de **potência**. E para ajustá-la, a régua certa não é a regressão linear, é a **não linear**.
+:::
+
+A regressão linear assume que a resposta cresce a uma taxa constante: cada centímetro a mais soma sempre o mesmo tanto de peso. Mas um peixe não funciona assim. Ele cresce nas três dimensões ao mesmo tempo, então o peso acompanha mais ou menos o **volume** — e o volume cresce com o **cubo** do comprimento. A relação peso-comprimento é o exemplo clássico de um modelo **não linear nos parâmetros**:
+
+$$
+W = a \cdot L^{\,b}
+$$
+
+em que $W$ é o peso, $L$ o comprimento, $a$ um fator de escala e $b$ o **expoente de crescimento**. Quando $b = 3$, o crescimento é **isométrico** (a forma do corpo não muda); quando $b$ se afasta de 3, há **alometria** (o peixe vai ficando relativamente mais "gordo" ou mais "magro" à medida que cresce). Estimar $a$ e $b$ é, no fundo, ler a estratégia de crescimento do animal.
+
+## Os dados: peso e comprimento do cangulo
+
+O conjunto `cangulo_crescimento`, do pacote `EAPADados`, traz o comprimento (cm) e o peso (g) de cangulos ao longo de uma faixa de tamanhos. Um olhar exploratório já mostra a curva.
+
+```{r}
+#| label: fig-nuvem
+#| fig-cap: "Peso versus comprimento do cangulo: a relação encurva para cima, típica de um modelo de potência."
+ggplot(cangulo_crescimento, aes(comprimento_cm, peso_g)) +
+  geom_point(color = ocean["TEAL"], size = 2) +
+  labs(x = "Comprimento (cm)", y = "Peso (g)")
+```
+
+::: {.callout-important .destaque icon=false}
+## Amplitude de tamanhos importa
+
+Um cuidado de planejamento que vale ouro neste tipo de regressão: colete peixes ao longo de uma **ampla faixa de comprimentos**, dos menores aos maiores que a espécie alcança. O modelo de potência descreve *como o crescimento muda com o tamanho* — e ele só consegue revelar essa curvatura se os dados a percorrerem. Uma amostra restrita a uma faixa estreita (só juvenis, ou só adultos grandes) faz a relação parecer quase reta naquele trecho, o expoente $b$ fica mal estimado e a previsão **não pode ser extrapolada** para tamanhos fora do intervalo amostrado. Quanto maior a amplitude de $L$, mais fiel o ajuste representa o fenômeno biológico.
+:::
+
+## Ajustando o modelo de potência
+
+Diferente da regressão linear, que tem fórmula fechada, a regressão não linear é **iterativa**: o R parte de um chute inicial para os parâmetros e vai refinando até minimizar a soma dos quadrados dos resíduos. Por isso a função `nls()` (de *nonlinear least squares*) pede um argumento `start` com valores iniciais razoáveis.
+
+De onde tirar esses chutes? Há um truque elegante: **linearizar**. Aplicando logaritmo nos dois lados, $W = a\,L^b$ vira $\ln W = \ln a + b \ln L$ — uma **reta** em escala log-log. Uma regressão linear simples sobre os logaritmos nos dá, de bandeja, os valores de partida.
+
+```{r}
+#| label: chutes
+# valores iniciais a partir da linearização log-log
+ini <- coef(lm(log(peso_g) ~ log(comprimento_cm), data = cangulo_crescimento))
+start <- list(a = exp(ini[[1]]), b = ini[[2]])
+start
+```
+
+Com os chutes em mãos, ajustamos o modelo não linear de verdade:
+
+```{r}
+#| label: ajuste
+ajuste <- nls(peso_g ~ a * comprimento_cm^b,
+              data = cangulo_crescimento, start = start)
+summary(ajuste)
+```
+
+A saída traz as estimativas: $a \approx 0{,}030$ e $b \approx 2{,}91$, ambas com erro-padrão pequeno e altamente significativas. O expoente $b = 2{,}91$ fica **muito perto de 3** — o cangulo cresce de forma quase isométrica, com uma alometria negativa leve (engorda um pouquinho mais devagar do que o cubo do comprimento).
+
+Como o `nls` não devolve um $R^2$ no sentido tradicional, calculamos um **pseudo-$R^2$** a partir da soma dos quadrados:
+
+```{r}
+#| label: r2
+rss <- sum(residuals(ajuste)^2)
+tss <- sum((cangulo_crescimento$peso_g - mean(cangulo_crescimento$peso_g))^2)
+pseudo_R2 <- 1 - rss / tss
+round(pseudo_R2, 4)
+```
+
+Um pseudo-$R^2$ de cerca de **0,999** indica que o modelo de potência captura quase toda a variação do peso — o que não surpreende, já que a relação peso-comprimento é uma das mais regulares da biologia pesqueira.
+
+## Olhando os resíduos
+
+Ajustar não é o fim: é preciso checar se o modelo "sobrou" algum padrão. Os resíduos (diferença entre o peso observado e o previsto) devem se espalhar **sem estrutura** em torno do zero.
+
+```{r}
+#| label: fig-residuos
+#| fig-cap: "Resíduos versus valores ajustados. Sem padrão evidente — o modelo de potência está adequado."
+diag <- data.frame(ajustado = fitted(ajuste),
+                   residuo  = residuals(ajuste))
+
+ggplot(diag, aes(ajustado, residuo)) +
+  geom_hline(yintercept = 0, linetype = 2, color = ocean["CORAL"]) +
+  geom_point(color = ocean["NAVY"]) +
+  labs(x = "Peso ajustado (g)", y = "Resíduo (g)")
+```
+
+## A curva sobre os dados
+
+Por fim, vale ver o ajuste desenhado sobre a nuvem original — a prova visual de que a curva acompanha os pontos.
+
+```{r}
+#| label: fig-ajuste
+#| fig-cap: "Modelo de potência ajustado sobre os dados de peso-comprimento do cangulo."
+ab  <- coef(ajuste)
+eq  <- sprintf("W = %.4f \u00b7 L^%.3f\npseudo-R\u00b2 = %.3f",
+               ab["a"], ab["b"], pseudo_R2)
+
+ggplot(cangulo_crescimento, aes(comprimento_cm, peso_g)) +
+  geom_point(color = ocean["TEAL"], size = 2) +
+  geom_function(fun = function(L) ab["a"] * L^ab["b"],
+                color = ocean["CORAL"], linewidth = 1) +
+  annotate("text", x = min(cangulo_crescimento$comprimento_cm),
+           y = max(cangulo_crescimento$peso_g), hjust = 0, vjust = 1,
+           label = eq, color = ocean["NAVY"], size = 4) +
+  labs(x = "Comprimento (cm)", y = "Peso (g)")
+```
+
+> O modelo de potência ajustado foi $\widehat{W} = `r round(coef(ajuste)["a"], 4)` \cdot L^{`r round(coef(ajuste)["b"], 3)`}$, com pseudo-$R^2$ de `r round(pseudo_R2, 3)`. O expoente próximo de 3 indica crescimento quase isométrico do cangulo.
+
+## Da linearização ao ajuste: por que não usar só os logaritmos?
+
+Você pode estar pensando: se a linearização já dá uma reta, por que não parar nela? Porque os dois caminhos **minimizam coisas diferentes**. A regressão sobre os logaritmos minimiza o erro na escala *log* — tratando proporcionalmente igual um peixe de 40 g e um de 1500 g. O `nls` minimiza o erro na escala **original**, em gramas, dando mais peso aos peixes grandes. Para a relação peso-comprimento, a versão log-linear (com a correção de viés de Baskerville) é tradicional e perfeitamente válida; o `nls` é a abordagem direta quando você quer a curva que melhor prevê o peso em gramas. Conhecer as duas — e saber que podem diferir um pouco nos parâmetros — é o que separa quem aplica a fórmula de quem entende o que ela faz.
+
+::: {.callout-tip .destaque icon=false}
+## Resumo do capítulo
+
+Nem toda relação é uma reta. A relação peso-comprimento dos peixes é uma **potência**, $W = a\,L^b$, em que o expoente $b$ revela a estratégia de crescimento (perto de 3, isométrico). Ajustamos modelos assim com `nls()`, que é iterativo e por isso pede valores iniciais — obtidos com elegância pela **linearização log-log**. Depois do ajuste, lemos os parâmetros, calculamos um pseudo-$R^2$ e, sobretudo, **olhamos os resíduos** para confirmar que nenhum padrão ficou de fora. No cangulo, o modelo explicou quase toda a variação do peso, com $b$ pertinho de 3.
+:::
+
+::: {.callout-note icon=false}
+## Para praticar
+
+1. Compare os parâmetros do `nls` com os da linearização (`lm(log(peso_g) ~ log(comprimento_cm))`). Quão diferentes ficaram $a$ e $b$?
+2. Use o modelo ajustado para prever o peso de um cangulo de 25 cm. Confira com `predict(ajuste, newdata = data.frame(comprimento_cm = 25))`.
+3. Ajuste um modelo de potência separado para cada réplica de peso (`p1`, `p2`, `p3`). Os expoentes $b$ ficam parecidos?
+:::

@@ -20,3 +20,8 @@
 
 // Menos espaco abaixo dos titulos (titulo do capitulo -> texto)
 #show heading: set block(above: 1.0em, below: 0.55em)
+
+// Legendas de figura: texto justificado (em vez de centralizado),
+// fica melhor para as legendas mais longas do livro.
+#show figure.caption: set align(left)
+#show figure.caption: set par(justify: true)

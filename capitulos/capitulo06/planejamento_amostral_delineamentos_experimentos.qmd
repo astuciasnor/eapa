@@ -1,11 +1,124 @@
 ---
-title: "Planejamento Amostral e Delineamentos de Experimentos"
-format: html
+title: "Planejamento Amostral"
+subtitle: "Ou: a análise certa começa muito antes do primeiro número"
+lang: pt-BR
+execute:
+  warning: false
+  message: false
 ---
 
-Trazer aquele textto sobre captur de camarões de dados do eduardo e que mostrei na sala de aula para a turma de 2022. \
-Projeto camarão
+```{r setup}
+#| include: false
+library(EAPADados)
+library(ggplot2)
+library(dplyr)
 
-Incluir sobre o capítulo de pseudo-réplica e aplicar a uma pesquisa de conjutno de dados.
+ocean <- c(NAVY = "#0F3B5F", TEAL = "#2E7D8F", SEAFOAM = "#62B6B7",
+           AMBER = "#E89B3C", CORAL = "#E76F51")
+```
 
-Incluir DIC. DBC , DQL e DF
+::: {.callout-note .destaque icon=false}
+## Já passou por isso?
+
+O barco está abastecido, a rede a postos, e você prestes a embarcar para uma pescaria de camarão. Mas pare um instante: *você já sabe exatamente o que vai medir lá fora?* Quais variáveis anotar a cada lance, em que unidade pesar a captura, como separar o camarão da fauna acompanhante, onde e quando lançar a rede? Se a resposta não estiver pronta **antes** de soltar as amarras, nenhum software vai consertar depois. O planejamento acontece em terra.
+:::
+
+Há uma ordem natural nas coisas, e ela costuma ser invertida. Na Unidade II, aprendemos a reconhecer o **tipo** de cada variável e vimos como ele aponta a análise. Agora damos um passo atrás, para o momento que decide tudo: **o tipo de estudo determina os tipos de dados a coletar, como coletá-los e como organizá-los**. É o estudo que define se você terá categóricas ou numéricas, contagens ou medidas, grupos independentes ou pareados — e, com isso, quais análises serão possíveis, quais pressupostos elas exigirão e que cuidados a coleta impõe para que esses pressupostos se sustentem.
+
+Organizar os dados desde o início na **filosofia *tidy*** — cada linha uma observação, cada coluna uma variável — não é capricho de programador. É o que mantém aberto o leque de análises lá na frente. Um conjunto bem planejado e bem arrumado praticamente se oferece à análise correta; um conjunto coletado no improviso fecha portas que nenhum código reabre. Esta Unidade III trata, portanto, de uma única ideia poderosa: **planejar a coleta é, na prática, escolher antecipadamente o teste**.
+
+O planejamento tem dois grandes ramos. Quando observamos a natureza como ela é — sem intervir —, fazemos **planejamento amostral**: decidimos *quem* observar e *como sortear* esses indivíduos de uma população. Quando intervimos deliberadamente — atribuindo tratamentos e controlando condições —, fazemos **planejamento experimental**, tema do próximo capítulo. Este aqui cuida do primeiro ramo, e vamos percorrê-lo com um exemplo real: um estudo de captura de camarão.
+
+## O estudo: captura de camarão por arrasto
+
+Imagine que queremos avaliar **quanto camarão se captura** ao longo de diferentes períodos do ano e em locais distintos de um estuário — informação valiosa para a gestão sustentável do recurso. As perguntas que guiam o estudo são duas: *a captura difere entre os locais?* e *o período do ano afeta a quantidade capturada?* Cada pergunta já é, no fundo, uma hipótese à espera de um teste.
+
+A captura é feita por **arrasto**, com a embarcação rebocando a rede pelo fundo (@fig-barco). Reparar nesse desenho não é detalhe: o petrecho, a abertura da boca da rede, o tempo de arrasto e a velocidade definem o **esforço de pesca** — e é esse esforço que precisaremos registrar para que as capturas sejam comparáveis entre si.
+
+![Captura de camarão por arrasto de fundo: a embarcação reboca a rede pelas portas de arrasto, e o camarão se acumula no saco (copo). O esforço de pesca depende do petrecho, da abertura da rede e do tempo de arrasto.](../../images/barco_camarao_arrasto.png){#fig-barco width=85%}
+
+## Decidir o que medir — antes de embarcar
+
+Aqui está o coração do planejamento: a lista de variáveis não se improvisa no convés, ela se decide na escrivaninha. Para responder às perguntas do estudo, definimos de antemão o que será anotado a cada lance:
+
+- **Quando e em que condições:** data, fase lunar, direção e força do vento — fatores ambientais que podem influenciar a captura.
+- **Como se pescou:** tipo de petrecho e duração do esforço pesqueiro (em horas) — para padronizar o esforço.
+- **O que se capturou:** peso de camarão (kg) e peso da fauna acompanhante (kg) — a resposta de interesse e seu acompanhamento.
+- **Onde:** o local específico de captura.
+
+Note como cada variável já nasce com um **tipo** declarado — fase lunar e local são *categóricas*; peso e duração são *numéricas contínuas* — exatamente a distinção que aprendemos a fazer na Unidade II. Decidir o tipo agora é decidir, desde já, o que se poderá calcular depois.
+
+Tão importante quanto *o que* medir é *como* registrar. A captura é pesada a bordo, logo após cada lance, numa balança digital, sempre na **mesma unidade** (kg) e com o mesmo número de casas decimais. As informações vão primeiro para uma planilha de campo em papel, à prova de respingos, e só depois são digitalizadas. A @fig-planilha mostra um modelo dessa rotina de bordo — da conferência da captura ao registro padronizado, lance a lance.
+
+![Rotina de arrumação dos dados após cada lance e modelo de planilha de campo: conferir, separar por espécie, pesar, registrar, identificar o lance e conservar. Padronizar unidades e preencher de forma legível garante a rastreabilidade da amostragem.](../../images/planilha_coleta_camarao.png){#fig-planilha width=95%}
+
+::: {.callout-tip icon=false}
+## Boas práticas de bordo
+
+Anote os dados ainda a bordo, logo após cada lance; use sempre unidades padronizadas (kg, mm); e revise os registros diariamente, para que nenhuma informação se perca antes de chegar ao computador. Dados consistentes e completos são a matéria-prima de toda análise — e não há análise que recupere o que não foi registrado.
+:::
+
+## Da planilha ao formato *tidy*
+
+Uma planilha bem desenhada já é quase *tidy*: cada linha é um lance (uma observação) e cada coluna, uma variável. Essa correspondência é o que permite carregar os dados no R e, num só passo, declarar o tipo de cada coluna — transformando texto em **fatores** com níveis ordenados onde a ordem importa (a força do vento vai de *Fraco* a *Forte*; a fase lunar segue seu ciclo).
+
+```{r}
+#| eval: false
+library(tidyverse)
+library(readxl)
+
+dados_camarao <- read_excel("dados/captura_camarao.xlsx", sheet = 1) |>
+  janitor::clean_names() |>
+  mutate(
+    data          = lubridate::dmy(data),
+    fase_lunar    = factor(fase_lunar,
+                           levels = c("Nova", "Crescente", "Cheia", "Minguante")),
+    forca_vento   = factor(forca_vento,
+                           levels = c("Fraco", "Moderado", "Forte")),
+    tipo_petrecho = as.factor(tipo_petrecho),
+    direcao_vento = as.factor(direcao_vento),
+    local_captura = as.factor(local_captura)
+  )
+
+glimpse(dados_camarao)
+```
+
+Repare que declarar `levels` numa variável ordinal não é detalhe estético: é o que faz o R (e os gráficos) respeitarem a sequência natural *Fraco < Moderado < Forte* em vez da ordem alfabética. De novo, o tipo da variável comanda o que vem depois.
+
+## Onde e quando amostrar
+
+Definidas as variáveis, falta o essencial do planejamento amostral: *quem* observar e *como sortear*. Raramente conseguimos cobrir o estuário inteiro — não há tempo, combustível nem tripulação para isso. Então **amostramos**: tomamos uma parte para inferir sobre o todo. E a única defesa honesta contra o viés é o **acaso**: é o sorteio, não a conveniência do "lugar onde sempre pesco", que torna a amostra representativa.
+
+No nosso estudo, o desenho amostral combina cuidado no espaço e no tempo. No **espaço**, escolhem-se três áreas principais separadas por pelo menos 5 km — para que sejam de fato distintas — e, dentro de cada uma, sub-pontos num raio de 50 m, garantindo representatividade local. No **tempo**, cada ponto é visitado em quatro momentos (T1 a T4), **distribuídos aleatoriamente** ao longo do estudo, para que nenhuma fase do ano fique sobre ou sub-representada. Esse arranjo é, na prática, uma amostragem **estratificada** (as áreas são os estratos) com **casualização** temporal.
+
+Vale conhecer os três métodos probabilísticos que sustentam desenhos como esse. Na **amostragem aleatória simples (AAS)**, todo indivíduo tem a mesma chance de ser sorteado, como tirar nomes de um chapéu — é a base de tudo. Sortear, por exemplo, quais 4 dos 16 dias possíveis de defeso aberto sairão para coleta:
+
+```{r}
+#| label: aas
+set.seed(2026)
+dias_possiveis <- 1:16
+dias_coleta <- sample(dias_possiveis, size = 4)   # sorteio sem reposição
+sort(dias_coleta)
+```
+
+Na **amostragem sistemática**, sorteia-se só o ponto de partida e seguem-se intervalos fixos — útil quando há uma fila natural (lances ao longo do dia), mas arriscada se a lista tiver um padrão cíclico. Na **amostragem estratificada**, divide-se a população em subgrupos homogêneos — os **estratos**, como as três áreas — e amostra-se dentro de cada um, em geral por **alocação proporcional** ao tamanho do estrato. É a escolha certa quando sabemos que um fator (local, período) influencia fortemente a resposta: garante que nenhum subgrupo importante fique de fora.
+
+A escolha do método não é estética: ela molda a estrutura dos dados e, com ela, a análise. Estratificar por área já entrega os grupos prontos para comparar capturas entre locais; casualizar os tempos protege a comparação entre períodos. Eis, de novo, o fio condutor da unidade — **a forma de coletar decide a forma de analisar**.
+
+## A ponte para a análise
+
+Quando essa planilha estiver preenchida, ela alimentará exatamente as comparações que motivaram o estudo: a **captura por unidade de esforço (CPUE)** entre locais e entre períodos. Como CPUE é uma contagem, costuma fugir da normalidade — e aí entram os testes que veremos na Unidade IV, como o **Kruskal-Wallis** para comparar três ou mais áreas. O conjunto `captura_petrechos`, do pacote `EAPADados`, traz justamente esse tipo de dado de captura por aparelho de pesca, e será o nosso campo de prática lá adiante. O planejamento que fizemos aqui é o que torna aquela análise possível.
+
+::: {.callout-tip .destaque icon=false}
+## Resumo do capítulo
+
+O estudo vem antes do dado, e o planejamento amostral é onde se decide *o que* medir, *como* medir e *quem* observar — tudo antes de embarcar. No exemplo do camarão, isso significou definir as variáveis (ambientais, de esforço e de captura) e seus tipos, padronizar a pesagem a bordo, registrar lance a lance numa planilha já no formato *tidy*, e sortear áreas e tempos com o auxílio do **acaso**: AAS quando todos têm a mesma chance, sistemática quando há uma sequência, estratificada para garantir cada subgrupo. Coletar com método é o que mantém abertas as portas para a análise correta — e, no fim, é o que decide o teste.
+:::
+
+::: {.callout-note icon=false}
+## Para praticar
+
+1. Liste as variáveis do estudo do camarão e classifique cada uma como nominal, ordinal, discreta ou contínua. Quais permitiriam uma comparação de médias? Quais, uma tabela de contingência?
+2. Sorteie, por AAS, 5 dias de coleta entre 20 dias possíveis. Mude a semente (`set.seed`) e observe como o sorteio muda.
+3. Pense num estudo seu (ou de um colega): que desenho amostral ele usou — ou deveria ter usado — e que análises esse desenho tornou possíveis?
+:::

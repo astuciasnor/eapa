@@ -1,6 +1,5 @@
-
 ::: {.content-visible when-format="pdf"}
-![](images/capa-livro-eapa.png){width=100%}
+![](images/capa-livro-eapa.png){width="100%"}
 
 {{< pagebreak >}}
 :::

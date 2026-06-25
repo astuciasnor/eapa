@@ -1,4 +1,121 @@
 ---
-title: "Testes Não-paramétricos para uma e duas amostras"
-format: html
+title: "Testes Não-paramétricos"
+subtitle: "Ou: o que fazer quando os dados não querem ser normais"
+lang: pt-BR
+execute:
+  warning: false
+  message: false
 ---
+
+```{r setup}
+#| include: false
+library(EAPADados)
+library(ggplot2)
+library(dplyr)
+library(flextable)
+
+ocean <- c(NAVY = "#0F3B5F", TEAL = "#2E7D8F", SEAFOAM = "#62B6B7",
+           AMBER = "#E89B3C", CORAL = "#E76F51")
+```
+
+::: {.callout-note .destaque icon=false}
+## Já passou por isso?
+
+Você roda o teste de normalidade, ele dá significativo, e lá se vai o teste *t* que você planejava. E agora? Jogar fora os dados? Fingir que não viu? Nem um nem outro. Existe toda uma família de testes que não pede normalidade — eles trabalham com a **ordem** dos valores, não com seus tamanhos exatos. São os **testes não-paramétricos**, e este capítulo mostra quando e como usá-los.
+:::
+
+Os testes que vimos até aqui — o *t*, e em breve a ANOVA — são **paramétricos**: assumem que os dados seguem (aproximadamente) uma distribuição conhecida, em geral a normal, e que as variâncias se comportam bem. Quando esses pressupostos valem, eles são poderosos. Mas a natureza nem sempre coopera: contagens de captura, dados muito assimétricos, amostras pequenas ou variáveis ordinais costumam quebrar a normalidade.
+
+Aí entram os **testes não-paramétricos**. Em vez de comparar médias, eles comparam **postos** (a posição de cada valor quando ordenamos tudo). Trocar valores por ordens custa um pouco de poder estatístico, mas compra robustez: o teste deixa de se importar com a forma da distribuição. A regra prática é direta — *se os pressupostos do teste paramétrico se sustentam, use-o; se não, recorra ao seu primo não-paramétrico.*
+
+| Pergunta | Teste paramétrico | Equivalente não-paramétrico |
+|:---|:---|:---|
+| Uma amostra / pareada | teste *t* | Wilcoxon |
+| Dois grupos independentes | teste *t* independente | Mann-Whitney (Wilcoxon) |
+| Três ou mais grupos | ANOVA | **Kruskal-Wallis** |
+| Associação entre categóricas | — | **Qui-quadrado** |
+
+: Cada teste paramétrico tem um equivalente que dispensa a normalidade. {tbl-colwidths="[34,33,33]"}
+
+## Dois grupos: Mann-Whitney
+
+Quando comparamos **dois grupos independentes** e a normalidade não se sustenta, o substituto do teste *t* é o **teste de Mann-Whitney** (também chamado Wilcoxon para amostras independentes). No R, é a função `wilcox.test()`. A hipótese nula é que as duas distribuições estão deslocadas igualmente — na prática, que não há diferença sistemática entre os grupos.
+
+```{r}
+#| label: mann-whitney
+data(biometria_caranguejos)
+
+wilcox.test(LC ~ Sexo, data = biometria_caranguejos)
+```
+
+A leitura é a mesma de sempre: um *p*-valor pequeno (abaixo de 0,05) indica que a diferença entre machos e fêmeas dificilmente é obra do acaso.
+
+## Três ou mais grupos: Kruskal-Wallis
+
+Quando há **três ou mais grupos** e a ANOVA não pode ser usada — porque os resíduos não são normais ou as variâncias são muito desiguais —, o teste certo é o de **Kruskal-Wallis**. Ele é, exatamente, a versão não-paramétrica da ANOVA de um fator: pergunta se *ao menos um grupo* tende a apresentar valores sistematicamente maiores que os demais, comparando postos em vez de médias.
+
+Vamos usar o conjunto `captura_petrechos`, que traz a captura por unidade de esforço (CPUE) de peixes obtida por três aparelhos de pesca diferentes. Como CPUE é uma contagem e costuma ser bem assimétrica, é um caso natural para o Kruskal-Wallis.
+
+```{r}
+#| label: fig-kruskal
+#| fig-cap: "CPUE por aparelho de pesca. Distribuições assimétricas e de dispersão desigual pedem um teste não-paramétrico."
+data(captura_petrechos)
+
+ggplot(captura_petrechos, aes(x = Petrecho, y = CPUE, fill = Petrecho)) +
+  geom_boxplot(alpha = 0.85) +
+  scale_fill_manual(values = unname(ocean[c("TEAL", "AMBER", "CORAL")])) +
+  labs(x = NULL, y = "CPUE (indivíduos)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r}
+#| label: kruskal
+kruskal.test(CPUE ~ Petrecho, data = captura_petrechos)
+```
+
+Se o *p*-valor for pequeno, concluímos que **pelo menos um aparelho** difere dos outros na captura — e o passo seguinte seria uma comparação múltipla de postos (por exemplo, o teste de Dunn) para descobrir *quais* pares diferem, assim como o Tukey faz depois da ANOVA.
+
+## Associação entre categóricas: o qui-quadrado
+
+Até aqui comparamos uma variável **numérica** entre grupos. Mas e quando as **duas** variáveis são **categóricas**? Voltemos à tabela de contingência que construímos na Unidade II, cruzando o **sexo** e a **estação** dos caranguejos de Bragança. Lá, apenas a descrevemos. Agora temos a ferramenta para testá-la.
+
+O **teste do qui-quadrado de independência** pergunta: *as duas variáveis são independentes, ou existe associação entre elas?* A lógica é comparar as frequências que **observamos** com as que **esperaríamos** se não houvesse associação nenhuma. Se a distância entre observado e esperado for grande demais para o acaso explicar, rejeitamos a independência.
+
+```{r}
+#| label: tbl-contingencia-teste
+#| tbl-cap: "Frequências observadas de caranguejos por sexo e estação — a mesma tabela da Unidade II, agora levada ao teste."
+tab <- table(biometria_caranguejos$Sexo, biometria_caranguejos$Estacao)
+
+tab_df <- as.data.frame.matrix(tab)
+tab_df <- cbind(Sexo = rownames(tab_df), tab_df, Total = rowSums(tab_df))
+rownames(tab_df) <- NULL
+flextable_ocean(tab_df)
+```
+
+```{r}
+#| label: qui-quadrado
+chisq.test(tab)
+```
+
+A interpretação fecha o ciclo: um *p*-valor **acima** de 0,05 indica que sexo e estação são **independentes** — a proporção de machos e fêmeas não muda de uma estação para a outra. Um *p*-valor **abaixo** de 0,05 indicaria o contrário: há **associação**, e a composição por sexo depende da estação. Foi exatamente para responder a essa pergunta que, lá atrás, valeu a pena descrever a tabela com cuidado.
+
+::: {.callout-warning icon=false}
+## Um cuidado com o qui-quadrado
+
+O teste assume que as **frequências esperadas** não são pequenas demais (a regra usual pede ao menos 5 em cada célula). Com células muito pequenas, prefira o **teste exato de Fisher** (`fisher.test()`). Vale sempre inspecionar `chisq.test(tab)$expected` antes de confiar no resultado.
+:::
+
+::: {.callout-tip .destaque icon=false}
+## Resumo do capítulo
+
+Quando a normalidade falha, os testes não-paramétricos salvam a análise trocando valores por **postos**. Para dois grupos independentes, **Mann-Whitney** substitui o teste *t*; para três ou mais, **Kruskal-Wallis** substitui a ANOVA. E quando as duas variáveis são categóricas, o **qui-quadrado de independência** decide se há associação — comparando o que observamos com o que esperaríamos sob independência. Pagamos um pouco de poder em troca de robustez; é um bom negócio quando os pressupostos paramétricos não se sustentam.
+:::
+
+::: {.callout-note icon=false}
+## Para praticar
+
+1. Compare `CC` entre sexos com `wilcox.test()`. O resultado concorda com o de `LC`?
+2. Rode o Kruskal-Wallis da CPUE e, em seguida, inspecione visualmente quais aparelhos parecem diferir. Como você testaria isso formalmente?
+3. Construa a tabela de contingência de `Local` por `Estacao` e aplique o qui-quadrado. Há associação entre onde e quando os caranguejos foram capturados?
+:::

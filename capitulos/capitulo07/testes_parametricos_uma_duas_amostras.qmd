@@ -1,4 +1,111 @@
 ---
-title: "Testes estatísticos paramétricos para uma e duas amostras"
-format: html
+title: "Testes Paramétricos para Uma e Duas Amostras"
+subtitle: "Ou: a ração da propaganda faz mesmo a Artemia crescer mais?"
+lang: pt-BR
+execute:
+  warning: false
+  message: false
 ---
+
+```{r setup}
+#| include: false
+library(EAPADados)
+library(ggplot2)
+library(dplyr)
+library(flextable)
+
+ocean <- c(NAVY = "#0F3B5F", TEAL = "#2E7D8F", SEAFOAM = "#62B6B7",
+           AMBER = "#E89B3C", CORAL = "#E76F51")
+theme_set(theme_minimal(base_size = 11))
+
+data(artemia)
+```
+
+::: {.callout-note .destaque icon=false}
+## Já passou por isso?
+
+Uma fábrica de ração anuncia, em letras garrafais, que a sua ração de farelo de arroz faz a *Artemia* crescer mais rápido que a concorrente, de farelo de babaçu. Soa convincente — mas é propaganda. Será que a diferença existe de verdade, ou é só conversa de marketing em cima do acaso de algumas medições? Há um jeito honesto de decidir: montar o experimento e aplicar um **teste *t***.
+:::
+
+Quando queremos comparar a **média** de uma variável numérica entre **dois grupos**, a ferramenta clássica é o **teste *t***. Ele responde a uma pergunta direta: a diferença que vejo entre as médias amostrais é grande o bastante para não ser obra do acaso? Como assume que os dados são aproximadamente **normais**, ele faz parte da família dos testes **paramétricos** — os de maior poder, quando seus pressupostos se sustentam (quando não, recorremos aos não-paramétricos da Unidade IV).
+
+## O experimento: duas rações para a *Artemia*
+
+Para testar a alegação da fábrica, montamos um experimento **em laboratório**, onde quase tudo pode ser controlado. A *Artemia salina* (um microcrustáceo usado como alimento vivo na aquicultura) é cultivada em pequenos aquários idênticos. Cada aquário recebe **uma** das duas rações — A (farelo de arroz) ou B (farelo de babaçu) — e, ao final, medimos a **taxa de crescimento** (em mg/dia).
+
+O desenho é um **Delineamento Inteiramente Casualizado (DIC)** com dois tratamentos e **7 réplicas por tratamento**: 14 pequenos aquários, sorteados ao acaso entre as duas rações (@fig-experimento-artemia). Cada aquário é uma **unidade experimental independente** — sete medidas por ração, sem pseudo-replicação.
+
+
+![Desenho do experimento de comparação de duas rações para a *Artemia* em delineamento inteiramente casualizado (DIC): 7 pequenos aquários por tratamento (A — farelo de arroz; B — farelo de babaçu), alimentados por uma mesma bomba de ar e mantidos sob condições idênticas (250 mL, salinidade 35 g/L, aeração contínua, 25 ± 1 °C e densidade inicial igual de *Artemia*). Cada aquário é uma réplica independente.](../../images/artemia-experimentos.png){#fig-experimento-artemia width=100%}
+
+```{r}
+#| label: estrutura
+glimpse(artemia)
+```
+
+Antes de qualquer teste, **veja** os dados. Um boxplot já mostra se as nuvens estão deslocadas.
+
+```{r}
+#| label: fig-box
+#| fig-cap: "Taxa de crescimento da Artemia por ração. A ração A parece puxar as medidas para cima."
+ggplot(artemia, aes(x = racao, y = taxa_crescimento_mg_dia, fill = racao)) +
+  geom_boxplot(alpha = 0.85) +
+  geom_jitter(width = 0.08, alpha = 0.6) +
+  scale_fill_manual(values = unname(ocean[c("TEAL", "AMBER")])) +
+  labs(x = "Ração", y = "Taxa de crescimento (mg/dia)") +
+  theme(legend.position = "none")
+```
+
+## Conferindo os pressupostos
+
+O teste *t* pede duas coisas: **normalidade** dentro de cada grupo e, na sua versão clássica, **variâncias parecidas** entre os grupos. Com amostras pequenas, checamos a normalidade com o teste de Shapiro-Wilk e a igualdade de variâncias com o teste *F*.
+
+```{r}
+#| label: pressupostos
+# normalidade dentro de cada ração
+tapply(artemia$taxa_crescimento_mg_dia, artemia$racao, function(x) shapiro.test(x)$p.value)
+
+# igualdade de variâncias entre as rações
+var.test(taxa_crescimento_mg_dia ~ racao, data = artemia)$p.value
+```
+
+Os dois *p*-valores ficam acima de 0,05: não há evidência contra a normalidade nem contra a igualdade de variâncias. Caminho livre para o teste *t* clássico (de variâncias iguais). Quando a igualdade de variâncias é duvidosa, a escolha segura é o **teste *t* de Welch**, que o R usa por padrão.
+
+## O teste *t*
+
+```{r}
+#| label: teste-t
+t.test(taxa_crescimento_mg_dia ~ racao, data = artemia, var.equal = TRUE)
+```
+
+E aqui está a ponte **do mouse ao código**: a mesma análise sai pronta, em tabela e em frase, com as funções canônicas do ecossistema EAPA — exatamente as que a IDE CatalyseR usa para gerar o relatório `.docx`.
+
+```{r}
+#| label: tbl-teste-t
+#| tbl-cap: "Resultado do teste t para a taxa de crescimento da Artemia entre as duas rações."
+mostrar_teste_t_ind(taxa_crescimento_mg_dia ~ racao,
+                    data = artemia, equal_var = TRUE) |>
+  flextable_ocean()
+```
+
+> `r relatar_teste_t_ind(taxa_crescimento_mg_dia ~ racao, data = artemia, equal_var = TRUE, label_y = "a taxa de crescimento (mg/dia)", label_x = "o tipo de ração")`
+
+## Da significância à decisão
+
+O *p*-valor de cerca de **0,014** fica abaixo de 0,05: rejeitamos a hipótese de médias iguais. A ração A (farelo de arroz) produziu uma taxa de crescimento média de **4,09 mg/dia** contra **3,47 mg/dia** da ração B — uma diferença que dificilmente é fruto do acaso. E não é só "significativa": o ***d* de Cohen** de cerca de **1,5** indica um efeito **grande**, de real relevância prática.
+
+Vale uma observação fina. A propaganda faz uma afirmação **direcional** — A é *melhor* que B —, o que justificaria um teste **unilateral** (`alternative = "greater"`), cujo *p*-valor (≈ 0,007) é a metade do bilateral. A regra de ouro é decidir o lado **antes** de ver os dados; como a alegação já vinha da fábrica, o teste unilateral é defensável aqui. De todo modo, bilateral ou unilateral, a conclusão é a mesma: há evidência de que o farelo de arroz acelera o crescimento da *Artemia*.
+
+::: {.callout-tip .destaque icon=false}
+## Resumo do capítulo
+
+O teste *t* compara as **médias** de dois grupos e pergunta se a diferença escapa ao acaso. É **paramétrico**: pede **normalidade** (Shapiro-Wilk) e, na versão clássica, **variâncias iguais** (teste *F*); na dúvida, use o *t* de **Welch**. No experimento da *Artemia* — um DIC com 7 aquários por ração —, a ração de farelo de arroz superou a de babaçu (*t* ≈ 2,9, *p* ≈ 0,014), com **efeito grande** (*d* de Cohen ≈ 1,5). Sempre acompanhe o *p*-valor do **tamanho do efeito**: significância diz que *existe* diferença; o *d* diz se ela **importa**.
+:::
+
+::: {.callout-note icon=false}
+## Para praticar
+
+1. Refaça o teste com `var.equal = FALSE` (Welch). O *t*, os graus de liberdade e o *p*-valor mudam muito?
+2. Rode a versão unilateral com `alternative = "greater"` (lembrando que o R compara o primeiro nível do fator). O que muda na conclusão?
+3. Construa o intervalo de confiança de 99% para a diferença de médias (`conf.level = 0.99`). Ele ainda exclui o zero?
+:::
