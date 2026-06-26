@@ -16,27 +16,25 @@ book:
         - capitulos/capitulo03/organizacao_projetos_leitura_dados.qmd
     - part: "Unidade II · Conhecer os dados"
       chapters:
-        - capitulos/capitulo05/analise_exploratoria_statistica_descritiva.qmd
-    - part: "Unidade III · Planejar a coleta"
-      chapters:
-        - capitulos/capitulo06/planejamento_amostral_delineamentos_experimentos.qmd
-        - capitulos/capitulo06/planejamento_experimental_delineamentos.qmd
-    - part: "Unidade IV · Comparar grupos — inferência"
+        - capitulos/capitulo04/analise_exploratoria_statistica_descritiva.qmd
+    # Unidade "Planejar a coleta" está em capitulos/_stage/capitulo06 (fora do build).
+    # Para reativar, mova os .qmd de volta para capitulos/ e recoloque o part aqui.
+    - part: "Unidade III · Comparar grupos — inferência"
       chapters:
         - capitulos/capitulo07/testes_parametricos_uma_duas_amostras.qmd
         - capitulos/capitulo08/nao-parametricos_uma_duas_amostras.qmd
-        - capitulos/capitulo11/anova_estudos_observacionais_experimentais.qmd
-    - part: "Unidade V · Relações entre variáveis"
+        - capitulos/capitulo09/anova_estudos_observacionais_experimentais.qmd
+    - part: "Unidade IV · Relações entre variáveis"
       chapters:
         - capitulos/capitulo10/analise_correlacao_associacao_variaveis.qmd
-        - capitulos/capitulo09/regressao_linear_simples_multipla.qmd
-        - capitulos/capitulo13/analise_regressao_nao_linear.qmd
-        - capitulos/capitulo17/analise_multivariada_dados.qmd
-    - part: "Unidade VI · Visualização e comunicação de dados"
+        - capitulos/capitulo11/regressao_linear_simples_multipla.qmd
+        - capitulos/capitulo12/analise_regressao_nao_linear.qmd
+        - capitulos/capitulo13/analise_multivariada_dados.qmd
+    - part: "Unidade V · Visualização e comunicação de dados"
       chapters:
-        - capitulos/capitulo22/criacao_graficos_visualizacao.qmd
-        - capitulos/capitulo18/criacao_mapas_em_R.qmd
-        - capitulos/capitulo21/relatorios_comunicacao_dados_usando_quarto.qmd
+        - capitulos/capitulo14/criacao_graficos_visualizacao.qmd
+        - capitulos/capitulo15/criacao_mapas_em_R.qmd
+        - capitulos/capitulo16/relatorios_comunicacao_dados_usando_quarto.qmd
     - summary.qmd
     - references.qmd
 
