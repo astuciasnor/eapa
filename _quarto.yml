@@ -14,11 +14,14 @@ book:
         - capitulos/capitulo01/intro.qmd
         - capitulos/capitulo02/criacao_ambiente_computacional.qmd
         - capitulos/capitulo03/organizacao_projetos_leitura_dados.qmd
-    - part: "Unidade II · Conhecer os dados"
+    # Unidade II · "Antes da análise": tudo o que precede o primeiro teste —
+    # planejar a coleta e, com os dados em mãos, conhecê-los na exploração
+    # inicial, já preparando as análises que virão.
+    - part: "Unidade II · Antes da análise — planejar a pesquisa e conhecer os dados"
       chapters:
+        - capitulos/capitulo06/planejando_sua_pesquisa.qmd
+        - capitulos/capitulo05/preparando_os_dados.qmd
         - capitulos/capitulo04/analise_exploratoria_statistica_descritiva.qmd
-    # Unidade "Planejar a coleta" está em capitulos/_stage/capitulo06 (fora do build).
-    # Para reativar, mova os .qmd de volta para capitulos/ e recoloque o part aqui.
     - part: "Unidade III · Comparar grupos — inferência"
       chapters:
         - capitulos/capitulo07/testes_parametricos_uma_duas_amostras.qmd
@@ -36,10 +39,10 @@ book:
         - capitulos/capitulo15/criacao_mapas_em_R.qmd
         - capitulos/capitulo16/relatorios_comunicacao_dados_usando_quarto.qmd
     - summary.qmd
-    - references.qmd
 
 bibliography: references.bib
-csl: abnt.csl
+csl: apa.csl
+reference-section-title: "Referências Bibliográficas"
 
 format:
   html:

@@ -1,6 +1,6 @@
 ---
-title: "Análise Exploratória e Estatística Descritiva"
-subtitle: "Ou: antes de testar qualquer coisa, conheça quem são os seus dados"
+title: "Análise Exploratória de Dados"
+subtitle: "Ou: conhecer os dados já é preparar as análises que vêm depois"
 lang: pt-BR
 execute:
   warning: false
@@ -30,7 +30,9 @@ Você recebe uma planilha com quase mil caranguejos medidos no mangue de Bragan�
 
 Estatística começa com curiosidade, não com fórmula. Antes de comparar médias ou ajustar modelos, a gente **olha** os dados: quantas observações há, que variáveis foram medidas, como elas se distribuem, se há buracos (valores ausentes) ou números que destoam. Essa etapa tem nome — **análise exploratória de dados** — e ela existe para uma coisa muito prática: descobrir o que os dados *permitem* perguntar. É aqui que a **estatística descritiva** entra, resumindo um monte de números em poucas medidas que cabem na cabeça.
 
-Mais do que descrever, este capítulo ensina a **reconhecer o tipo de cada variável**. Esse conhecimento é o que vai, lá na frente, dizer qual análise é possível, quais pressupostos ela exige e até como os dados deveriam ter sido coletados. Guarde essa ideia: **o tipo da variável é a bússola que aponta o teste**. Voltaremos a ela na Unidade III, quando falarmos de planejamento.
+Mais do que descrever, este capítulo ensina a **reconhecer o tipo de cada variável**. Esse conhecimento é o que vai, lá na frente, dizer qual análise é possível, quais pressupostos ela exige e até como os dados deveriam ter sido coletados. Guarde essa ideia: **o tipo da variável é a bússola que aponta o teste**. Foi ela, aliás, que orientou o capítulo anterior: ao planejar a coleta, é o tipo pretendido de cada variável que já decide, desde o campo, quais análises serão possíveis.
+
+E é aqui que esta etapa faz jus ao nome da unidade: explorar não é enrolação antes do "trabalho de verdade" — é onde você **prepara**, uma a uma, as análises que virão. Cada resumo e cada gráfico daqui já é o rascunho de um teste adiante: o boxplot que insinua um teste *t*, a nuvem de pontos que pede uma regressão, a tabela cruzada que chama um qui-quadrado. Na CatalyseR, esse preparo tem um lugar próprio — você seleciona as variáveis, filtra o que interessa e declara o tipo de cada coluna antes de rodar qualquer análise. E há uma recompensa concreta da disciplina *tidy* que vimos ao planejar a coleta: uma planilha de Excel bem-arrumada — cada linha uma observação, cada coluna uma variável — chega **pronta** a esse painel, sem retrabalho; anotada de qualquer jeito, obriga a limpar tudo antes de começar.
 
 ## Os dados: caranguejos do mangue de Bragança
 
@@ -115,7 +117,7 @@ ggplot(caranguejos, aes(x = Sexo, y = LC, fill = Sexo)) +
   theme(legend.position = "none")
 ```
 
-Por fim, cruze duas numéricas. O **diagrama de dispersão** entre largura e comprimento revela se uma cresce junto com a outra: uma nuvem que sobe em linha é o convite para **correlação e regressão** — assunto da Unidade V. Colorir por sexo ainda insinua se a relação muda entre grupos.
+Por fim, cruze duas numéricas. O **diagrama de dispersão** entre largura e comprimento revela se uma cresce junto com a outra: uma nuvem que sobe em linha é o convite para **correlação e regressão** — assunto da Unidade IV. Colorir por sexo ainda insinua se a relação muda entre grupos.
 
 ```{r}
 #| label: fig-disp
@@ -167,4 +169,20 @@ Antes de testar, conheça os dados. Toda variável pertence a uma família — *
 1. Troque `LC` por `CC` nos resumos e gráficos. A forma da distribuição muda? E a conclusão sobre simetria?
 2. Construa a tabela de contingência de `Local` por `Estacao`. Qual combinação concentra mais capturas?
 3. Classifique cada variável de `biometria_caranguejos` como nominal, ordinal, discreta ou contínua — e, para cada uma, anote que tipo de análise ela tornaria possível.
+:::
+
+::: {.callout-note .destaque icon=false}
+## Checklist: pronto para escolher o teste?
+
+Fechamos aqui a unidade **Antes da análise**. Antes de virar a página para o primeiro teste, faça as pazes com estas sete perguntas — se você responde "sim" a todas, dificilmente vai errar o teste por descuido com o básico:
+
+1. Minha **pergunta** de pesquisa está clara?
+2. Sei qual é a **variável resposta** — aquilo que quero explicar ou comparar?
+3. Sei o **tipo** de cada variável envolvida, numérica ou categórica?
+4. Sei se o meu estudo é **observacional** ou **experimental**?
+5. A **unidade amostral** (ou experimental) está bem definida — e não confundi réplica com subamostra?
+6. Já **descrevi e visualizei** os dados antes de qualquer teste?
+7. O **desenho** da pesquisa combina com o teste que pretendo usar?
+
+Cada "sim" daqui foi construído nesta unidade: os quatro primeiros no planejamento, os três últimos na exploração. Com eles no bolso, os próximos capítulos — teste *t*, ANOVA, qui-quadrado, correlação, regressão — deixam de ser um cardápio confuso e passam a ser a consequência natural de um bom plano.
 :::

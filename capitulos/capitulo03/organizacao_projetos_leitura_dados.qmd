@@ -63,6 +63,8 @@ A receita que resolve quase tudo se chama **dados *tidy*** (dados "arrumados"), 
 
 Repare que, no formato *tidy*, o que antes estava na cor ou no título virou **coluna**: o local de coleta deixou de ser um cabeçalho amarelo e passou a ser a variável `local`; a data, que estava só no título, virou a coluna `data`. Nada se perde: tudo vira dado. E uma planilha *tidy* não é só mais limpa: é a forma que o `ggplot2`, o `dplyr` e as funções da CatalyseR **esperam** receber. Organizar na entrada economiza horas de remendo depois.
 
+Nem sempre, porém, dá para organizar na origem — muitos dados chegam prontos, em formato **largo** (uma coluna por ano, por exemplo) ou com informação espremida dentro de uma célula. Quando for esse o caso, o passo de **reformatar** a tabela para *tidy* — empilhar, alargar, separar — tem capítulo próprio: o Capítulo 5, já na Unidade II.
+
 ## Do bruto ao limpo
 
 Com a estrutura no lugar e os caminhos resolvidos, o fluxo de trabalho fica natural: **ler** o dado bruto, **limpar**, e **gravar** a versão tratada. Tudo apontando para as pastas certas.

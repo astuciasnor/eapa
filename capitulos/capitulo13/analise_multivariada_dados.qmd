@@ -1,4 +1,182 @@
 ---
 title: "Análise Multivariada de Dados"
-format: html
+subtitle: "Componentes principais (PCA) e agrupamento hierárquico — enxergar o padrão em muitas variáveis de uma vez"
+lang: pt-BR
+execute:
+  warning: false
+  message: false
 ---
+
+```{r setup}
+#| include: false
+library(EAPADados)   # dados do ecossistema EAPA
+library(ggplot2)
+library(flextable)
+library(FactoMineR)  # PCA() — instale com install.packages("FactoMineR")
+library(factoextra)  # fviz_* (gráficos) — install.packages("factoextra")
+
+# Paleta da identidade visual Ocean Gradient
+ocean <- c("#0F3B5F", "#2E7D8F", "#62B6B7", "#E89B3C", "#E76F51")
+grupo_cores <- ocean[c(2, 4, 5)]   # uma cor por unidade geológica
+
+data(brine_carbonatos)
+
+# Só as colunas numéricas (os seis íons), rotuladas pela amostra
+ions <- brine_carbonatos[, c("HCO3", "SO4", "Cl", "Ca", "Mg", "Na")]
+rownames(ions) <- brine_carbonatos$amostra
+grupo <- brine_carbonatos$grupo
+```
+
+<!-- TODO (figura de abertura): infográfico Ocean "muitas variáveis -> poucos eixos / grupos". -->
+
+::: {.callout-note .destaque icon=false}
+## Já passou por isso?
+
+No capítulo anterior você viu que os íons das salmouras se correlacionam de formas diferentes — alguns sobem juntos, outros se opõem. Mas correlação é coisa de **par a par**. E quando você quer enxergar o padrão de **todas as seis variáveis ao mesmo tempo**, e ainda descobrir quais amostras se parecem entre si? Olhar seis colunas de números não resolve. Precisamos condensar e agrupar.
+:::
+
+Quando há muitas variáveis numéricas correlacionadas, duas perguntas se impõem. A primeira: dá para **resumir** essas seis colunas em dois ou três "eixos" que guardem quase toda a informação? É a **Análise de Componentes Principais (PCA)**. A segunda: dá para **agrupar** as amostras parecidas em famílias? É a **Análise de Agrupamento Hierárquico (AAH/HCA)**, que termina num **dendrograma**. As duas são análises do menu da CatalyseR (módulos PCA e HCA) — aqui o livro as reproduz com os pacotes **FactoMineR** [@le2008] e **factoextra** [@kassambara2017], que entregam gráficos bonitos e didáticos.
+
+## Os dados: a química das salmouras (de novo)
+
+Retomamos o `brine_carbonatos` [@davis2002]: 19 amostras de salmouras de **três** unidades carbonáticas (Ellenburger Dolomite, Grayburg Dolomite e Viola Limestone), descritas por seis íons em ppm. É o mesmo conjunto da correlação — e a documentação do dado o aproxima de algo bem familiar à aquicultura: **monitoramento de qualidade de água**, onde também medimos vários íons por ponto de coleta.
+
+Há um detalhe que decide tudo na PCA: os íons estão em **escalas muito diferentes**.
+
+```{r}
+#| label: escalas
+round(sapply(ions, sd), 1)   # desvios-padrão por íon
+```
+
+O cloreto e o sódio variam em centenas; o sulfato, em poucas unidades. Se rodássemos a PCA sobre os números crus, ela enxergaria quase só o Cl e o Na — os de maior magnitude. Por isso vamos **padronizar** (cada variável com média 0 e desvio 1), o que equivale a rodar a PCA sobre a **matriz de correlação**.
+
+## Parte 1 — Componentes Principais (PCA)
+
+### Por dentro da conta
+
+Imagine a nuvem de 19 amostras flutuando num espaço de seis dimensões — uma por íon. Impossível de visualizar. A PCA procura o **melhor ângulo de fotografia** dessa nuvem: a direção em que os pontos mais se espalham vira o **primeiro componente** (PC1); a melhor direção perpendicular a ela, o **segundo** (PC2); e assim por diante. Cada componente é uma combinação das variáveis originais, e a cada um corresponde um **autovalor** — quanto da variação total ele captura.
+
+Em geral bastam os primeiros componentes para resumir quase tudo. Para decidir quantos manter, usamos dois critérios clássicos: o **critério de Kaiser** (ficar com componentes de autovalor maior que 1, sobre dados padronizados) e a **proporção acumulada** de variância explicada.
+
+### A PCA no R, com FactoMineR
+
+```{r}
+#| label: pca
+res.pca <- PCA(ions, scale.unit = TRUE, graph = FALSE)
+```
+
+O `scale.unit = TRUE` é a padronização de que falamos — a **mesma** escolha que o módulo PCA da CatalyseR oferece (a caixinha "Padronizar variáveis"), e que ela usa para montar o relatório `.docx`. Uma definição, vários consumidores.
+
+```{r}
+#| label: tbl-eigen
+#| tbl-cap: "Autovalores e variância explicada por componente. Pelo critério de Kaiser, ficamos com os componentes de autovalor > 1."
+eig <- get_eigenvalue(res.pca)
+tab <- data.frame(
+  Componente = rownames(eig),
+  Autovalor  = round(eig[, "eigenvalue"], 3),
+  "Variância (%)" = round(eig[, "variance.percent"], 1),
+  "Acumulada (%)" = round(eig[, "cumulative.variance.percent"], 1),
+  check.names = FALSE, row.names = NULL
+)
+flextable_ocean(tab)
+```
+
+```{r}
+#| label: fig-scree
+#| fig-cap: "Scree plot: a variância explicada cai rápido após os primeiros componentes — sinal de que poucos eixos resumem bem os dados."
+#| fig-width: 6
+#| fig-height: 4
+fviz_eig(res.pca, addlabels = TRUE,
+         barfill = ocean[3], barcolor = ocean[2],
+         linecolor = ocean[5]) +
+  labs(title = NULL, x = "Componente principal", y = "Variância explicada (%)") +
+  theme_minimal()
+```
+
+### O que cada componente significa: o círculo de correlações
+
+As **cargas** dizem o quanto cada íon "puxa" cada componente. O círculo de correlações mostra isso de um golpe: setas no mesmo sentido indicam variáveis que andam juntas; setas opostas, variáveis que se contrapõem; setas longas (perto da borda) são as bem representadas pelos dois primeiros eixos.
+
+```{r}
+#| label: fig-var
+#| fig-cap: "Círculo de correlações. A cor (cos²) indica a qualidade de representação de cada íon no plano PC1–PC2."
+#| fig-width: 5.5
+#| fig-height: 5.5
+fviz_pca_var(res.pca, col.var = "cos2", repel = TRUE,
+             gradient.cols = c(ocean[3], ocean[4], ocean[5])) +
+  labs(title = NULL) +
+  theme_minimal()
+```
+
+### O biplot: amostras e variáveis no mesmo gráfico
+
+O **biplot** é o retrato-síntese da PCA: põe as **amostras** (pontos) e as **variáveis** (setas) no mesmo plano. Pontos próximos são amostras parecidas; uma amostra puxada na direção de uma seta tem valor alto naquele íon. Colorimos por unidade geológica para ver se a química separa as rochas.
+
+```{r}
+#| label: fig-biplot
+#| fig-cap: "Biplot da PCA (PC1 × PC2). Pontos = amostras (por unidade); setas = íons. Os envoltórios agrupam cada unidade geológica."
+#| fig-width: 6.5
+#| fig-height: 5
+fviz_pca_biplot(res.pca,
+                geom.ind = "point", pointshape = 21, pointsize = 2.8,
+                fill.ind = grupo, col.ind = "grey30",
+                addEllipses = TRUE, ellipse.type = "convex",
+                palette = grupo_cores,
+                col.var = ocean[1], label = "var", repel = TRUE,
+                legend.title = "Unidade") +
+  labs(title = NULL) +
+  theme_minimal()
+```
+
+Repare como os dois primeiros componentes já contam boa parte da história: as unidades ocupam regiões distintas do plano, e as setas mostram **quais** íons puxam cada grupo. É a "fotografia" de seis dimensões reduzida a uma folha de papel.
+
+## Parte 2 — Agrupamento Hierárquico (dendrograma)
+
+A PCA resume as variáveis; a **AAH** organiza as **amostras**. A ideia é começar com cada amostra sozinha e ir juntando, passo a passo, as mais parecidas, até formar uma única família — registrando a história num **dendrograma** (uma árvore). Onde cortamos a árvore define quantos grupos teremos.
+
+Medimos a "parecença" pela **distância euclidiana** sobre os dados **padronizados** (a mesma padronização da PCA), e juntamos os grupos pelo método de **Ward**, que tende a formar grupos compactos.
+
+```{r}
+#| label: hca
+d  <- dist(scale(ions))               # distâncias sobre dados padronizados
+hc <- hclust(d, method = "ward.D2")   # agrupamento de Ward
+```
+
+```{r}
+#| label: fig-dendrograma
+#| fig-cap: "Dendrograma das salmouras (distância euclidiana, ligação de Ward). O corte em três grupos é destacado pelos retângulos."
+#| fig-width: 7
+#| fig-height: 5
+fviz_dend(hc, k = 3, cex = 0.7,
+          k_colors = grupo_cores,
+          color_labels_by_k = TRUE,
+          rect = TRUE, rect_fill = TRUE, rect_border = grupo_cores,
+          main = NULL, ylab = "Distância (Ward)")
+```
+
+O dendrograma sugere três famílias naturais. Será que elas correspondem às três unidades geológicas? A tabela cruza o grupo do corte com a unidade real:
+
+```{r}
+#| label: tbl-clusters
+#| tbl-cap: "Grupos do dendrograma (corte em k = 3) versus a unidade geológica real de cada amostra."
+clusters <- cutree(hc, k = 3)
+cl <- table(Grupo = clusters, Unidade = grupo)
+cl_df <- as.data.frame.matrix(cl)
+cl_df <- data.frame(Grupo = rownames(cl_df), cl_df, check.names = FALSE, row.names = NULL)
+flextable_ocean(cl_df)
+```
+
+Quando os grupos do dendrograma "casam" com as unidades, é um forte sinal de que a química da água carrega a assinatura da rocha de origem — o tipo de validação que a AAH oferece quando há um rótulo conhecido para conferir.
+
+## E daí? Da multivariada à decisão
+
+PCA e AAH não são truques de gráfico; são formas de **ver o que muitas variáveis dizem juntas**. Na geoquímica, separam águas por origem. Na aquicultura, o mesmo ferramental ataca dados de **qualidade de água** (oxigênio, pH, amônia, íons): a PCA aponta quais variáveis comandam a variação entre tanques, e a AAH agrupa pontos de coleta com perfis parecidos — útil para monitorar, comparar e decidir onde intervir. O número condensa; a interpretação, guiada pelo conhecimento do sistema, é que vira manejo.
+
+> **Resumo do capítulo.** (1) Com muitas variáveis correlacionadas, **padronize** e use a **PCA** para resumir em poucos componentes (critério de Kaiser, variância acumulada). (2) Leia o **círculo de correlações** (o que cada eixo significa) e o **biplot** (amostras + variáveis juntas). (3) Use a **AAH** e o **dendrograma** para agrupar amostras parecidas; valide os grupos contra um rótulo conhecido quando houver. (4) PCA e AAH são canônicas na CatalyseR (módulos PCA e HCA) — aqui visualizadas com FactoMineR e factoextra [@kassambara2017].
+
+## Para praticar
+
+1. Rode a PCA **sem padronizar** (`scale.unit = FALSE`) e compare o biplot com o padronizado. Quem domina os eixos agora?
+2. Corte o dendrograma em `k = 2` (`cutree(hc, k = 2)`) e refaça a tabela de grupos. Duas unidades se fundem — quais?
+3. Troque a ligação de Ward por `"complete"` em `hclust()` e veja se o dendrograma conta a mesma história.
+

@@ -1,5 +1,203 @@
 ---
 title: "Criação de Mapas em R"
-format: html
+subtitle: "Ou: do dado ao território — três mapas para ver melhor a pesca e a aquicultura"
+lang: pt-BR
+execute:
+  warning: false
+  message: false
 ---
 
+```{r setup}
+#| include: false
+library(EAPADados)
+library(ggplot2)
+library(dplyr)
+
+# Paleta da identidade visual Ocean Gradient
+ocean <- c(NAVY = "#0F3B5F", TEAL = "#2E7D8F", SEAFOAM = "#62B6B7",
+           AMBER = "#E89B3C", CORAL = "#E76F51")
+theme_set(theme_minimal(base_size = 11))
+
+data(aquicultura_br)
+data(estacoes_ictiofauna)
+```
+
+::: {.callout-note .destaque icon=false}
+## Já passou por isso?
+
+Você abre o anuário da piscicultura e encontra uma tabela com a produção de cada estado — vinte e sete linhas de números. Dá para ler, com paciência, que o Paraná lidera. Mas *onde*, no mapa do Brasil, está a força da aquicultura? A tabela não mostra que o Sul e o Norte puxam a produção enquanto boa parte do interior fica pálida. Um número vira território quando entra num **mapa** — e é aí que a pergunta "quem produz mais?" ganha, de relance, uma resposta geográfica.
+:::
+
+Mapa é gráfico, só que com **geografia** embaixo. Em vez de um eixo x e um eixo y, temos a forma real do território, e a posição e a cor de cada elemento contam uma história — quanto se produziu num estado, onde uma rede foi lançada, qual a captura em cada estação.
+
+## Por que mapas num livro de estatística?
+
+Um mapa **não substitui** a análise estatística — ele a prepara. Antes de comparar médias, ajustar uma regressão ou testar uma associação, vale saber **onde** os dados foram coletados, se há **concentração espacial**, se existem **vazios de amostragem** e se o **ambiente** pode explicar parte da variação. É a mesma lógica da unidade "Antes da análise": olhar os dados antes de testá-los, só que agora no espaço. Um bom mapa ajuda a **formular perguntas melhores**.
+
+Por isso o menu **Mapas** da CatalyseR — e este capítulo — não vira um curso de geoprocessamento. Ficamos com **três** tipos de mapa, e eles se organizam por **propósito**:
+
+|  | Mapa | Pergunta que responde |
+|:---|:---|:---|
+| **Analisar quantidades** | Coroplético | Onde a variável agregada por área é maior ou menor? |
+| **Analisar quantidades** | Bolhas proporcionais | Qual a magnitude (CPUE, biomassa) em cada local? |
+| **Apoiar a amostragem** | Pontos / estações | Onde a coleta aconteceu? A cobertura é boa? Há lacunas? |
+
+: Os três mapas da primeira edição e o que cada um responde. {#tbl-mapas tbl-colwidths="[24,26,50]"}
+
+Deixamos de fora, por ora, mapas de densidade, rasters ambientais e mapas interativos: úteis, mas fora do foco de um curso introdutório de estatística aplicada. A regra é simples — **mapa só entra se ajudar a ver melhor os dados, planejar melhor a coleta ou interpretar melhor uma pergunta**.
+
+## Dados espaciais: áreas e pontos
+
+Há duas naturezas de dado espacial neste capítulo. A primeira é o dado **agregado por área** — a produção de um *estado inteiro* —, que pinta polígonos (o coroplético). A segunda é o dado de **pontos** — cada linha tem uma **latitude** e uma **longitude** —, que marca lugares no mapa (estações e bolhas). Saber de qual tipo é o seu dado já decide qual mapa fazer.
+
+## Mapa 1 — Coroplético: a produção por estado
+
+### Os dados: a aquicultura brasileira
+
+Vamos trabalhar com o conjunto `aquicultura_br`, do pacote `EAPADados`. São dados públicos dos anuários da **Revista PEIXE BR**: para cada estado e ano (2016 a 2023), a produção da piscicultura em toneladas e a posição no ranking nacional.
+
+```{r}
+#| label: estrutura
+glimpse(aquicultura_br)
+```
+
+A coluna que abre as portas do mapa é a `uf` — a **sigla** do estado (PR, SP, PA…). Guarde essa ideia: para juntar dados a um mapa de áreas, precisamos de uma coluna que sirva de **chave** entre a tabela e a geometria. A sigla é essa chave.
+
+Antes de mapear, um gráfico de barras já responde à pergunta do começo — quem lidera em 2023:
+
+```{r}
+#| label: top10
+aqui23 <- aquicultura_br |>
+  filter(ano == 2023) |>
+  arrange(desc(producao_t))
+
+aqui23 |>
+  slice_max(producao_t, n = 10) |>
+  ggplot(aes(x = reorder(uf, producao_t), y = producao_t)) +
+  geom_col(fill = ocean["TEAL"]) +
+  coord_flip() +
+  labs(title = "Os dez maiores produtores (2023)",
+       x = "Estado (UF)", y = "Produção (t)")
+```
+
+O gráfico ordena, mas não **localiza**. Paraná, São Paulo, Minas, Rondônia — onde eles estão? Para responder, precisamos da forma do Brasil.
+
+### Geometria, dados e junção
+
+Todo coroplético nasce de três peças: uma **geometria** (os contornos dos estados), uma **tabela de dados** (a produção) e uma **junção** que casa as duas por uma chave comum.
+
+A geometria vem do pacote **`geobr`**, mantido pelo IPEA. Ele baixa os limites oficiais do IBGE — sem você caçar *shapefiles* na mão — e entrega um objeto **`sf`** (*simple features*), que é um `data.frame` com uma coluna especial de geometria. O objeto traz a coluna `abbrev_state` com a sigla de cada estado: a chave da junção.
+
+```{r}
+#| label: coropleto-classes
+#| eval: false
+library(geobr)
+library(sf)
+
+# Geometria dos 27 estados (na 1ª vez precisa de internet; year é obrigatório)
+estados <- read_state(code_state = "all", year = 2020, showProgress = FALSE)
+
+# Junta a produção de 2023 pela sigla do estado
+juntos <- estados |>
+  inner_join(filter(aquicultura_br, ano == 2023), by = c("abbrev_state" = "uf"))
+
+# Faixas à mão: a última ("acima de 100.000") isola o outlier Paraná
+juntos$categoria <- cut(juntos$producao_t,
+                        breaks = c(0, 5000, 15000, 30000, 100000, Inf),
+                        include.lowest = TRUE,
+                        labels = c("até 5.000", "5.001 – 15.000", "15.001 – 30.000",
+                                   "30.001 – 100.000", "acima de 100.000"))
+
+ggplot(juntos) +
+  geom_sf(aes(fill = categoria), color = "white", linewidth = 0.2) +
+  scale_fill_brewer(palette = "GnBu") +
+  labs(title = "Produção da aquicultura por estado — 2023", fill = "Produção (t)") +
+  theme_void()
+```
+
+![Coroplético da produção aquícola por estado em 2023, em faixas — com o **Paraná** isolado na faixa mais alta (acima de 100.000 t), o que espalha melhor os demais nas faixas inferiores. Gerado por `images/gerar_mapa_cap15.R`. Fonte: Revista PEIXE BR; malha IBGE via `geobr`.](../../images/mapa_aquicultura_2023.png){#fig-mapa-aqui width=78%}
+
+Duas decisões dão o acabamento. A primeira é a **classe**: o olho compara faixas melhor do que tons quase idênticos, e o Paraná, sendo um **valor atípico**, achataria uma escala contínua — por isso reservamos uma faixa só para ele. A segunda são os **enfeites que não são enfeites**: a **barra de escala** e a **rosa-dos-ventos** (do pacote `ggspatial`), que todo mapa científico pede.
+
+## Mapa 2 — Pontos e estações: onde a coleta aconteceu
+
+Este é o mapa que **apoia a amostragem**. Ele não fala de quanto, e sim de **onde**: mostra cada estação de coleta no território, para você discutir cobertura espacial, lacunas de amostragem e se todos os ambientes foram contemplados — a conversa do planejamento amostral, antes de qualquer teste.
+
+Usamos o conjunto de exemplo `estacoes_ictiofauna` (do `EAPADados`), com estações na costa norte do Pará. Cada linha tem **latitude**, **longitude**, o **ambiente** e uma medida de captura:
+
+```{r}
+#| label: estrutura-estacoes
+glimpse(estacoes_ictiofauna)
+```
+
+Agora os pontos viram um objeto `sf` (com `st_as_sf()`, informando as colunas de coordenada e o sistema de referência, **CRS 4326** = graus de lat/lon), plotados sobre a base dos estados, recortada na região:
+
+```{r}
+#| label: mapa-pontos
+#| eval: false
+library(geobr); library(sf); library(ggplot2)
+
+# Pontos como sf e base recortada na área de estudo
+pts <- st_as_sf(estacoes_ictiofauna, coords = c("longitude", "latitude"), crs = 4326)
+estados <- st_transform(read_state(code_state = "all", year = 2020, showProgress = FALSE), 4326)
+bb <- st_bbox(pts)
+
+ggplot() +
+  geom_sf(data = estados, fill = "#EAF0F2", color = "grey75") +
+  geom_sf(data = pts, aes(color = ambiente, shape = ambiente), size = 3) +
+  ggrepel::geom_text_repel(data = pts, aes(label = id_estacao, geometry = geometry),
+                           stat = "sf_coordinates", size = 3) +
+  coord_sf(xlim = c(bb["xmin"], bb["xmax"]), ylim = c(bb["ymin"], bb["ymax"])) +
+  ggspatial::annotation_scale(location = "br") +
+  ggspatial::annotation_north_arrow(location = "tr",
+                                    style = ggspatial::north_arrow_fancy_orienteering()) +
+  scale_color_manual(values = unname(ocean)) +
+  labs(title = "Estações de coleta de ictiofauna — costa do Pará",
+       color = "Ambiente", shape = "Ambiente", x = "Longitude", y = "Latitude") +
+  theme_bw()
+```
+
+![Mapa de estações de coleta na costa do Pará, com rótulos (`ggrepel`), grade de coordenadas, escala e Norte, e um **mapa de localização** (inset) marcando a área de estudo no Brasil — o formato esperado numa figura de "Material e Métodos" de TCC ou artigo. Dados de exemplo; gerado por `images/gerar_mapa_cap15.R`.](../../images/mapa_estacoes_pontos.png){#fig-estacoes width=88%}
+
+Note os detalhes que transformam um punhado de pontos numa **figura de publicação**: **rótulos** que não se sobrepõem (o `ggrepel` afasta o texto e puxa uma linha), a **grade de coordenadas** em graus, a **cor e a forma** por ambiente (para o mapa continuar legível impresso em preto e branco) e o **inset** de localização. A CatalyseR liga tudo isso com caixas de seleção no menu **Mapas › Pontos / Estações**.
+
+## Mapa 3 — Bolhas proporcionais: a magnitude em cada local
+
+O mapa de pontos diz *onde*; o de **bolhas** diz *quanto*. É a extensão natural: cada estação vira um círculo cujo **tamanho** representa uma variável numérica — CPUE, biomassa, abundância. De relance, o leitor vê onde os valores são maiores e se a magnitude se concentra em alguma região.
+
+```{r}
+#| label: mapa-bolhas
+#| eval: false
+ggplot() +
+  geom_sf(data = estados, fill = "#EAF0F2", color = "grey75") +
+  geom_sf(data = pts, aes(size = cpue, color = ambiente), alpha = 0.85) +
+  scale_size_area(max_size = 11, name = "CPUE") +
+  coord_sf(xlim = c(bb["xmin"], bb["xmax"]), ylim = c(bb["ymin"], bb["ymax"])) +
+  scale_color_manual(values = unname(ocean), name = "Ambiente") +
+  labs(title = "CPUE por estação — costa do Pará", x = "Longitude", y = "Latitude") +
+  theme_minimal()
+```
+
+![Bolhas proporcionais: o tamanho de cada círculo é a CPUE da estação; a cor indica o ambiente. As maiores capturas aparecem na plataforma. Dados de exemplo; gerado por `images/gerar_mapa_cap15.R`.](../../images/mapa_estacoes_bolhas.png){#fig-bolhas width=88%}
+
+O detalhe técnico que importa é o `scale_size_area()`: ele faz a **área** da bolha — não o raio — ser proporcional ao valor, que é como o olho compara tamanhos com honestidade. Limite o tamanho máximo e, se houver bolhas demais se sobrepondo, o caminho é agregar por local ou voltar ao mapa de pontos.
+
+::: {.callout-tip icon=false}
+## Do mouse ao código
+
+Os três mapas vivem no menu **Mapas** da CatalyseR — *Coroplético*, *Pontos / Estações* e *Bolhas Proporcionais* —, feitos apontando e clicando: você carrega o conjunto, escolhe as colunas (a sigla do estado, ou a latitude/longitude, ou a variável da bolha), e a IDE desenha o mapa **e exporta o script R** que o reproduz. O mapa que você vê é o mesmo que o código escreve.
+:::
+
+::: {.callout-tip .destaque icon=false}
+## Resumo do capítulo
+
+Mapa é gráfico com geografia embaixo, e num livro de estatística ele serve para **ver melhor os dados antes de analisá-los**. Ficamos com três, por propósito. Para **analisar quantidades**: o **coroplético**, que pinta áreas conforme um valor (geometria do `geobr` + dados + **junção** por uma chave — a sigla `uf` ↔ `abbrev_state`), com **classes** que isolam *outliers*; e as **bolhas proporcionais**, cujo tamanho (via `scale_size_area()`) mede a magnitude em cada ponto. Para **apoiar a amostragem**: o mapa de **pontos e estações**, que mostra onde a coleta aconteceu, com rótulos, grade, escala, Norte e inset — pronto para um TCC ou artigo. Tudo estático, reprodutível e exportável, espelhando o menu **Mapas** da CatalyseR.
+:::
+
+::: {.callout-note icon=false}
+## Para praticar
+
+1. Refaça o coroplético para **2016** e compare com 2023: quais estados mudaram de faixa? (Dica: troque o `filter(ano == 2023)`.)
+2. No mapa de **estações**, colora os pontos por `campanha` em vez de `ambiente`. A cobertura muda entre a seca e a chuvosa?
+3. No mapa de **bolhas**, troque `cpue` por `abundancia` no `aes(size = ...)`. A leitura da magnitude muda? E se você **facetar** por `ano` (`facet_wrap(~ ano)`)?
+:::

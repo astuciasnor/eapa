@@ -232,8 +232,3 @@ Estatística é meio, não fim. @bhujel2011 faz uma ressalva importante: a raç�
 1. Refaça a ANOVA **sem** a ração C e veja se as conclusões sobre A, B e D mudam.
 2. O que aconteceria com a tabela de pressupostos se um valor de C fosse, digamos, 130 g (um *outlier*)? Teste e interprete.
 3. Troque o pós-teste de Tukey por comparações com `pairwise.t.test()` e compare as conclusões.
-
-## Referências {.unnumbered}
-
-::: {#refs}
-:::

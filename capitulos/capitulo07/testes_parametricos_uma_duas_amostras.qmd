@@ -73,20 +73,19 @@ Os dois *p*-valores ficam acima de 0,05: não há evidência contra a normalidad
 
 ## O teste *t*
 
+Rodamos o teste e apresentamos o resultado com `exibir_teste_t()`, do `EAPADados`: ela arruma a saída do `t.test()` num formato enxuto e em português (médias, diferença, intervalo num campo só, *t*, gl, *p*, método e hipótese alternativa, já traduzidos) e ainda deixa a tabela apresentável — com cara de console, mas organizada: fonte monoespaçada, centralizada, fundo verde acinzentado e sem linhas de grade. Por baixo, é o atalho de `arrumar_teste_t() |> flextable_cinza()` numa chamada só.
+
 ```{r}
 #| label: teste-t
-t.test(taxa_crescimento_mg_dia ~ racao, data = artemia, var.equal = TRUE)
+teste <- t.test(taxa_crescimento_mg_dia ~ racao, data = artemia, var.equal = TRUE)
+exibir_teste_t(teste)
 ```
 
-E aqui está a ponte **do mouse ao código**: a mesma análise sai pronta, em tabela e em frase, com as funções canônicas do ecossistema EAPA — exatamente as que a IDE CatalyseR usa para gerar o relatório `.docx`.
-
-```{r}
-#| label: tbl-teste-t
-#| tbl-cap: "Resultado do teste t para a taxa de crescimento da Artemia entre as duas rações."
-mostrar_teste_t_ind(taxa_crescimento_mg_dia ~ racao,
-                    data = artemia, equal_var = TRUE) |>
-  flextable_ocean()
+```{=typst}
+#v(0.8em)
 ```
+
+E aqui está a ponte **do mouse ao código**: a leitura em uma frase sai pronta com a função canônica `relatar_teste_t_ind()` — a mesma que a IDE CatalyseR usa para montar o relatório `.docx`, onde a tabela é renderizada no tema Ocean por `flextable_ocean()`.
 
 > `r relatar_teste_t_ind(taxa_crescimento_mg_dia ~ racao, data = artemia, equal_var = TRUE, label_y = "a taxa de crescimento (mg/dia)", label_x = "o tipo de ração")`
 

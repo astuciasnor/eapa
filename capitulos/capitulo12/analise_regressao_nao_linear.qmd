@@ -132,10 +132,235 @@ ggplot(cangulo_crescimento, aes(comprimento_cm, peso_g)) +
 
 Você pode estar pensando: se a linearização já dá uma reta, por que não parar nela? Porque os dois caminhos **minimizam coisas diferentes**. A regressão sobre os logaritmos minimiza o erro na escala *log* — tratando proporcionalmente igual um peixe de 40 g e um de 1500 g. O `nls` minimiza o erro na escala **original**, em gramas, dando mais peso aos peixes grandes. Para a relação peso-comprimento, a versão log-linear (com a correção de viés de Baskerville) é tradicional e perfeitamente válida; o `nls` é a abordagem direta quando você quer a curva que melhor prevê o peso em gramas. Conhecer as duas — e saber que podem diferir um pouco nos parâmetros — é o que separa quem aplica a fórmula de quem entende o que ela faz.
 
+```{r}
+#| label: setup-vonbert
+#| include: false
+data(walleye_erie)
+```
+
+## Do peso à idade: o crescimento de von Bertalanffy
+
+Até aqui perguntamos *quanto pesa* um peixe de determinado comprimento. Falta a outra metade da história: *quanto ele mede a cada idade*. E aqui o gráfico volta a encurvar — só que por um motivo diferente.
+
+Pense numa poupança que rende juros, mas da qual você saca um pouco mais a cada ano. No começo, o saldo dispara; depois, a retirada come quase todo o rendimento e o saldo quase para de crescer. O peixe faz algo parecido com a energia: quando jovem, investe quase tudo em ficar maior; quando adulto, divide essa energia com manutenção e reprodução, e o crescimento desacelera. O resultado é uma curva que sobe rápido, vai perdendo o fôlego e se aproxima de um teto. É exatamente isso que a função de crescimento de **von Bertalanffy** descreve:
+
+$$
+L_t = L_\infty \left(1 - e^{-K\,(t - t_0)}\right)
+$$
+
+em que $L_t$ é o comprimento esperado na idade $t$, $L_\infty$ é o **comprimento assintótico** (o tamanho médio máximo para o qual a espécie tende), $K$ é o **coeficiente de crescimento** e $t_0$ é a idade teórica em que o comprimento seria zero — um ajuste de posição da curva, não um fato biológico.
+
+Vale insistir num ponto que confunde muita gente: $K$ **não** é a "velocidade" do crescimento. Ele mede a **rapidez com que o peixe se aproxima de $L_\infty$**. Espécies com $K$ alto chegam logo perto do teto; com $K$ baixo, crescem devagar e por mais tempo. A FAO resume bem: a curva de comprimento por idade tem inclinação cada vez menor à medida que a idade avança, encostando numa assíntota superior.[^fao-vb] E há um motivo prático para tanto cuidado com esses três números: eles alimentam modelos de avaliação de estoques, como o rendimento por recruta de Beverton e Holt — errar o crescimento se propaga como erro na decisão de manejo.[^vb-stock]
+
+[^fao-vb]: FAO — *Fitting a von Bertalanffy growth model to length-at-age data*: <https://www.fao.org/4/v2648e/V2648E06.htm>.
+[^vb-stock]: A VBGF é base da equação de rendimento por recruta de Beverton–Holt; suposições sobre $L_\infty$ afetam fortemente as estimativas de manejo. Ver verbete *Von Bertalanffy function*, Wikipedia: <https://en.wikipedia.org/wiki/Von_Bertalanffy_function>.
+
+::: {.callout-tip .destaque icon=false}
+## Quando usar von Bertalanffy?
+
+Use quando a pergunta for *"como o comprimento muda com a idade (ou o tempo)?"* e os dados tiverem **idade e comprimento**. Ele brilha quando o crescimento é rápido no início, desacelera com a idade e tende a um tamanho máximo — e quando você quer **comparar** crescimento entre sexos, áreas, anos ou populações. Ele é menos indicado quando a curva é fortemente **sigmoide** (fases larvais, engordas curtas): aí modelos como Gompertz ou logístico costumam encaixar melhor. Nenhum modelo simples descreve todas as fases da vida de um peixe — e tudo bem.
+:::
+
+### Os dados: idade e comprimento do walleye
+
+Para ajustar a curva precisamos de uma coisa nem sempre trivial: a **idade** de cada peixe. Ela costuma vir de estruturas calcificadas — os **otólitos**, pequenas "pedras" de carbonato de cálcio no ouvido interno dos peixes ósseos. Eles crescem a vida toda e depositam camadas sazonais; contar esses anéis é como contar os anéis de uma árvore.[^otolito] Há ainda escamas, espinhos e raios de nadadeira, além de estudos de marcação e recaptura.
+
+[^otolito]: NOAA Fisheries — *Age and Growth*: os otólitos são a estrutura mais usada para idade de peixes ósseos, com anéis (annuli) anuais como os de uma árvore: <https://www.fisheries.noaa.gov/national/science-data/age-and-growth>. Sobre a microestrutura e incrementos diários, ver FAO: <https://www.fao.org/4/t0529e/T0529E09.htm>.
+
+O conjunto `walleye_erie`, do `EAPADados`, traz dados biológicos **reais** de walleye (*Sander vitreus*) do Lago Erie, com idade atribuída por otólitos, comprimento e peso — preparado a partir de `FSAdata::WalleyeErie2`. É um material e tanto: permite ajustar a curva de crescimento e, depois, reaproveitar a relação peso-comprimento que vimos com o cangulo.
+
+```{r}
+#| label: fig-vb-nuvem
+#| fig-cap: "Comprimento por idade no walleye do Lago Erie. A nuvem sobe rápido nas idades jovens e vai achatando — a assinatura de von Bertalanffy."
+peixes <- walleye_erie |>
+  dplyr::filter(!is.na(idade_anos), !is.na(comprimento_total_mm))
+
+ggplot(peixes, aes(idade_anos, comprimento_total_mm)) +
+  geom_point(alpha = 0.15, colour = ocean["TEAL"]) +
+  labs(x = "Idade (anos)", y = "Comprimento total (mm)")
+```
+
+### Ajustando a curva no R (e na CatalyseR)
+
+Como o modelo é **não linear nos parâmetros**, o ajuste é por mínimos quadrados não lineares, com `nls()` — a mesma família de função que a CatalyseR aciona quando você escolhe "crescimento de von Bertalanffy" no menu. O `nls()` precisa de **chutes iniciais**; valores razoáveis vêm da própria biologia: $L_\infty$ perto do maior comprimento observado, $K$ em torno de 0,3 por ano e $t_0$ próximo de zero.
+
+```{r}
+#| label: ajuste-vb
+ajuste_vb <- nls(
+  comprimento_total_mm ~ Linf * (1 - exp(-K * (idade_anos - t0))),
+  data  = peixes,
+  start = list(Linf = 650, K = 0.30, t0 = -0.5)
+)
+
+coef(ajuste_vb)
+```
+
+```{r}
+#| label: params-vb
+#| include: false
+cf   <- coef(ajuste_vb)
+Linf <- unname(cf["Linf"]); Kk <- unname(cf["K"]); t0 <- unname(cf["t0"])
+fmt  <- function(x, d = 2) formatC(x, format = "f", digits = d, decimal.mark = ",")
+```
+
+O ajuste estima um comprimento assintótico de cerca de `r fmt(Linf, 0)` mm e um $K$ de aproximadamente `r fmt(Kk, 2)` por ano. Em palavras: o walleye tende a um teto perto de `r fmt(Linf/10, 0)` cm e se aproxima dele a um ritmo moderado. A curva sobre os pontos conta a história melhor que qualquer tabela:
+
+```{r}
+#| label: fig-vb-curva
+#| fig-cap: "Curva de von Bertalanffy ajustada sobre os comprimentos por idade do walleye."
+idades <- data.frame(idade_anos = seq(min(peixes$idade_anos),
+                                      max(peixes$idade_anos), length.out = 200))
+idades$ajuste <- predict(ajuste_vb, newdata = idades)
+
+ggplot(peixes, aes(idade_anos, comprimento_total_mm)) +
+  geom_point(alpha = 0.12, colour = ocean["SEAFOAM"]) +
+  geom_line(data = idades, aes(idade_anos, ajuste),
+            colour = ocean["CORAL"], linewidth = 1.3) +
+  labs(x = "Idade (anos)", y = "Comprimento total (mm)")
+```
+
+### Como sair a campo: o esquema de coleta
+
+Antes do `nls`, vem o trabalho de obter os dados — e o **desenho** dessa coleta muda o que você pode concluir. Há dois caminhos típicos.
+
+![Da pergunta ao banco de dados: a anatomia de um estudo de crescimento, tomando a anchoveta-do-pacífico (*Engraulis ringens*) das águas centrais do Chile como exemplo real. O esquema percorre o objetivo do estudo, a origem dos dados (conjunto `AnchovetaChile`, do pacote `FSAdata`, com 207 peixes), a coleta e organização em formato *tidy* — leitura de idade, medição e uma linha por peixe —, as variáveis resultantes (idade em meses, comprimento total e coorte) e a aplicação analítica: ajustar a curva de von Bertalanffy ao comprimento por idade. Dados de @cubillos2001.](../../images/anchoveta.png){#fig-esquema-anchoveta width=100%}
+
+O **caminho amostral**, o mais comum em biologia pesqueira, observa uma população natural ou explorada — é o caminho que a @fig-esquema-anchoveta resume de ponta a ponta. Você amostra peixes em diferentes locais, meses ou artes de pesca; para cada um, registra comprimento, peso, sexo e maturidade, e estima a idade pelos otólitos. O fluxo é: *área de estudo → amostragem em locais/meses/artes → medições + leitura de idade → banco tidy (idade | comprimento | peso | sexo | local | ano) → ajuste de von Bertalanffy*. A força aqui é o realismo; o cuidado é com a **representatividade** — se você só pega peixe grande na rede, a curva mente sobre os jovens.
+
+O **caminho experimental** é para quando você controla o ambiente — em aquicultura, por exemplo, comparando rações, densidades ou temperaturas. Você parte de juvenis de tamanho parecido, distribui ao acaso entre as unidades, aplica os tratamentos e faz **biometrias periódicas**: *juvenis homogêneos → casualização nas unidades → tratamentos (ração A, B, C…) → biometria a cada 15–30 dias → banco (tanque | tempo | comprimento | peso | tratamento) → curva de crescimento ou modelo misto*. Aqui mora uma armadilha clássica: medir o mesmo tanque repetidas vezes **não** gera observações independentes. Quando a ração é aplicada ao tanque inteiro, é o **tanque** — não o peixe — que é a unidade experimental. O `tilapia_crescimento` do `EAPADados` ilustra justamente esse formato de peso por semana e tratamento.
+
+### von Bertalanffy ou modelo de potência?
+
+É comum confundir os dois, então vale fixar a diferença num quadro. O ponto-chave é que eles respondem a **perguntas distintas**: von Bertalanffy descreve o crescimento **no tempo**; o modelo de potência descreve a relação **peso-comprimento** num instante.
+
+| Aspecto | von Bertalanffy | Modelo de potência |
+|:---|:---|:---|
+| Equação | $L_t = L_\infty\,(1 - e^{-K(t-t_0)})$ | $W = a\,L^{\,b}$ |
+| Resposta ($y$) | comprimento | peso |
+| Preditora ($x$) | idade / tempo | comprimento |
+| Pergunta | como cresce com a idade? | quanto pesa em dado comprimento? |
+| Forma da curva | assintótica | alométrica |
+| Uso típico | crescimento, idade, estoques | condição corporal, biomassa |
+
+: Dois modelos não lineares para o crescimento de peixes — quando o eixo é a idade, von Bertalanffy; quando é o comprimento, potência. {#tbl-vb-potencia tbl-colwidths="[26,37,37]"}
+
+A melhor parte é que os dois se encaixam num **encadeamento**. Primeiro, a idade prevê o comprimento (von Bertalanffy); depois, o comprimento prevê o peso (potência). Juntando as peças, vamos da *idade* à *biomassa*:
+
+$$
+\text{idade} \;\xrightarrow{\text{von Bertalanffy}}\; \text{comprimento} \;\xrightarrow{\text{potência}}\; \text{peso}
+$$
+
+Não precisamos modelar o peso direto pela idade: modelamos o comprimento pela idade e usamos a relação peso-comprimento para chegar ao peso. É o tipo de raciocínio que sustenta uma avaliação de estoque inteira.
+
+::: {.callout-note .destaque icon=false}
+## Dados confiáveis para praticar
+
+Para a curva idade-comprimento, o `EAPADados` já traz dois conjuntos **reais**, com procedência: `walleye_erie` (*Sander vitreus*, Lago Erie, de `FSAdata::WalleyeErie2`) e `snapper_hg` (*Pagrus auratus*, idade por otólitos, de `FSAdata::SnapperHG1`). Para a relação peso-comprimento, use o `cangulo_crescimento` (*Balistes vetula*). E quando precisar de **parâmetros já publicados** ($L_\infty$, $K$, $t_0$) para comparar espécies, o [FishBase](https://www.fishbase.se) reúne estimativas da literatura — ótimo para conferir se o seu ajuste faz sentido biológico, ainda que traga os parâmetros prontos, não os dados brutos de idade-comprimento.
+:::
+
+```{r}
+#| label: setup-logistica
+#| include: false
+peixes_mat <- walleye_erie |>
+  dplyr::filter(!is.na(maturidade), !is.na(comprimento_total_mm)) |>
+  dplyr::mutate(madura = as.integer(maturidade == "maduro"))
+```
+
+## Do tamanho à maturidade: a regressão logística
+
+As duas curvas anteriores respondiam com **números**: quantos centímetros a cada idade, quantos gramas a cada comprimento. Mas há uma pergunta de manejo igualmente importante cuja resposta é um **sim ou não**: este peixe já se reproduz? Abaixo de certo tamanho, quase nenhuma fêmea desovou; acima dele, quase todas. No meio, é uma transição. E a pergunta que interessa não é sobre um indivíduo, e sim sobre a população: *a partir de que comprimento metade das fêmeas já está madura?* Esse comprimento tem nome — $L_{50}$ — e é um dos números mais usados para regular a pesca.[^l50]
+
+[^l50]: O comprimento de primeira maturação ($L_{50}$) é base para definir tamanho mínimo de captura e malha de rede, deixando o peixe desovar ao menos uma vez antes de ser capturado. Ver King, M. (2007). *Fisheries Biology, Assessment and Management*, 2ª ed., Blackwell.
+
+O problema é que não dá para traçar uma reta — nem uma curva de crescimento — por cima de uma coluna de zeros e uns. Precisamos de uma curva que viva entre 0 e 1, porque o que ela devolve é uma **probabilidade**: a chance de o peixe estar maduro em cada comprimento. Essa curva é a **logística**:
+
+$$
+p(L) = \frac{1}{1 + e^{-(\beta_0 + \beta_1 L)}}
+$$
+
+em que $p(L)$ é a probabilidade de estar maduro no comprimento $L$. Repare que ela é parente próxima da reta: por dentro mora $\beta_0 + \beta_1 L$, uma equação linear, que a função logística "amassa" para dentro do intervalo de 0 a 1. Por isso a logística pertence à família dos **modelos lineares generalizados** (os GLM) — é uma reta vista através de uma lente que a curva em **S**.
+
+Pense num **dimmer** de luz. No fundo, escuro: probabilidade quase zero de estar maduro. No topo, luz plena: quase certeza. No meio do giro, a luz muda depressa de fraca para forte — e é nesse meio que está a informação. O $\beta_1$ diz quão abrupta é a virada: alto, a transição de imaturo para maduro acontece numa faixa estreita de comprimento; baixo, ela se espalha. E o ponto em que a luz está exatamente pela metade — probabilidade 0,5 — é o $L_{50}$, que sai direto dos coeficientes:
+
+$$
+L_{50} = -\frac{\beta_0}{\beta_1}
+$$
+
+### Os dados: maturidade do walleye
+
+Não precisamos de um conjunto novo: o mesmo `walleye_erie` que ajustou a curva de von Bertalanffy traz, para cada peixe, a condição de maturidade (`maturidade`, com os níveis *imaturo* e *maduro*). Criamos uma coluna binária — 1 para maduro, 0 para imaturo — e olhamos a proporção de maduros por faixa de comprimento. O **S** aparece sozinho.
+
+```{r}
+#| label: fig-prop-mat
+#| fig-cap: "Proporção de walleyes maduros por faixa de comprimento. A subida em S é a assinatura da resposta binária."
+props <- peixes_mat |>
+  dplyr::mutate(faixa = ggplot2::cut_width(comprimento_total_mm, width = 30)) |>
+  dplyr::group_by(faixa) |>
+  dplyr::summarise(centro = mean(comprimento_total_mm),
+                   prop   = mean(madura),
+                   n      = dplyr::n(), .groups = "drop")
+
+ggplot(props, aes(centro, prop)) +
+  geom_point(aes(size = n), colour = ocean["TEAL"]) +
+  labs(x = "Comprimento total (mm)", y = "Proporção de maduros", size = "n")
+```
+
+### Ajustando a ogiva no R (e na CatalyseR)
+
+Como a resposta é sim/não, o ajuste não é com `nls()`, e sim com `glm()` na família **binomial** — a mesma rotina que a CatalyseR aciona quando você pede a "ogiva de maturidade". O `family = binomial` é o que diz ao R: ajuste a curva em S, não uma reta.
+
+```{r}
+#| label: ajuste-log
+ajuste_log <- glm(madura ~ comprimento_total_mm,
+                  data = peixes_mat, family = binomial)
+
+coef(ajuste_log)
+```
+
+```{r}
+#| label: params-log
+#| include: false
+b   <- coef(ajuste_log)
+L50 <- unname(-b[1] / b[2])
+# L95: p = 0,95  =>  L = (logit(0,95) - b0)/b1
+L95 <- unname((log(0.95/0.05) - b[1]) / b[2])
+```
+
+Os coeficientes, sozinhos, dizem pouco. O que se lê é o $L_{50} = -\beta_0/\beta_1$, que aqui dá cerca de **`r fmt(L50, 0)` mm** (uns `r fmt(L50/10, 1)` cm): abaixo desse comprimento, a maioria dos walleyes ainda não se reproduziu; acima, a maioria já. Por simetria, em torno de **`r fmt(L95, 0)` mm** praticamente todos já estão maduros. A curva sobre as proporções observadas confirma o ajuste:
+
+```{r}
+#| label: fig-ogiva
+#| fig-cap: "Ogiva de maturidade ajustada (curva logística) sobre as proporções observadas, com o L50 destacado."
+grade <- data.frame(comprimento_total_mm =
+                      seq(min(peixes_mat$comprimento_total_mm),
+                          max(peixes_mat$comprimento_total_mm), length.out = 200))
+grade$prob <- predict(ajuste_log, newdata = grade, type = "response")
+
+ggplot(props, aes(centro, prop)) +
+  geom_point(aes(size = n), colour = ocean["SEAFOAM"]) +
+  geom_line(data = grade, aes(comprimento_total_mm, prob),
+            colour = ocean["CORAL"], linewidth = 1.3) +
+  geom_vline(xintercept = L50, linetype = 2, colour = ocean["AMBER"]) +
+  annotate("text", x = L50, y = 0.1, hjust = -0.1,
+           label = sprintf("L50 = %.0f mm", L50), colour = ocean["NAVY"]) +
+  labs(x = "Comprimento total (mm)", y = "Proporção / probabilidade de maduro",
+       size = "n")
+```
+
+> A ogiva de maturidade estimou um $L_{50}$ de aproximadamente `r fmt(L50, 0)` mm (cerca de `r fmt(L50/10, 1)` cm) para o walleye — o comprimento em que metade da população já se reproduziu.
+
+::: {.callout-tip .destaque icon=false}
+## Quando usar a logística?
+
+Use sempre que a resposta for **binária** — maduro/imaturo, presente/ausente, recapturado/não — e a pergunta for *"qual a probabilidade de acontecer isto, dado o tamanho (ou a idade)?"*. Um cuidado decisivo: a amostra precisa ter peixes **dos dois lados** da transição, pequenos e grandes; se só houver adultos, a curva não enxerga a subida e o $L_{50}$ vira chute. E não confunda significância com efeito — o que move o manejo é o **valor** do $L_{50}$ (e seu intervalo), não o *p* do coeficiente. Trocando o comprimento pela idade (`madura ~ idade_anos`), a mesma curva entrega o $A_{50}$, a idade de primeira maturação.
+:::
+
+A logística fecha a trinca de modelos não lineares deste capítulo. Da idade ao comprimento (von Bertalanffy), do comprimento ao peso (potência) e, agora, do comprimento à probabilidade de já estar reproduzindo (logística) — três perguntas, três curvas, o mesmo peixe.
+
 ::: {.callout-tip .destaque icon=false}
 ## Resumo do capítulo
 
-Nem toda relação é uma reta. A relação peso-comprimento dos peixes é uma **potência**, $W = a\,L^b$, em que o expoente $b$ revela a estratégia de crescimento (perto de 3, isométrico). Ajustamos modelos assim com `nls()`, que é iterativo e por isso pede valores iniciais — obtidos com elegância pela **linearização log-log**. Depois do ajuste, lemos os parâmetros, calculamos um pseudo-$R^2$ e, sobretudo, **olhamos os resíduos** para confirmar que nenhum padrão ficou de fora. No cangulo, o modelo explicou quase toda a variação do peso, com $b$ pertinho de 3.
+Nem toda relação é uma reta. A relação peso-comprimento dos peixes é uma **potência**, $W = a\,L^b$, em que o expoente $b$ revela a estratégia de crescimento (perto de 3, isométrico). Ajustamos modelos assim com `nls()`, que é iterativo e por isso pede valores iniciais — obtidos com elegância pela **linearização log-log**. Depois do ajuste, lemos os parâmetros, calculamos um pseudo-$R^2$ e, sobretudo, **olhamos os resíduos** para confirmar que nenhum padrão ficou de fora. No cangulo, o modelo explicou quase toda a variação do peso, com $b$ pertinho de 3. E conhecemos um segundo modelo não linear — a curva de **von Bertalanffy**, $L_t = L_\infty(1 - e^{-K(t-t_0)})$ —, que descreve o comprimento ao longo da **idade** e se encadeia com a potência: a idade prevê o comprimento, e o comprimento prevê o peso. Por fim, quando a resposta é um **sim ou não** — maduro ou imaturo —, a régua é a **regressão logística**, uma curva em S ajustada com `glm(..., family = binomial)`, da qual lemos o $L_{50}$, o comprimento de primeira maturação que ancora o tamanho mínimo de captura.
 :::
 
 ::: {.callout-note icon=false}
@@ -144,4 +369,6 @@ Nem toda relação é uma reta. A relação peso-comprimento dos peixes é uma *
 1. Compare os parâmetros do `nls` com os da linearização (`lm(log(peso_g) ~ log(comprimento_cm))`). Quão diferentes ficaram $a$ e $b$?
 2. Use o modelo ajustado para prever o peso de um cangulo de 25 cm. Confira com `predict(ajuste, newdata = data.frame(comprimento_cm = 25))`.
 3. Ajuste um modelo de potência separado para cada réplica de peso (`p1`, `p2`, `p3`). Os expoentes $b$ ficam parecidos?
+4. Ajuste a curva de von Bertalanffy ao `snapper_hg` (`comprimento_cm ~ idade_anos`) e compare o $L_\infty$ com o do walleye. Qual espécie tende ao maior tamanho?
+5. Ajuste a ogiva de maturidade do walleye usando a **idade** (`madura ~ idade_anos`) e obtenha o $A_{50}$. Compare a distribuição de comprimentos da amostra com o $L_{50}$: a rede estaria capturando peixes abaixo do comprimento de primeira maturação?
 :::

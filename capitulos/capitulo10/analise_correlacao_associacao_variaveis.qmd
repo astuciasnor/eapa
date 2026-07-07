@@ -1,5 +1,198 @@
 ---
-title: "Análise de Correlação e Associação entre váriáveis"
-format: html
+title: "Análise de Correlação e Associação entre Variáveis"
+subtitle: "Ou: quando duas medidas andam de mãos dadas — e como saber se isso é real"
+lang: pt-BR
+execute:
+  warning: false
+  message: false
 ---
+
+```{r setup}
+#| include: false
+library(EAPADados)   # dados e funções canônicas do ecossistema EAPA
+library(ggplot2)
+library(flextable)
+library(corrplot)    # mapa de correlação (instale com install.packages("corrplot"))
+
+# Paleta da identidade visual Ocean Gradient
+ocean <- c("#0F3B5F", "#2E7D8F", "#62B6B7", "#E89B3C", "#E76F51")
+
+data(brine_carbonatos)
+data(biometria_caranguejos)
+```
+
+<!-- TODO (figura de abertura): infográfico Ocean "correlação x associação" no padrão do cap. de ANOVA. -->
+
+::: {.callout-note .destaque icon=false}
+## Já passou por isso?
+
+Você tem uma planilha cheia de colunas — concentrações de íons na água, tamanhos de animais, sexo, estação do ano — e bate aquela pergunta: **o que tem a ver com o quê?** Será que, quando um íon sobe, outro acompanha? A proporção de machos e fêmeas muda entre as estações? Olhar coluna por coluna não revela essas ligações. Precisamos de ferramentas que meçam **o quanto duas variáveis caminham juntas**.
+:::
+
+Há duas perguntas parecidas, mas diferentes, escondidas aqui. A primeira é sobre **correlação**: quando duas variáveis **numéricas** sobem e descem juntas (ou em sentidos opostos). A segunda é sobre **associação**: quando duas variáveis **categóricas** aparecem juntas mais (ou menos) do que o acaso explicaria. A ferramenta muda conforme o tipo de variável — e é fácil escolher errado. Vamos às duas.
+
+## Parte 1 — Correlação entre variáveis numéricas
+
+### Os dados: a química das salmouras
+
+Para correlação, queremos variáveis que **não** estejam todas amarradas pela mesma causa. Medidas de tamanho de um animal, por exemplo, sobem quase todas juntas (um bicho grande é grande em tudo) — e a correlação fica monótona, tudo perto de 1. Já um conjunto de **concentrações químicas** é mais interessante: alguns componentes se associam, outros se opõem.
+
+Usaremos o `brine_carbonatos` do `EAPADados`: 19 amostras de **salmouras** de unidades carbonáticas, com a concentração (em ppm) de seis íons — bicarbonato (`HCO3`), sulfato (`SO4`), cloreto (`Cl`), cálcio (`Ca`), magnésio (`Mg`) e sódio (`Na`) — além do grupo geológico de origem. É um conjunto **multivariado** que você reencontrará nos capítulos de PCA e agrupamento; aqui ele serve para enxergar como variáveis de um mesmo sistema se correlacionam.
+
+```{r}
+#| label: estrutura
+str(brine_carbonatos)
+```
+
+### Por dentro da conta: o que é correlação
+
+Imagine duas medidas dançando. Se, quando uma sobe, a outra **também** sobe, elas dançam no mesmo compasso — correlação **positiva**. Se uma sobe enquanto a outra desce, dançam em sentidos opostos — correlação **negativa**. Se cada uma vai para um lado sem ligar para a outra, não há correlação.
+
+O **coeficiente de correlação de Pearson** ($r$) põe número nessa dança. Ele nasce da **covariância** (o quanto as duas variam juntas), só que padronizada para ficar sempre entre $-1$ e $+1$:
+
+$$
+r = \frac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum (x_i - \bar{x})^2}\;\sqrt{\sum (y_i - \bar{y})^2}}
+$$
+
+O sinal diz a **direção** (positiva ou negativa); o valor absoluto diz a **força**: perto de $1$ (ou $-1$), as duas medidas andam quase coladas; perto de $0$, andam soltas. Um lembrete que vale ouro: **correlação não é causalidade**. Duas variáveis podem subir juntas porque uma causa a outra, porque uma terceira causa as duas, ou por pura coincidência.
+
+### A matriz de correlação no R
+
+Com várias variáveis numéricas, calculamos a correlação de **todos os pares de uma vez** — a *matriz de correlação*. Primeiro separamos só as colunas dos íons:
+
+```{r}
+#| label: matriz
+ions <- brine_carbonatos[, c("HCO3", "SO4", "Cl", "Ca", "Mg", "Na")]
+
+M <- cor(ions, use = "complete.obs")   # método de Pearson (padrão)
+```
+
+```{r}
+#| label: tbl-correlacao
+#| tbl-cap: "Matriz de correlação de Pearson entre as seis concentrações iônicas das salmouras."
+Mtab <- round(M, 2)
+tab  <- data.frame(Íon = rownames(Mtab), Mtab, check.names = FALSE, row.names = NULL)
+flextable_ocean(tab)
+```
+
+Os números variam bastante — alguns pares quase colados, outros frouxos, e há sinais negativos. Mas tabela de correlação cansa o olho. É aí que entra o **`corrplot`**: ele transforma a matriz num mapa de cores, onde a intensidade e o sentido da cor mostram, num relance, quem anda com quem (azul = positivo, coral = negativo).
+
+```{r}
+#| label: fig-corrplot
+#| fig-cap: "Mapa de correlação dos íons. Tons de teal = correlação positiva; coral = negativa; a intensidade indica a força. Os números repetem o coeficiente de Pearson."
+#| fig-width: 5.5
+#| fig-height: 5
+# Escala coral (negativo) -> branco -> teal (positivo). Uso o teal (ocean[2]) no
+# topo, e nao o navy quase preto, para o numero escuro permanecer legivel mesmo
+# nas correlacoes fortes.
+cores <- colorRampPalette(c(ocean[5], "white", ocean[2]))(200)
+corrplot(M, method = "color", col = cores, col.lim = c(-1, 1),
+         type = "upper", addCoef.col = "grey15",
+         tl.col = ocean[1], tl.srt = 45, tl.cex = 0.9,
+         number.cex = 0.8, diag = FALSE,
+         mar = c(0, 0, 0, 0))
+```
+
+::: {.callout-note}
+**Do mouse ao código (e o que vem por aí).** Hoje o livro usa `cor()` e `corrplot()` diretamente. A correlação ainda **não é uma análise canônica da CatalyseR** (a IDE usa matriz de correlação por dentro da PCA, e faz a correlação bivariada dentro da regressão). Está no backlog transformá-la numa família canônica do `EAPADados` — algo como `calcular_correlacao()`, `mostrar_correlacao()` e `grafico_correlacao()` —, para que a IDE, o relatório `.docx` e este capítulo derivem do mesmo código. Por ora, `corrplot()` resolve.
+:::
+
+### Um par de perto, com teste
+
+A matriz mostra o panorama; para **um** par, o `cor.test()` dá o coeficiente **e** testa se ele é diferente de zero. Veja a relação entre sódio e cloreto, dois íons que costumam caminhar juntos nas salmouras:
+
+```{r}
+#| label: cortest
+ct <- cor.test(brine_carbonatos$Na, brine_carbonatos$Cl)
+ct
+```
+
+> A correlação entre o sódio (Na) e o cloreto (Cl) foi de *r* = `r round(ct$estimate, 3)` (IC 95% [`r round(ct$conf.int[1], 3)`; `r round(ct$conf.int[2], 3)`]), `r if (ct$p.value < 0.001) "p < 0,001" else paste0("p = ", formatC(ct$p.value, format = "f", digits = 3))` — uma correlação `r {a <- abs(ct$estimate); if (a < 0.3) "fraca" else if (a < 0.5) "moderada" else if (a < 0.7) "forte" else "muito forte"}` e `r if (ct$estimate < 0) "negativa" else "positiva"`: as duas concentrações tendem a `r if (ct$estimate > 0) "subir juntas" else "variar em sentidos opostos"`.
+
+```{r}
+#| label: fig-dispersao
+#| fig-cap: "Sódio vs. cloreto nas salmouras, por grupo geológico. A reta resume a tendência linear."
+#| fig-width: 6
+#| fig-height: 4
+ggplot(brine_carbonatos, aes(Na, Cl, colour = grupo)) +
+  geom_point(size = 2.5, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE, colour = ocean[1], linewidth = 0.8) +
+  scale_colour_manual(values = ocean[-1], name = "Grupo") +
+  labs(x = "Sódio (ppm)", y = "Cloreto (ppm)") +
+  theme_minimal()
+```
+
+### As letras miúdas: Pearson tem pressupostos
+
+O $r$ de Pearson mede a relação **linear** e é sensível a *outliers* e a relações curvas. Sempre olhe o gráfico de dispersão **antes** de confiar no número: um $r$ baixo pode esconder uma relação forte, porém curva; um $r$ alto pode ser obra de um único ponto extremo. Quando a relação é monotônica mas não linear, ou há valores discrepantes, a alternativa é a correlação de **Spearman** (sobre os postos), que se pede com `method = "spearman"`:
+
+```{r}
+#| label: spearman
+cor(brine_carbonatos$Na, brine_carbonatos$Cl, method = "spearman")
+```
+
+## Parte 2 — Associação entre variáveis categóricas
+
+Correlação é para número. Quando as variáveis são **categóricas** — sexo, local, estação —, a pergunta vira: as categorias de uma se distribuem de forma **dependente** das categorias da outra? A ferramenta é a **tabela de contingência** e o **teste qui-quadrado ($\chi^2$) de independência**.
+
+### Os dados: caranguejos de Bragança (PA)
+
+O `biometria_caranguejos` traz 993 caranguejos capturados em Bragança, no Pará, com sexo, local e estação anotados. Vamos perguntar: **a proporção de machos e fêmeas depende da estação do ano?** (Uma pergunta com sentido biológico — épocas reprodutivas mudam quem é capturado.)
+
+```{r}
+#| label: tbl-contingencia
+#| tbl-cap: "Tabela de contingência: número de caranguejos por estação e sexo."
+tab_cont <- table(Estação = biometria_caranguejos$Estacao,
+                  Sexo    = biometria_caranguejos$Sexo)
+cont_df <- as.data.frame.matrix(tab_cont)
+cont_df <- data.frame(Estação = rownames(cont_df), cont_df,
+                     check.names = FALSE, row.names = NULL)
+flextable_ocean(cont_df)
+```
+
+### Por dentro da conta: o que o qui-quadrado compara
+
+A ideia é simples e elegante. O teste calcula quantos caranguejos **esperaríamos** em cada célula **se** sexo e estação fossem independentes (isto é, se a proporção de machos fosse a mesma nas duas estações). Depois compara esse **esperado** com o que de fato foi **observado**. Quanto maior a distância entre observado e esperado, maior o $\chi^2$ — e mais difícil de explicar pelo acaso.
+
+```{r}
+#| label: quiquadrado
+qui <- chisq.test(tab_cont)
+qui
+```
+
+```{r}
+#| label: fig-associacao
+#| fig-cap: "Proporção de sexos em cada estação. Barras parecidas entre estações indicam pouca associação."
+#| fig-width: 5.5
+#| fig-height: 4
+ggplot(biometria_caranguejos, aes(Estacao, fill = Sexo)) +
+  geom_bar(position = "fill", alpha = 0.9) +
+  scale_fill_manual(values = ocean[c(2, 4)]) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = "Estação", y = "Proporção") +
+  theme_minimal()
+```
+
+```{r}
+#| label: cramer
+#| include: false
+n  <- sum(tab_cont)
+V  <- sqrt(as.numeric(qui$statistic) / (n * (min(dim(tab_cont)) - 1)))
+```
+
+> Aplicou-se o teste qui-quadrado de independência entre estação e sexo, $\chi^2$(`r qui$parameter`) = `r round(qui$statistic, 2)`, `r if (qui$p.value < 0.001) "p < 0,001" else paste0("p = ", formatC(qui$p.value, format = "f", digits = 3))`. O tamanho do efeito (V de Cramér) foi de `r round(V, 3)`, indicando uma associação `r if (V < 0.1) "desprezível" else if (V < 0.3) "fraca" else if (V < 0.5) "moderada" else "forte"` entre as duas variáveis.
+
+> **Como ler.** Um $p$ pequeno (< 0,05) diz que sexo e estação **não** são independentes — a composição de sexos muda conforme a estação. Um $p$ grande diz que não há evidência de associação. Mas atenção: com amostras grandes (aqui são quase mil), até diferenças minúsculas viram "significativas". Por isso reportamos também o **V de Cramér**, que mede a **força** da associação numa escala de 0 a 1 — o complemento do "tem efeito?" com o "quão grande é?".
+
+## E daí? Da significância à decisão
+
+Correlação e associação são pontos de partida, não de chegada. Uma correlação forte entre íons sugere uma origem geoquímica comum — e adianta o que a PCA vai condensar em poucos eixos lá na frente. Já uma associação entre sexo e estação, se real, tem leitura de manejo: pode sinalizar época reprodutiva e orientar regras de defeso. Em ambos os casos, o número abre a conversa — quem fecha é o conhecimento do sistema, da biologia e da pesca.
+
+> **Resumo do capítulo.** (1) Variáveis **numéricas** → **correlação** (Pearson, ou Spearman quando a relação não é linear); a matriz vira mapa com `corrplot()`. (2) Variáveis **categóricas** → **associação** pela tabela de contingência e pelo **qui-quadrado**, com o **V de Cramér** medindo a força. (3) Sempre **veja o gráfico** antes de confiar no coeficiente. (4) Correlação e associação **não são causalidade**.
+
+## Para praticar
+
+1. Refaça a matriz de correlação **sem** o íon `Na` e veja se as relações entre os demais mudam de força.
+2. Troque o par do `cor.test()` por cálcio (`Ca`) e magnésio (`Mg`). A correlação é tão forte quanto a do par sódio-cloreto?
+3. Monte uma nova tabela de contingência entre **local** e **sexo** (`biometria_caranguejos$Local`) e teste a associação. O que muda na conclusão?
 

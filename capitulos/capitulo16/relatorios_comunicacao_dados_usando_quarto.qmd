@@ -21,7 +21,7 @@ theme_set(theme_minimal(base_size = 11))
 data(artemia)
 ```
 
-::: {.callout-note .destaque icon=false}
+::: {.callout-note .destaque icon="false"}
 ## Já passou por isso?
 
 A análise está pronta na tela: o teste deu significativo, o gráfico ficou bom, o número está ali. Aí vem a parte que ninguém ensina — **transformar isso num relatório** que outra pessoa entenda. E começa o sofrimento: copiar o *p*-valor na mão (e errar uma casa decimal), colar o gráfico que descola na próxima edição, reescrever a mesma frase de conclusão pela milésima vez. Há um jeito melhor: deixar o **relatório nascer da própria análise**, com exatamente o que aquela análise precisa mostrar — nem mais, nem menos.
@@ -35,9 +35,9 @@ Aqui está a ideia central deste capítulo, e o princípio que guia a CatalyseR:
 
 E o que cada análise exige se resume, quase sempre, a **três peças**:
 
-1. **O relato** — uma frase científica em português que conta o resultado (a estatística do teste, os graus de liberdade, o *p*-valor, o intervalo de confiança e o tamanho do efeito), pronta para entrar num artigo ou relatório.
-2. **A tabela estruturada** — os números organizados, no padrão visual do livro (tema *Ocean Gradient*, cabeçalho navy).
-3. **A figura** — o gráfico que torna o resultado visível.
+1.  **O relato** — uma frase científica em português que conta o resultado (a estatística do teste, os graus de liberdade, o *p*-valor, o intervalo de confiança e o tamanho do efeito), pronta para entrar num artigo ou relatório.
+2.  **A tabela estruturada** — os números organizados, no padrão visual do livro (tema *Ocean Gradient*, cabeçalho navy).
+3.  **A figura** — o gráfico que torna o resultado visível.
 
 A CatalyseR produz essas três peças automaticamente, usando as **funções canônicas** do `EAPADados` — as mesmas que você pode chamar no R. Vamos vê-las em ação.
 
@@ -47,7 +47,7 @@ Retomemos o experimento da *Artemia* (Unidade IV): duas rações comparadas por 
 
 > `r relatar_teste_t_ind(taxa_crescimento_mg_dia ~ racao, data = artemia, equal_var = TRUE, label_y = "a taxa de crescimento (mg/dia)", label_x = "o tipo de ração")`
 
-A **tabela estruturada** vem de `mostrar_teste_t_ind()`, formatada no tema Ocean por `flextable_ocean()`:
+A **tabela estruturada** vem de `mostrar_teste_t_ind()`, formatada no tema Ocean por `flextable_ocean()` e citável por número (@tbl-relatorio):
 
 ```{r}
 #| label: tbl-relatorio
@@ -63,7 +63,7 @@ E a **figura** — o boxplot que mostra a diferença:
 #| label: fig-relatorio
 #| fig-cap: "A figura que acompanha o relato e a tabela: taxa de crescimento por ração."
 ggplot(artemia, aes(racao, taxa_crescimento_mg_dia, fill = racao)) +
-  geom_boxplot(alpha = 0.85) +
+  geom_boxplot(alpha = 0.85, width = 0.3) +
   scale_fill_manual(values = unname(ocean[c("TEAL", "AMBER")])) +
   labs(x = "Ração", y = "Taxa de crescimento (mg/dia)") +
   theme(legend.position = "none")
@@ -86,7 +86,7 @@ Ou seja: a IDE faz a análise no mouse e te entrega o **código que a reproduz**
 
 O coração da exportação é simples. O cabeçalho (YAML) do `relatorio.qmd` declara o formato Word e aponta para o modelo de estilo:
 
-```yaml
+``` yaml
 ---
 title: "Relatório de Análise — Comparação de Rações"
 format:
@@ -100,16 +100,16 @@ lang: pt-BR
 
 O `custom-reference.docx` é um documento Word "vazio" que carrega a identidade visual: **Times New Roman 12**, parágrafos **justificados**, página **A4 com margens ABNT**, **sumário**, **títulos numerados** e **número de página**. O Quarto aplica esses estilos ao gerar o `.docx`. A renderização é um comando só:
 
-```bash
+``` bash
 quarto render relatorio.qmd --to docx
 ```
 
 Por baixo dos panos, a IDE monta num diretório temporário o `relatorio.qmd` + o `custom-reference.docx` + os dados (`.rda`) + os scripts, substitui as variáveis (qual análise, quais dados, quais rótulos) e roda esse `quarto render`. O resultado é um relatório Word com cara de publicação — o relato, a tabela Ocean e a figura, na ordem certa, com a formatação certa.
 
-::: {.callout-tip .destaque icon=false}
+::: {.callout-tip .destaque icon="false"}
 ## A regra de ouro do relatório reproduzível
 
-Nunca digite um resultado à mão. Todo número que aparece no texto deve vir de uma chamada de código (`` `r relatar_teste_t_ind(...)` ``), e toda tabela e figura devem ser geradas no próprio documento. Assim, o relatório nunca "mente" — ele é, por construção, fiel aos dados.
+Nunca digite um resultado à mão. Todo número que aparece no texto deve vir de uma chamada de código (`r knitr::inline_expr("relatar_teste_t_ind(...)")`), e toda tabela e figura devem ser geradas no próprio documento. Assim, o relatório nunca "mente" — ele é, por construção, fiel aos dados.
 :::
 
 ## Um relatório para cada análise
@@ -117,27 +117,27 @@ Nunca digite um resultado à mão. Todo número que aparece no texto deve vir de
 A versão 1 do ecossistema cobre as análises que você já domina, e para cada uma há um conjunto mínimo de saídas — o que a @tbl-saidas resume. É esse mapeamento que a CatalyseR usa para montar o relatório certo conforme a análise escolhida.
 
 | Análise | Relato (`relatar_*`) | Tabela (`mostrar_*`) | Figura típica |
-|:---|:---|:---|:---|
+|:-----------------|:-----------------|:-----------------|:-----------------|
 | Estatística descritiva | resumo das medidas | medidas de centro e dispersão | histograma / boxplot |
 | Teste *t* (1 amostra, independentes, pareadas) | frase com *t*, gl, *p*, IC e *d* de Cohen | médias, diferença, IC, efeito | boxplot por grupo |
 | ANOVA | frase com *F*, gl, *p* e pós-teste | quadro da ANOVA + Tukey | médias com erro |
 | Regressão linear simples | frase com coeficientes, *R²* e *p* | coeficientes e ajuste | reta com IC |
 | Qui-quadrado | frase de (in)dependência | tabela de contingência | barras por categoria |
 
-: As saídas mínimas de cada análise — o que entra no relatório que a CatalyseR gera. {#tbl-saidas tbl-colwidths="[22,30,28,20]"}
+: As saídas mínimas de cada análise — o que entra no relatório que a CatalyseR gera. {#tbl-saidas}
 
 A lógica é sempre a mesma: a análise calcula (`calcular_*`), o relatório mostra (`mostrar_*`) e relata (`relatar_*`), e o Quarto empacota. Trocar de análise é trocar de trio de funções — o motor de exportação é o mesmo.
 
-::: {.callout-tip .destaque icon=false}
+::: {.callout-tip .destaque icon="false"}
 ## Resumo do capítulo
 
 Comunicar é o último passo do *mouse ao código*. Com o **Quarto**, o relatório nasce da própria análise: texto, código e resultados num só documento, exportável para HTML, PDF ou **Word**. O princípio que guia a CatalyseR é entregar, para **cada análise**, exatamente as saídas que ela exige — o **relato** (`relatar_*`), a **tabela** (`mostrar_*` + `flextable_ocean`) e a **figura** —, sem digitar um número sequer. A IDE empacota tudo num **Projeto R** (`.zip`) com o `relatorio.qmd` e o `custom-reference.docx`, e um `quarto render --to docx` produz o relatório final no padrão ABNT. Da coleta ao relatório, um fluxo só, reprodutível de ponta a ponta.
 :::
 
-::: {.callout-note icon=false}
+::: {.callout-note icon="false"}
 ## Para praticar
 
-1. Crie um `.qmd` com `format: html`, escreva um parágrafo e insira um valor calculado com `` `r mean(artemia$taxa_crescimento_mg_dia)` ``. Renderize e confirme que o número aparece no texto.
-2. Refaça o relatório do teste *t* da *Artemia* trocando `equal_var = TRUE` por `FALSE` (Welch). O relato e a tabela mudam sozinhos?
-3. Gere o mesmo documento em três formatos (`html`, `pdf`, `docx`) trocando só o `format:` do YAML. Qual exige o `custom-reference.docx`?
+1.  Crie um `.qmd` com `format: html`, escreva um parágrafo e insira um valor calculado com `r knitr::inline_expr("mean(artemia$taxa_crescimento_mg_dia)")`. Renderize e confirme que o número aparece no texto.
+2.  Refaça o relatório do teste *t* da *Artemia* trocando `equal_var = TRUE` por `FALSE` (Welch). O relato e a tabela mudam sozinhos?
+3.  Gere o mesmo documento em três formatos (`html`, `pdf`, `docx`) trocando só o `format:` do YAML. Qual exige o `custom-reference.docx`?
 :::

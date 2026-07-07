@@ -49,3 +49,9 @@ figcaption,
 figure > figcaption {
   text-align: justify;
 }
+
+/* Referências bibliográficas com texto justificado */
+#refs .csl-entry,
+.csl-entry {
+  text-align: justify;
+}

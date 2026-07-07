@@ -421,23 +421,21 @@
 ]
 // Estilo Typst do livro EAPA (afeta apenas o PDF via Typst)
 //
-// Tabelas markdown no estilo booktabs com linhas PRETAS:
-//  - uma linha ACIMA do cabecalho;
-//  - uma linha ABAIXO do cabecalho;
-//  - uma linha no RODAPE da tabela.
+// Tabelas markdown SEM nenhuma linha (sem cabecalho e sem rodape).
 // (As tabelas "Ocean"/flextable nao sao afetadas: o Quarto as renderiza
 //  como imagem, nao como #table nativo.)
 
 #set table(
   inset: 6pt,
-  stroke: (x, y) => (
-    top: if y == 0 { 0.9pt + black },     // acima do cabecalho
-    bottom: if y == 0 { 0.6pt + black },  // abaixo do cabecalho
-  ),
+  stroke: none,   // tabela sem nenhuma linha
 )
 
-// Linha no rodape: caixa que abraca a largura da tabela, com borda inferior.
-#show table: it => box(it, stroke: (bottom: 0.9pt + black))
+// Cabecalho (rotulos das colunas) em negrito
+#show table.cell.where(y: 0): set text(weight: "bold")
+
+// Blocos de codigo e de saida (raw em bloco) com fonte menor,
+// para caber saidas largas (ex.: a tabela do teste t) numa linha so.
+#show raw.where(block: true): set text(size: 7.5pt)
 
 // Menos espaco abaixo dos titulos (titulo do capitulo -> texto)
 #show heading: set block(above: 1.0em, below: 0.55em)
@@ -446,6 +444,14 @@
 // fica melhor para as legendas mais longas do livro.
 #show figure.caption: set align(left)
 #show figure.caption: set par(justify: true)
+
+// Justifica a lista de referencias. O Quarto usa a bibliografia NATIVA do Typst
+// (#bibliography), que ignora o #set par global; por isso a regra entra "dentro"
+// do elemento bibliography.
+#show bibliography: set par(justify: true)
+// Hifenizacao na bibliografia: deixa o Typst quebrar palavras longas para
+// fechar as linhas do meio na margem (resolve linhas curtas como a do periodico).
+#show bibliography: set text(hyphenate: true)
 #import "@preview/fontawesome:0.5.0": *
 #let brand-color = (:)
 #let brand-color-background = (:)
@@ -499,6 +505,8 @@ Há uma distância conhecida entre dominar a teoria estatística e conseguir apl
 Mais do que uma obra isolada, este livro é a face escrita de um ecossistema de ensino. As análises que ele apresenta nascem na #strong[CatalyseR], uma interface visual que conduz o usuário "do mouse ao código": a análise é feita apontando e clicando e, ao final, o usuário leva consigo o script R que a reproduz. Os dados que ilustram cada método vêm do pacote #strong[EAPADados], que reúne conjuntos reais da pesca e da aquicultura, sobretudo amazônica. Livro, interface e pacote foram pensados para andar juntos --- o que se lê aqui é exatamente o que a interface executa e o que o pacote fornece.
 
 A obra percorre os temas essenciais da estatística aplicada (da análise exploratória aos testes de hipóteses, da regressão à análise de variância), sempre com exemplos contextualizados e código reprodutível. A esses fundamentos somam-se alguns temas mais avançados, mas de uso corrente na pesquisa, como a análise multivariada, a regressão não linear e a confecção de mapas em R. A primeira edição foi mantida deliberadamente enxuta, concentrada nas análises já consolidadas, de modo a servir como um guia confiável e completo naquilo a que se propõe, deixando os demais temas mais avançados para edições futuras.
+
+Um cuidado especial foi dado ao #strong[planejamento da pesquisa]. Antes de qualquer cálculo, é o desenho do estudo --- como amostrar uma população ou como organizar um experimento --- que decide quais análises serão possíveis e válidas; planejar a coleta é, na prática, escolher antecipadamente o teste. Por isso, logo após os fundamentos de ambientação, o planejamento abre uma unidade própria --- dedicada a preparar e conhecer os dados antes de analisá-los --- num capítulo que ensina a planejar tanto a observação (amostragem aleatória simples, estratificada e sistemática) quanto a experimentação (os delineamentos clássicos, do inteiramente casualizado às parcelas subdivididas), espelhando o módulo "Planejando sua Pesquisa" da CatalyseR. É um capítulo de fundamentos, mas dos mais importantes do livro: dele depende a qualidade de tudo o que vem depois.
 
 Recomenda-se ler este livro com o R aberto. Cada capítulo foi escrito para ser acompanhado na prática: instale o pacote de dados, execute os exemplos, gere os gráficos e produza os relatórios. É percorrendo esse caminho, e repetindo-o, que a fluência se constrói.
 
@@ -622,6 +630,38 @@ A ordem importa: o Rtools precisa #strong[casar] com a versão do R. Instale ass
 
 Feche e reabra o RStudio depois de instalar o Rtools: assim ele "enxerga" a caixa de ferramentas nova.
 
+#block[
+#callout(
+body: 
+[
+Duas precauções evitam a maioria das dores de cabeça com permissões no Windows.
+
+Primeiro, #strong[instale o R numa pasta gravável]. No caminho padrão (#NormalTok("C:\\Program Files\\R\\...");), a pasta da biblioteca de pacotes fica protegida pelo sistema, e o #NormalTok("install.packages()"); acaba caindo numa "biblioteca pessoal" escondida --- ou falhando com erros de permissão (#NormalTok("'lib = ...' is not writable");). A solução mais tranquila é criar uma pasta simples, como #strong[#NormalTok("C:\\R");], e apontar o instalador do R para ela (no instalador, troque o diretório de destino para #NormalTok("C:\\R\\R-4.x.x");). Assim a sua biblioteca fica sob seu controle, sem pedir privilégios a cada novo pacote.
+
+Segundo, #strong[instale as quatro peças como administrador] (clique com o botão direito no instalador → #emph[Executar como administrador]): o #strong[R], o #strong[RStudio], o #strong[Rtools] e o #strong[Quarto]. Isso garante que os atalhos, as variáveis de ambiente e o registro do Windows fiquem corretos para todos os programas se encontrarem.
+
+Se, mesmo assim, a pasta #NormalTok("...\\R\\R-4.x.x"); continuar protegida, abra as #strong[Propriedades] dela → aba #emph[Segurança] e conceda #strong[Controle total] (escrita) ao seu usuário.
+
+]
+, 
+title: 
+[
+Atenção no Windows: biblioteca gravável e instalação como administrador
+]
+, 
+background_color: 
+rgb("#f7dddc")
+, 
+icon_color: 
+rgb("#CC1914")
+, 
+icon: 
+none
+, 
+body_background_color: 
+white
+)
+]
 == Testando o Rtools (com um único pacote)
 <testando-o-rtools-com-um-único-pacote>
 Não confie; #strong[verifique]. Em vez de descobrir que o Rtools não funciona só lá na frente, testamos agora. Instalamos #strong[um] pacote --- o #NormalTok("pkgbuild"); --- e pedimos a ele que tente compilar um programinha. Se a oficina estiver completa, ele responde que sim.
@@ -839,6 +879,8 @@ supplement: "Figura",
 
 Repare que, no formato #emph[tidy], o que antes estava na cor ou no título virou #strong[coluna]: o local de coleta deixou de ser um cabeçalho amarelo e passou a ser a variável #NormalTok("local");\; a data, que estava só no título, virou a coluna #NormalTok("data");. Nada se perde: tudo vira dado. E uma planilha #emph[tidy] não é só mais limpa: é a forma que o #NormalTok("ggplot2");, o #NormalTok("dplyr"); e as funções da CatalyseR #strong[esperam] receber. Organizar na entrada economiza horas de remendo depois.
 
+Nem sempre, porém, dá para organizar na origem --- muitos dados chegam prontos, em formato #strong[largo] (uma coluna por ano, por exemplo) ou com informação espremida dentro de uma célula. Quando for esse o caso, o passo de #strong[reformatar] a tabela para #emph[tidy] --- empilhar, alargar, separar --- tem capítulo próprio: o Capítulo 5, já na Unidade II.
+
 == Do bruto ao limpo
 <do-bruto-ao-limpo>
 Com a estrutura no lugar e os caminhos resolvidos, o fluxo de trabalho fica natural: #strong[ler] o dado bruto, #strong[limpar], e #strong[gravar] a versão tratada. Tudo apontando para as pastas certas.
@@ -1021,10 +1063,770 @@ Dê a cada arquivo um lugar: #strong[brutos] intocados, #strong[limpos] tratados
 + Salve o mesmo dado em #NormalTok(".csv"); e em #NormalTok(".parquet");. Leia os dois de volta e compare as classes das colunas com #NormalTok("str()");\; veja o que o Parquet preserva e o CSV esquece.
 + Pegue a planilha "para humanos" da #ref(<fig-tidy>, supplement: [Figura]) (à esquerda) e #strong[reorganize-a] no formato #emph[tidy] (à direita): uma coluna por variável, um peixe por linha, cabeçalho único, sem unidades nem cores. Depois leia o resultado no R e confira com #NormalTok("str()"); se cada coluna ficou com o tipo certo.
 
-#part[Unidade II · Conhecer os dados]
-= Análise Exploratória e Estatística Descritiva
-<análise-exploratória-e-estatística-descritiva>
-Ou: antes de testar qualquer coisa, conheça quem são os seus dados
+#part[Unidade II · Antes da análise — planejar a pesquisa e conhecer os dados]
+= Planejando sua Pesquisa
+<planejando-sua-pesquisa>
+Ou: a análise certa começa muito antes do primeiro número
+
+\
+#block[
+#callout(
+body: 
+[
+O barco está abastecido, a rede a postos, e você prestes a embarcar. Mas pare um instante: #emph[você já sabe exatamente o que vai medir lá fora?] Quais variáveis anotar a cada lance, em que unidade pesar a captura, onde e quando soltar a rede? Se a resposta não estiver pronta #strong[antes] de soltar as amarras, nenhum software conserta depois. O planejamento acontece em terra --- e é ele que decide quais análises serão possíveis.
+
+]
+, 
+title: 
+[
+Já passou por isso?
+]
+, 
+background_color: 
+rgb("#dae6fb")
+, 
+icon_color: 
+rgb("#0758E5")
+, 
+icon: 
+none
+, 
+body_background_color: 
+white
+)
+]
+Começa aqui a unidade #strong[Antes da análise], e o nome diz a que veio: quase tudo que decide a qualidade de um estudo acontece #emph[antes] de apertar o botão do teste. O caminho é #strong[da pergunta aos dados] --- primeiro a #strong[pergunta], o #strong[desenho] do estudo e as #strong[variáveis] (é o assunto deste capítulo); depois, com os dados em mãos, #strong[organizá-los, descrevê-los e visualizá-los] (o capítulo seguinte). Só ao fim desse trajeto é que se escolhe, com segurança, o procedimento estatístico. É também a primeira vez que os três lados do ecossistema EAPA andam juntos de ponta a ponta: o #strong[livro] explica o raciocínio, o #strong[EAPADados] fornece os dados reais da pesca e da aquicultura, e a #strong[CatalyseR] conduz a análise e exporta o projeto #NormalTok(".qmd"); para você terminar no RStudio.
+
+Há uma ordem natural nas coisas, e ela costuma ser invertida. A pressa é coletar logo, e só na frente do computador perguntar "que teste eu uso agora?". Acontece que essa pergunta tem resposta muito antes: #strong[o tipo de estudo determina os dados que você vai coletar, como coletá-los e como organizá-los] --- e, com isso, decide de antemão quais análises serão possíveis, quais pressupostos elas exigirão e que cuidados a coleta impõe. Planejar a coleta é, na prática, #strong[escolher antecipadamente o teste].
+
+Daí a importância deste capítulo, que talvez seja o mais teórico do livro e, ainda assim, um dos mais decisivos. Não há linha de código que recupere um dado que não foi registrado, nem análise que salve uma amostra colhida no improviso. Por outro lado, um conjunto bem planejado e arrumado desde o início --- na filosofia #emph[tidy], cada linha uma observação, cada coluna uma variável, como vimos na Unidade I --- praticamente se oferece à análise correta.
+
+O planejamento tem dois grandes ramos, e eles dão nome às duas seções deste capítulo, espelhando o menu #strong[Planejando sua Pesquisa] da CatalyseR. Quando observamos a natureza como ela é, sem intervir, fazemos #strong[planejamento observacional]: decidimos #emph[quem] observar e #emph[como sortear] esses indivíduos. Quando intervimos de propósito --- atribuindo tratamentos e controlando condições ---, fazemos #strong[planejamento experimental]. O primeiro descreve e compara o que existe; o segundo permite falar em #strong[causa].
+
+#figure([
+#table(
+  columns: (26%, 28%, 24%, 22%),
+  align: (left,left,left,left,),
+  table.header([Ramo (menu CatalyseR)], [O que se faz], [Pergunta típica], [Para onde leva],),
+  table.hline(),
+  [Planejamentos Observacionais], [observar sem intervir; #strong[sortear] quem observar], [como está a população?], [descrição, comparação, correlação],
+  [Planejamentos Experimentais], [#strong[intervir]\; atribuir tratamentos], [qual o efeito de #emph[X] sobre #emph[Y]?], [ANOVA, regressão],
+)
+], caption: figure.caption(
+position: top, 
+[
+Os dois ramos do planejamento e o que cada um habilita.
+]), 
+kind: "quarto-float-tbl", 
+supplement: "Tabela", 
+)
+<tbl-ramos>
+
+
+== Por que o planejamento vem antes de tudo
+<por-que-o-planejamento-vem-antes-de-tudo>
+Quase nunca conseguimos medir a população inteira. Não há tempo, combustível nem tripulação para pesar todo o camarão de um estuário ou medir todos os peixes de um açude. Então #strong[amostramos]: tomamos uma parte para inferir sobre o todo. E aqui mora a primeira decisão de peso, porque uma amostra só representa a população se for tomada com honestidade.
+
+A única defesa real contra o viés é o #strong[acaso]. Parece contraintuitivo confiar no sorteio, mas é justamente ele que impede que a amostra reflita as suas preferências em vez da realidade. O "lugar onde sempre pesco" rende mais camarão porque você o escolheu por isso --- e essa escolha contamina qualquer conclusão. Sortear quem entra na amostra é o que torna possível generalizar do pedaço para o todo.
+
+A segunda decisão é o formato. Dados pensados desde a planilha de campo no formato #emph[tidy] chegam ao R prontos para virar fatores, gráficos e testes. Dados anotados de qualquer jeito --- unidades misturadas, totais no meio das observações, cor como informação --- fecham portas que nenhum código reabre. O fio condutor do capítulo é este, e vale repetir: #strong[a forma de coletar decide a forma de analisar].
+
+== Planejamentos Observacionais
+<planejamentos-observacionais>
+Começamos pelo ramo em que apenas observamos. Aqui o objetivo é descrever uma população ou comparar grupos que já existem --- locais, períodos, sexos --- sem mexer em nada. A ferramenta central é a #strong[amostragem probabilística]: todo indivíduo tem uma probabilidade conhecida de ser sorteado, e é isso que garante a representatividade. A CatalyseR oferece os três métodos mais usados na pesca, e é por eles que vamos.
+
+=== Amostragem Aleatória Simples (AAS)
+<amostragem-aleatória-simples-aas>
+É a base de tudo, e a ideia não poderia ser mais simples: todo indivíduo da população tem #strong[a mesma chance] de ser sorteado, como tirar nomes de um chapéu. Imagine que o defeso abriu por dezesseis dias e você só tem perna para coletar em quatro deles. Em vez de escolher "os dias de tempo bom" (que enviesariam a captura), você sorteia:
+
+#block[
+#Skylighting(([#FunctionTok("set.seed");#NormalTok("(");#DecValTok("2026");#NormalTok(")");],
+[#NormalTok("dias_possiveis ");#OtherTok("<-");#NormalTok(" ");#DecValTok("1");#SpecialCharTok(":");#DecValTok("16");],
+[#NormalTok("dias_coleta ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("sample");#NormalTok("(dias_possiveis, ");#AttributeTok("size =");#NormalTok(" ");#DecValTok("4");#NormalTok(")   ");#CommentTok("# sorteio sem reposição");],
+[#FunctionTok("sort");#NormalTok("(dias_coleta)");],));
+#block[
+#Skylighting(([#NormalTok("[1]  1  6  9 13");],));
+]
+]
+Pronto: quatro dias escolhidos pelo acaso, sem a sua mão no meio. A AAS é honesta e fácil, mas tem um ponto cego --- ela ignora qualquer estrutura conhecida da população. Se metade do estuário é mangue e metade é praia, um sorteio simples pode, por azar, cair quase todo num lado só. Quando sabemos que existe essa estrutura, vale usá-la a nosso favor, e é o que faz o método seguinte.
+
+=== Amostragem Estratificada Proporcional (AEP)
+<amostragem-estratificada-proporcional-aep>
+Estratificar é dividir a população em subgrupos homogêneos --- os #strong[estratos] --- e amostrar dentro de cada um. Se as três áreas de um estuário diferem entre si, elas viram os estratos; aí garantimos que nenhuma fique de fora e, de quebra, já saímos com os grupos prontos para comparar. Na alocação #strong[proporcional], o tamanho da amostra em cada estrato acompanha o tamanho do estrato: áreas maiores recebem mais pontos.
+
+#block[
+#Skylighting(([#NormalTok("estratos ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("data.frame");#NormalTok("(");],
+[#NormalTok("  ");#AttributeTok("area =");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#StringTok("\"Área 1\"");#NormalTok(", ");#StringTok("\"Área 2\"");#NormalTok(", ");#StringTok("\"Área 3\"");#NormalTok("),");],
+[#NormalTok("  ");#AttributeTok("N    =");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#DecValTok("500");#NormalTok(", ");#DecValTok("300");#NormalTok(", ");#DecValTok("200");#NormalTok(")            ");#CommentTok("# tamanho de cada estrato");],
+[#NormalTok(")");],
+[#NormalTok("n_total ");#OtherTok("<-");#NormalTok(" ");#DecValTok("50");],
+[#NormalTok("estratos");#SpecialCharTok("$");#NormalTok("n_h ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("round");#NormalTok("(n_total ");#SpecialCharTok("*");#NormalTok(" estratos");#SpecialCharTok("$");#NormalTok("N ");#SpecialCharTok("/");#NormalTok(" ");#FunctionTok("sum");#NormalTok("(estratos");#SpecialCharTok("$");#NormalTok("N))");],
+[#NormalTok("estratos");],));
+#block[
+#Skylighting(([#NormalTok("    area   N n_h");],
+[#NormalTok("1 Área 1 500  25");],
+[#NormalTok("2 Área 2 300  15");],
+[#NormalTok("3 Área 3 200  10");],));
+]
+]
+A maior das áreas levou metade da amostra; a menor, um quinto. Esse é o método certo quando você sabe que um fator --- local, período, profundidade --- influencia forte a resposta: ele protege a comparação ao assegurar que cada subgrupo importante seja representado na medida do seu peso.
+
+=== Amostragem Sistemática (AS)
+<amostragem-sistemática-as>
+Às vezes a população chega em fila: lances ao longo de um dia, peixes saindo da rede um após o outro, indivíduos numa esteira de triagem. Aí é prático sortear apenas o #strong[ponto de partida] e seguir a intervalos fixos. O passo é $k = N \/ n$ --- a cada $k$ indivíduos, um entra na amostra.
+
+#block[
+#Skylighting(([#NormalTok("N ");#OtherTok("<-");#NormalTok(" ");#DecValTok("200");#NormalTok("; n ");#OtherTok("<-");#NormalTok(" ");#DecValTok("8");],
+[#NormalTok("k ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("floor");#NormalTok("(N ");#SpecialCharTok("/");#NormalTok(" n)              ");#CommentTok("# passo de amostragem");],
+[#FunctionTok("set.seed");#NormalTok("(");#DecValTok("2026");#NormalTok(")");],
+[#NormalTok("inicio ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("sample");#NormalTok("(");#DecValTok("1");#SpecialCharTok(":");#NormalTok("k, ");#DecValTok("1");#NormalTok(")       ");#CommentTok("# sorteia só o ponto de partida");],
+[#NormalTok("amostra ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("seq");#NormalTok("(inicio, ");#AttributeTok("by =");#NormalTok(" k, ");#AttributeTok("length.out =");#NormalTok(" n)");],
+[#NormalTok("amostra");],));
+#block[
+#Skylighting(([#NormalTok("[1]  25  50  75 100 125 150 175 200");],));
+]
+]
+É rápida e cobre a fila de ponta a ponta. O cuidado é com #strong[padrões cíclicos]: se a lista tem um ritmo que coincide com o passo $k$ --- digamos, a rede sempre sobe mais cheia de manhã e você acaba pegando só as manhãs ---, a amostra fica enviesada justamente por causa da regularidade. Quando não há esse risco, a sistemática é uma escolha econômica e elegante.
+
+=== Estudo de caso: captura de camarão por arrasto
+<estudo-de-caso-captura-de-camarão-por-arrasto>
+Vamos juntar tudo num exemplo real. Queremos avaliar #strong[quanto camarão se captura] ao longo de diferentes períodos do ano e em locais distintos de um estuário --- informação valiosa para a gestão do recurso. Duas perguntas guiam o estudo: #emph[a captura difere entre os locais?] e #emph[o período do ano afeta a quantidade capturada?] Cada pergunta já é, no fundo, uma hipótese à espera de um teste.
+
+A captura é feita por #strong[arrasto], com a embarcação rebocando a rede pelo fundo (#ref(<fig-barco>, supplement: [Figura])). Reparar nesse desenho não é detalhe: o petrecho, a abertura da boca da rede, o tempo de arrasto e a velocidade definem o #strong[esforço de pesca] --- e é esse esforço que precisaremos registrar para que as capturas sejam comparáveis entre si.
+
+#figure([
+#box(image("capitulos\\capitulo06/../../images/barco_camarao_arrasto.png", width: 85.0%))
+], caption: figure.caption(
+position: bottom, 
+[
+Captura de camarão por arrasto de fundo: a embarcação reboca a rede pelas portas de arrasto, e o camarão se acumula no saco (copo). O esforço de pesca depende do petrecho, da abertura da rede e do tempo de arrasto.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-barco>
+
+
+Aqui está o coração do planejamento observacional: a lista de variáveis não se improvisa no convés, ela se decide na escrivaninha. Para responder às perguntas, definimos de antemão o que será anotado a cada lance --- #emph[quando e em que condições] (data, fase lunar, vento), #emph[como se pescou] (petrecho e duração do esforço, para padronizar), #emph[o que se capturou] (peso de camarão e da fauna acompanhante, em quilogramas) e #emph[onde] (o local). Note que cada variável já nasce com um #strong[tipo] declarado: fase lunar e local são categóricas; pesos e duração, numéricas contínuas. Decidir o tipo agora é decidir, desde já, o que se poderá calcular depois.
+
+Tão importante quanto #emph[o que] medir é #emph[como] registrar. A captura é pesada a bordo, logo após cada lance, sempre na #strong[mesma unidade] e com o mesmo número de casas decimais. As informações vão primeiro para uma planilha de campo à prova de respingos e só depois são digitalizadas. A #ref(<fig-planilha>, supplement: [Figura]) mostra essa rotina de bordo --- conferir, separar, pesar, registrar lance a lance, num formato que já é quase #emph[tidy]: cada linha um lance, cada coluna uma variável.
+
+#figure([
+#box(image("capitulos\\capitulo06/../../images/planilha_coleta_camarao.png", width: 95.0%))
+], caption: figure.caption(
+position: bottom, 
+[
+Rotina de arrumação dos dados após cada lance e modelo de planilha de campo: conferir, separar por espécie, pesar, registrar, identificar o lance e conservar. Padronizar unidades e preencher de forma legível garante a rastreabilidade da amostragem.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-planilha>
+
+
+E o desenho da coleta? Ele combina cuidado no espaço e no tempo. No #strong[espaço], escolhem-se três áreas separadas por alguns quilômetros --- para que sejam de fato distintas ---, e elas funcionam como estratos. No #strong[tempo], cada ponto é visitado em vários momentos distribuídos ao acaso ao longo do estudo, para que nenhuma fase do ano fique sobre ou sub-representada. É, na prática, uma amostragem #strong[estratificada] (as áreas) com #strong[casualização] temporal --- exatamente os métodos que acabamos de ver, trabalhando juntos.
+
+Quando essa planilha estiver pronta, ela alimentará a comparação que motivou o estudo: a #strong[captura por unidade de esforço] (CPUE) entre locais e entre períodos. Como CPUE costuma fugir da normalidade, entra ali um teste não paramétrico como o de Kruskal-Wallis, que veremos na unidade de inferência. O conjunto #NormalTok("captura_petrechos");, do pacote #NormalTok("EAPADados");, traz justamente esse tipo de dado de captura por aparelho de pesca, e será o campo de prática lá adiante. O planejamento que fizemos aqui é o que torna aquela análise possível.
+
+=== Estudo de caso: a força da arrebentação
+<estudo-de-caso-a-força-da-arrebentação>
+Mudemos de praia --- literalmente. Na orla, a #strong[zona de arrebentação] (a faixa em que as ondas quebram) abriga uma comunidade própria de peixes, e é natural perguntar: #emph[essa comunidade muda conforme a força da arrebentação?] Foi exatamente o que investigaram #cite(<felix2006>, form: "prose") no litoral do Paraná, num caso que virou referência de como o planejamento decide o destino da análise.
+
+O desenho parecia robusto. Escolheram #strong[três praias] ao longo de um gradiente de exposição às ondas --- uma de energia baixa, uma média e uma alta --- e, durante #strong[doze meses], fizeram #strong[cinco arrastos] com rede picaré de 30 metros em cada praia. São cento e oitenta arrastos: uma montanha de dados, poder estatístico aparentemente de sobra.
+
+Mas repare onde mora a cilada. Cada #strong[nível de energia] foi representado por #strong[uma única praia]: a energia baixa #emph[é] a Praia 1, a média #emph[é] a Praia 2, a alta #emph[é] a Praia 3. Energia e identidade da praia ficaram #strong[confundidas] --- grudadas, impossíveis de separar. Os cinco arrastos não são cinco réplicas do nível de energia; são #strong[subamostras] de uma praia só. No nível em que a pergunta de fato vive --- a energia da arrebentação ---, o número de unidades independentes é #strong[um]. É a pseudo-replicação de novo @hurlbert1984, só que agora no espaço, não no tanque.
+
+A consequência é direta. Qualquer diferença entre as praias pode ser efeito da arrebentação, sim --- mas pode também ser granulometria, influência estuarina, presença de microhabitats ou qualquer atributo que aquelas três praias específicas não compartilham. O teste vai mesmo acusar diferença (ela existe), só que não consegue dizer #strong[de quê]. É como provar um único prato em três restaurantes e concluir algo sobre a culinária da cidade inteira: você comparou três pratos, não três cozinhas.
+
+E não adianta coletar mais. Doze meses de uma praia continuam sendo uma praia; somar arrastos engorda a estimativa #emph[daquela] praia, não cria praias novas. O conserto não é mais esforço --- é esforço no #strong[lugar certo]. Para testar energia, cada nível precisa de #strong[várias praias independentes] (pelo menos três). Aí a variação natural entre praias de um mesmo nível deixa de ser um ruído ignorado e passa a ser a #strong[régua] contra a qual o efeito da energia é medido @underwood1997. Os arrastos seguem valiosos, mas no seu devido papel: subamostras que afinam a medida de cada praia, sem se passar por réplicas do fator.
+
+Vale fixar o vocabulário, porque ele é a fonte de metade das confusões. A #strong[réplica] é a unidade independente que recebe o nível do fator --- aqui, a #strong[praia]. A #strong[subamostra] é cada coleta feita #emph[dentro] dessa unidade --- aqui, cada #strong[arrasto]. Os cinco arrastos de uma praia não são cinco praias: são cinco olhadas na mesma praia, que servem para descrevê-la com mais firmeza. Por isso, na prática, costuma-se #strong[tirar a média dos cinco arrastos] de cada praia e levar esse único valor representativo para a comparação entre os níveis de energia --- assim cada praia entra na análise como #strong[uma] unidade, que é exatamente o que ela é. A hierarquia fica: #strong[força da arrebentação] (fator) → #strong[praia] (réplica) → #strong[arrasto] (subamostra).
+
+Fica a pergunta que desarma a armadilha --- a mesma de sempre, agora vestida de maré: #emph[o que, exatamente, recebeu o nível de energia de forma independente?] A praia. E é ela que você conta como réplica. O #ref(<fig-arrebentacao>, supplement: [Figura]) resume, passo a passo, o plano de coleta que transforma essa pergunta num desenho capaz de sustentar a resposta.
+
+#figure([
+#box(image("capitulos\\capitulo06/../../images/infografico_arrebentacao_planejamento.png", width: 80.0%))
+], caption: figure.caption(
+position: bottom, 
+[
+Planejamento amostral na zona de arrebentação. Para testar se a comunidade de peixes varia com a força das ondas, o gradiente de energia (baixa, média e alta) recebe, em cada nível, três praias independentes (P1--P9): as réplicas espaciais verdadeiras do fator. Em cada praia fazem-se vários arrastos de picaré padronizados, que são subamostras --- tira-se a média dos cinco arrastos para obter um único valor representativo por praia. A faixa inferior fixa a hierarquia amostral (força da arrebentação → praia → arrasto), e a coluna à direita resume os passos práticos da coleta. É esse desenho que separa o efeito da arrebentação da identidade de cada praia. Adaptado de #cite(<felix2006>, form: "prose").
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-arrebentacao>
+
+
+== Planejamentos Experimentais
+<planejamentos-experimentais>
+Até agora apenas observamos. Mudemos de chave: e se quisermos saber se uma #strong[ração nova] faz o peixe crescer mais? Observar não basta --- precisamos #strong[intervir], dando a ração a uns e não a outros, e comparar. Essa é a essência do #strong[experimento], e é o que nos autoriza a falar em causa, não apenas em associação. Mas intervir tem regras; sem elas, você nunca saberá se mediu a ração ou o acaso.
+
+Três princípios sustentam todo bom experimento. A #strong[repetição] (réplicas) nos dá uma medida do acaso, sem a qual não há como julgar se uma diferença é real ou sorte. A #strong[casualização] (sortear quem recebe cada tratamento) protege contra vieses que não controlamos --- aquele tanque que pega mais sol, aquele lote de peixes de outra origem. E o #strong[controle local] (blocos) isola fontes de variação conhecidas, como a posição no viveiro ou o dia da medição. Os delineamentos clássicos, que veremos a seguir, são apenas combinações inteligentes desses três princípios --- e a CatalyseR oferece cinco deles.
+
+=== A armadilha da pseudo-replicação
+<a-armadilha-da-pseudo-replicação>
+Antes dos delineamentos, um aviso que vale por um capítulo inteiro.
+
+#block[
+#callout(
+body: 
+[
+Réplica de verdade é a #strong[unidade experimental independente] --- aquela que recebeu o tratamento de forma autônoma. Se você aplica uma ração a #strong[um] tanque e depois pesa 50 peixes desse tanque, você #strong[não] tem 50 réplicas: tem uma só. Os 50 peixes dividem a mesma água, a mesma temperatura, a mesma história. Tratá-los como independentes é cometer #strong[pseudo-replicação] --- um erro tão comum quanto grave, que infla artificialmente o tamanho da amostra e fabrica significâncias falsas.
+
+A pergunta que desarma a cilada é simples: #emph[o que, exatamente, recebeu o tratamento de forma independente?] A resposta é a sua unidade experimental --- e é ela que você conta como réplica.
+
+]
+, 
+title: 
+[
+Conte réplicas, não subamostras
+]
+, 
+background_color: 
+rgb("#f7dddc")
+, 
+icon_color: 
+rgb("#CC1914")
+, 
+icon: 
+none
+, 
+body_background_color: 
+white
+)
+]
+=== DIC --- Inteiramente Casualizado
+<dic-inteiramente-casualizado>
+O #strong[Delineamento Inteiramente Casualizado] é o mais simples: os tratamentos são sorteados livremente entre as unidades, sem nenhuma restrição. Ele pede condições homogêneas --- um laboratório, ou um conjunto de gaiolas idênticas num mesmo tanque, onde nada além do tratamento distingue uma unidade da outra. É o desenho do experimento das rações iso-proteicas para bagres que analisaremos por ANOVA mais à frente.
+
+Montar um DIC é sortear. Suponha quatro rações (A, B, C, D) e cinco gaiolas por ração:
+
+#block[
+#Skylighting(([#FunctionTok("set.seed");#NormalTok("(");#DecValTok("2026");#NormalTok(")");],
+[#NormalTok("tratamentos ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("rep");#NormalTok("(");#FunctionTok("c");#NormalTok("(");#StringTok("\"A\"");#NormalTok(", ");#StringTok("\"B\"");#NormalTok(", ");#StringTok("\"C\"");#NormalTok(", ");#StringTok("\"D\"");#NormalTok("), ");#AttributeTok("each =");#NormalTok(" ");#DecValTok("5");#NormalTok(")");],
+[#NormalTok("plano_dic ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("data.frame");#NormalTok("(");#AttributeTok("gaiola =");#NormalTok(" ");#DecValTok("1");#SpecialCharTok(":");#DecValTok("20");#NormalTok(", ");#AttributeTok("racao =");#NormalTok(" ");#FunctionTok("sample");#NormalTok("(tratamentos))  ");#CommentTok("# casualização");],
+[#FunctionTok("head");#NormalTok("(plano_dic)");],));
+#block[
+#Skylighting(([#NormalTok("  gaiola racao");],
+[#NormalTok("1      1     A");],
+[#NormalTok("2      2     B");],
+[#NormalTok("3      3     C");],
+[#NormalTok("4      4     C");],
+[#NormalTok("5      5     C");],
+[#NormalTok("6      6     C");],));
+]
+]
+O #NormalTok("sample()"); embaralha as rações entre as gaiolas --- é a casualização em ação. A CatalyseR faz exatamente isso quando você escolhe #emph[DIC] no menu, e ainda desenha o #strong[croqui], o mapa do experimento que você leva para o campo:
+
+#Skylighting(([#NormalTok("plano_dic");#SpecialCharTok("$");#NormalTok("col ");#OtherTok("<-");#NormalTok(" ((plano_dic");#SpecialCharTok("$");#NormalTok("gaiola ");#SpecialCharTok("-");#NormalTok(" ");#DecValTok("1");#NormalTok(") ");#SpecialCharTok("%%");#NormalTok(" ");#DecValTok("5");#NormalTok(") ");#SpecialCharTok("+");#NormalTok(" ");#DecValTok("1");],
+[#NormalTok("plano_dic");#SpecialCharTok("$");#NormalTok("lin ");#OtherTok("<-");#NormalTok(" ((plano_dic");#SpecialCharTok("$");#NormalTok("gaiola ");#SpecialCharTok("-");#NormalTok(" ");#DecValTok("1");#NormalTok(") ");#SpecialCharTok("%/%");#NormalTok(" ");#DecValTok("5");#NormalTok(") ");#SpecialCharTok("+");#NormalTok(" ");#DecValTok("1");],
+[],
+[#FunctionTok("ggplot");#NormalTok("(plano_dic, ");#FunctionTok("aes");#NormalTok("(col, lin, ");#AttributeTok("fill =");#NormalTok(" racao)) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("geom_tile");#NormalTok("(");#AttributeTok("color =");#NormalTok(" ");#StringTok("\"white\"");#NormalTok(", ");#AttributeTok("linewidth =");#NormalTok(" ");#FloatTok("1.2");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("geom_text");#NormalTok("(");#FunctionTok("aes");#NormalTok("(");#AttributeTok("label =");#NormalTok(" racao), ");#AttributeTok("color =");#NormalTok(" ");#StringTok("\"white\"");#NormalTok(", ");#AttributeTok("fontface =");#NormalTok(" ");#StringTok("\"bold\"");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("scale_fill_manual");#NormalTok("(");#AttributeTok("values =");#NormalTok(" ");#FunctionTok("unname");#NormalTok("(ocean[");#FunctionTok("c");#NormalTok("(");#StringTok("\"NAVY\"");#NormalTok(",");#StringTok("\"TEAL\"");#NormalTok(",");#StringTok("\"AMBER\"");#NormalTok(",");#StringTok("\"CORAL\"");#NormalTok(")])) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("scale_y_reverse");#NormalTok("() ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(", ");#AttributeTok("fill =");#NormalTok(" ");#StringTok("\"Ração\"");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("theme");#NormalTok("(");#AttributeTok("axis.text =");#NormalTok(" ");#FunctionTok("element_blank");#NormalTok("(), ");#AttributeTok("panel.grid =");#NormalTok(" ");#FunctionTok("element_blank");#NormalTok("())");],));
+#figure([
+#box(image("capitulos\\capitulo06/planejando_sua_pesquisa_files/figure-typst/dic-croqui-1.svg"))
+], caption: figure.caption(
+position: bottom, 
+[
+Croqui de um DIC com quatro rações e cinco repetições: as 20 gaiolas dispostas numa grade, com o tratamento sorteado para cada uma.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+
+
+=== DBC --- Blocos Casualizados
+<dbc-blocos-casualizados>
+E quando as condições #strong[não] são homogêneas? Imagine um viveiro comprido em que a água corre mais fria numa ponta do que na outra. Se você casualizar sem cuidado, a temperatura vira um carona clandestino na comparação das rações. O #strong[Delineamento em Blocos Casualizados] resolve isso agrupando as unidades em #strong[blocos] homogêneos --- cada faixa do viveiro é um bloco --- e sorteando #strong[todos] os tratamentos dentro de cada bloco. Assim, a variação entre blocos é isolada e tirada do caminho.
+
+#block[
+#Skylighting(([#FunctionTok("set.seed");#NormalTok("(");#DecValTok("2026");#NormalTok(")");],
+[#NormalTok("trats ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#StringTok("\"A\"");#NormalTok(", ");#StringTok("\"B\"");#NormalTok(", ");#StringTok("\"C\"");#NormalTok(")");],
+[#NormalTok("plano_dbc ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("do.call");#NormalTok("(rbind, ");#FunctionTok("lapply");#NormalTok("(");#DecValTok("1");#SpecialCharTok(":");#DecValTok("4");#NormalTok(", ");#ControlFlowTok("function");#NormalTok("(b) {");],
+[#NormalTok("  ");#FunctionTok("data.frame");#NormalTok("(");#AttributeTok("bloco =");#NormalTok(" b, ");#AttributeTok("posicao =");#NormalTok(" ");#DecValTok("1");#SpecialCharTok(":");#DecValTok("3");#NormalTok(", ");#AttributeTok("racao =");#NormalTok(" ");#FunctionTok("sample");#NormalTok("(trats))  ");#CommentTok("# sorteio dentro do bloco");],
+[#NormalTok("}))");],
+[#FunctionTok("head");#NormalTok("(plano_dbc, ");#DecValTok("6");#NormalTok(")");],));
+#block[
+#Skylighting(([#NormalTok("  bloco posicao racao");],
+[#NormalTok("1     1       1     A");],
+[#NormalTok("2     1       2     C");],
+[#NormalTok("3     1       3     B");],
+[#NormalTok("4     2       1     B");],
+[#NormalTok("5     2       2     A");],
+[#NormalTok("6     2       3     C");],));
+]
+]
+Repare que o sorteio acontece #strong[dentro] de cada bloco: todo bloco recebe A, B e C, em ordem própria. É essa restrição que separa o DBC do DIC.
+
+=== DQL --- Quadrado Latino
+<dql-quadrado-latino>
+Às vezes não há uma, mas #strong[duas] fontes de variação a controlar --- por exemplo, a linha e a coluna de uma bancada de aquários, onde a luz varia num sentido e a temperatura no outro. O #strong[Delineamento em Quadrado Latino] dá conta das duas ao mesmo tempo: dispõe os tratamentos de modo que cada um apareça #strong[uma vez em cada linha e uma vez em cada coluna].
+
+#block[
+#Skylighting(([#NormalTok("trats ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#StringTok("\"A\"");#NormalTok(", ");#StringTok("\"B\"");#NormalTok(", ");#StringTok("\"C\"");#NormalTok(", ");#StringTok("\"D\"");#NormalTok(")");],
+[#NormalTok("ql ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("outer");#NormalTok("(");#DecValTok("0");#SpecialCharTok(":");#DecValTok("3");#NormalTok(", ");#DecValTok("0");#SpecialCharTok(":");#DecValTok("3");#NormalTok(", ");#ControlFlowTok("function");#NormalTok("(i, j) trats[((i ");#SpecialCharTok("+");#NormalTok(" j) ");#SpecialCharTok("%%");#NormalTok(" ");#DecValTok("4");#NormalTok(") ");#SpecialCharTok("+");#NormalTok(" ");#DecValTok("1");#NormalTok("])");],
+[#NormalTok("ql");],));
+#block[
+#Skylighting(([#NormalTok("     [,1] [,2] [,3] [,4]");],
+[#NormalTok("[1,] \"A\"  \"B\"  \"C\"  \"D\" ");],
+[#NormalTok("[2,] \"B\"  \"C\"  \"D\"  \"A\" ");],
+[#NormalTok("[3,] \"C\"  \"D\"  \"A\"  \"B\" ");],
+[#NormalTok("[4,] \"D\"  \"A\"  \"B\"  \"C\" ");],));
+]
+]
+Cada letra ocupa cada linha e cada coluna uma única vez --- luz e temperatura ficam, ambas, equilibradas entre os tratamentos. A restrição do método é geométrica: o número de tratamentos tem de ser igual ao de linhas e ao de colunas.
+
+=== Fatorial
+<fatorial>
+Até aqui variamos um fator de cada vez. Mas e se a #strong[alimentação] e a quantidade de #strong[abrigo] importarem juntas --- e, pior, se o ganho do suplemento na ração mudar conforme o abrigo disponível? Estudá-los em experimentos separados nunca revelaria isso. O #strong[delineamento fatorial] cruza os fatores e testa todas as combinações de uma vez, o que permite enxergar não só o efeito de cada um, mas a #strong[interação] entre eles: o caso em que o efeito de um depende do nível do outro.
+
+A #ref(<fig-fatorial>, supplement: [Figura]) mostra um exemplo concreto. Cruzamos a #strong[alimentação] (Fator A: ração padrão, $A_0$, ou com suplemento, $A_1$ --- dois níveis) com a #strong[vegetação/abrigo] (Fator V: baixa, média ou alta --- três níveis). São $2 times 3 = 6$ combinações, e cada aquário recebe uma delas. Repare que o desenho é, ao mesmo tempo, #strong[fatorial e em blocos]: as seis combinações aparecem uma vez em cada bloco, sorteadas dentro dele, e os cinco blocos controlam variações do ambiente --- posição na estante, luminosidade --- como vimos no DBC. Cinco blocos × seis combinações dão trinta aquários, e cada aquário é uma unidade experimental.
+
+#figure([
+#box(image("capitulos\\capitulo06/../../images/delineamento_fatorial.png", width: 90.0%))
+], caption: figure.caption(
+position: bottom, 
+[
+Delineamento fatorial $2 times 3$ em cinco blocos. O #strong[Fator A] (alimentação: $A_0$ ração padrão, $A_1$ ração com suplemento) cruza com o #strong[Fator V] (vegetação/abrigo: $V_1$ baixa, $V_2$ média, $V_3$ alta), gerando seis combinações. Em cada bloco, as seis combinações aparecem uma única vez, em ordem sorteada; os blocos controlam variações do ambiente (posição, luminosidade). Cada aquário é uma unidade experimental --- cinco blocos × seis combinações = trinta aquários.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-fatorial>
+
+
+Montar esse plano é cruzar os fatores e sortear as combinações dentro de cada bloco:
+
+#block[
+#Skylighting(([#FunctionTok("set.seed");#NormalTok("(");#DecValTok("2026");#NormalTok(")");],
+[#NormalTok("combinacoes ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("expand.grid");#NormalTok("(");],
+[#NormalTok("  ");#AttributeTok("alimentacao =");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#StringTok("\"A0\"");#NormalTok(", ");#StringTok("\"A1\"");#NormalTok("),               ");#CommentTok("# padrão / com suplemento");],
+[#NormalTok("  ");#AttributeTok("vegetacao   =");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#StringTok("\"V1\"");#NormalTok(", ");#StringTok("\"V2\"");#NormalTok(", ");#StringTok("\"V3\"");#NormalTok(")          ");#CommentTok("# abrigo baixo / médio / alto");],
+[#NormalTok(")                                            ");#CommentTok("# 2 x 3 = 6 combinações");],
+[],
+[#NormalTok("plano_fat ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("do.call");#NormalTok("(rbind, ");#FunctionTok("lapply");#NormalTok("(");#DecValTok("1");#SpecialCharTok(":");#DecValTok("5");#NormalTok(", ");#ControlFlowTok("function");#NormalTok("(bloco) {");],
+[#NormalTok("  ordem ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("sample");#NormalTok("(");#FunctionTok("nrow");#NormalTok("(combinacoes))         ");#CommentTok("# sorteio dentro do bloco");],
+[#NormalTok("  ");#FunctionTok("data.frame");#NormalTok("(");#AttributeTok("bloco =");#NormalTok(" bloco, ");#AttributeTok("aquario =");#NormalTok(" ");#DecValTok("1");#SpecialCharTok(":");#DecValTok("6");#NormalTok(",");],
+[#NormalTok("             combinacoes[ordem, ], ");#AttributeTok("row.names =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(")");],
+[#NormalTok("}))");],
+[#FunctionTok("head");#NormalTok("(plano_fat)");],));
+#block[
+#Skylighting(([#NormalTok("  bloco aquario alimentacao vegetacao");],
+[#NormalTok("1     1       1          A0        V3");],
+[#NormalTok("2     1       2          A0        V1");],
+[#NormalTok("3     1       3          A1        V3");],
+[#NormalTok("4     1       4          A1        V1");],
+[#NormalTok("5     1       5          A1        V2");],
+[#NormalTok("6     1       6          A0        V2");],));
+]
+]
+O #NormalTok("expand.grid()"); gera as seis combinações; o #NormalTok("sample()"); as embaralha dentro de cada bloco. A interação é a verdadeira recompensa do fatorial --- é ela que responde perguntas do tipo "o suplemento na ração só compensa quando há bastante abrigo?".
+
+=== Parcelas Subdivididas (Split-Plot)
+<parcelas-subdivididas-split-plot>
+Chegamos ao delineamento mais sofisticado da lista --- e ao que mais se presta a confusão. Ele aparece quando um dos fatores só pode ser aplicado a uma área grande, e o outro, a subdivisões dela. Pense em #strong[temperatura da água], que vale para um tanque inteiro, combinada com #strong[linhagem do peixe], que você consegue separar em compartimentos dentro do tanque. A temperatura vai na #strong[parcela principal]\; a linhagem, nas #strong[subparcelas].
+
+A consequência é que há #strong[dois sorteios], em dois níveis. Primeiro, dentro de cada bloco, sorteiam-se os níveis do fator principal entre as parcelas grandes. Depois, dentro de cada parcela grande, sorteiam-se os níveis do fator subdividido entre as subparcelas. A #ref(<fig-split-plot>, supplement: [Figura]) mostra essa aleatorização em dois estágios.
+
+#figure([
+#box(image("capitulos\\capitulo06/../../images/Parcelas-subdivididas.png", width: 70.0%))
+], caption: figure.caption(
+position: bottom, 
+[
+Delineamento em parcelas subdivididas (split-plot) com três blocos. Em cada bloco, os níveis do #strong[Fator A] (parcelas principais, A1--A3) são sorteados primeiro; dentro de cada parcela principal, os níveis do #strong[Fator B] (subparcelas, B1--B4) são sorteados em seguida. São, portanto, dois estágios de aleatorização --- a origem das duas fontes de erro que a análise precisa respeitar.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-split-plot>
+
+
+Esse arranjo se monta sorteando em duas etapas:
+
+#block[
+#Skylighting(([#FunctionTok("set.seed");#NormalTok("(");#DecValTok("2026");#NormalTok(")");],
+[#NormalTok("A ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#StringTok("\"A1\"");#NormalTok(", ");#StringTok("\"A2\"");#NormalTok(", ");#StringTok("\"A3\"");#NormalTok(")            ");#CommentTok("# fator principal (parcela): ex. temperatura");],
+[#NormalTok("B ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#StringTok("\"B1\"");#NormalTok(", ");#StringTok("\"B2\"");#NormalTok(", ");#StringTok("\"B3\"");#NormalTok(", ");#StringTok("\"B4\"");#NormalTok(")      ");#CommentTok("# fator subdividido (subparcela): ex. linhagem");],
+[],
+[#NormalTok("plano_sp ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("do.call");#NormalTok("(rbind, ");#FunctionTok("lapply");#NormalTok("(");#DecValTok("1");#SpecialCharTok(":");#DecValTok("3");#NormalTok(", ");#ControlFlowTok("function");#NormalTok("(bloco) {");],
+[#NormalTok("  ordem_A ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("sample");#NormalTok("(A)                                   ");#CommentTok("# 1o sorteio: parcelas no bloco");],
+[#NormalTok("  ");#FunctionTok("do.call");#NormalTok("(rbind, ");#FunctionTok("lapply");#NormalTok("(");#FunctionTok("seq_along");#NormalTok("(ordem_A), ");#ControlFlowTok("function");#NormalTok("(p) {");],
+[#NormalTok("    ");#FunctionTok("data.frame");#NormalTok("(");#AttributeTok("bloco =");#NormalTok(" bloco, ");#AttributeTok("parcela =");#NormalTok(" p, ");#AttributeTok("fator_A =");#NormalTok(" ordem_A[p],");],
+[#NormalTok("               ");#AttributeTok("sub =");#NormalTok(" ");#DecValTok("1");#SpecialCharTok(":");#FunctionTok("length");#NormalTok("(B), ");#AttributeTok("fator_B =");#NormalTok(" ");#FunctionTok("sample");#NormalTok("(B))   ");#CommentTok("# 2o sorteio: subparcelas");],
+[#NormalTok("  }))");],
+[#NormalTok("}))");],
+[#FunctionTok("head");#NormalTok("(plano_sp, ");#DecValTok("8");#NormalTok(")");],));
+#block[
+#Skylighting(([#NormalTok("  bloco parcela fator_A sub fator_B");],
+[#NormalTok("1     1       1      A1   1      B2");],
+[#NormalTok("2     1       1      A1   2      B1");],
+[#NormalTok("3     1       1      A1   3      B3");],
+[#NormalTok("4     1       1      A1   4      B4");],
+[#NormalTok("5     1       2      A3   1      B4");],
+[#NormalTok("6     1       2      A3   2      B1");],
+[#NormalTok("7     1       2      A3   3      B3");],
+[#NormalTok("8     1       2      A3   4      B2");],));
+]
+]
+O detalhe que #strong[não] pode ser ignorado é a contabilidade do erro. Por haver dois níveis de sorteio, há #strong[duas fontes de erro]: o fator principal é julgado contra o erro entre parcelas; o fator subdividido e a interação, contra o erro entre subparcelas. Tratar tudo como um experimento simples --- o engano clássico --- leva a testar o fator principal com a régua errada. É um parente próximo da pseudo-replicação, e o motivo de o split-plot exigir uma análise com a estrutura certa.
+
+=== Estudo de caso experimental
+<estudo-de-caso-experimental>
+Um exemplo aterrissa todos esses princípios. No experimento das rações iso-proteicas para bagres, quatro rações (A a D) são distribuídas ao acaso entre gaiolas-rede idênticas num mesmo tanque, com cinco réplicas cada --- um #strong[DIC] de manual. As gaiolas são idênticas (condições homogêneas), o sorteio protege contra vieses, e as cinco réplicas medem o acaso. No fim, pesam-se os peixes e comparam-se as médias.
+
+E como se comparam quatro médias de uma vez? Com a #strong[ANOVA], que veremos na unidade de inferência. Eis a grande recompensa de planejar direito: um experimento bem desenhado já nasce pedindo a análise certa. O delineamento aqui escolhido entrega, de bandeja, a ANOVA que aplicaremos adiante. O conjunto #NormalTok("isoproteica_bagre");, do #NormalTok("EAPADados");, guarda esses dados para a nossa prática.
+
+== Do mouse ao código: planejar na CatalyseR
+<do-mouse-ao-código-planejar-na-catalyser>
+Tudo o que percorremos neste capítulo cabe num só lugar da IDE: o menu #strong[Planejando sua Pesquisa], com seus dois submenus --- #emph[Planejamentos Observacionais] e #emph[Planejamentos Experimentais]. Você escolhe o método (uma das amostragens ou um dos delineamentos), informa os níveis, repetições e blocos, e a CatalyseR sorteia o plano e desenha o croqui na tela. Nada de digitar #NormalTok("sample()"); na mão, a menos que você queira.
+
+E aí entra a ponte que dá identidade ao ecossistema: ao clicar em #strong[exportar], a interface gera um #strong[Projeto R (.zip)] com o script de sorteio e um relatório Quarto já preenchido --- os mesmos templates #NormalTok("relatorio_sampling.qmd"); e #NormalTok("relatorio_experimental_design.qmd");. Você sai da tela com o plano de coleta documentado e reproduzível, pronto para levar a campo. É o "do mouse ao código" aplicado ao começo de tudo: a IDE planeja com você apontando e clicando, e te devolve o código que registra e reproduz cada decisão.
+
+#block[
+#callout(
+body: 
+[
+Antes do primeiro número vem a decisão que comanda todas as outras: #strong[planejar a coleta é escolher o teste]. O planejamento tem dois ramos. No #strong[observacional], não intervimos --- apenas sorteamos quem observar, com #strong[amostragem aleatória simples] (todos com a mesma chance), #strong[estratificada proporcional] (cada subgrupo na medida do seu peso) ou #strong[sistemática] (ponto de partida sorteado e passo fixo). No #strong[experimental], intervimos para falar de causa, sob três princípios --- #strong[repetição], #strong[casualização] e #strong[controle local] ---, e fugindo da #strong[pseudo-replicação], que confunde subamostras com réplicas. Os delineamentos combinam esses princípios: #strong[DIC] para condições homogêneas, #strong[DBC] para isolar uma fonte de variação, #strong[DQL] para isolar duas, #strong[fatorial] para estudar fatores e suas interações, e #strong[parcelas subdivididas] quando há dois níveis de aplicação --- e, com eles, duas fontes de erro. Todo estudo bem planejado já nasce pedindo a análise certa.
+
+]
+, 
+title: 
+[
+Resumo do capítulo
+]
+, 
+background_color: 
+rgb("#ccf1e3")
+, 
+icon_color: 
+rgb("#00A047")
+, 
+icon: 
+none
+, 
+body_background_color: 
+white
+)
+]
+#block[
+#callout(
+body: 
+[
++ Liste as variáveis do estudo do camarão e classifique cada uma como nominal, ordinal, discreta ou contínua. Quais permitiriam uma comparação de médias? Quais, uma tabela de contingência?
++ Sorteie, por AAS, cinco dias de coleta entre vinte possíveis. Mude a semente (#NormalTok("set.seed");) e observe como o sorteio muda.
++ Você tem três áreas com 600, 300 e 100 indivíduos e quer uma amostra total de 40. Calcule, em R, a alocação proporcional por estrato.
++ Monte, em R, o plano de um DIC com casualização para três dietas em doze tanques.
++ Explique, com suas palavras, por que pesar trinta peixes de um único tanque tratado não gera trinta réplicas.
++ Num split-plot que cruza temperatura da água e linhagem do peixe, qual fator você poria na parcela principal e qual na subparcela? Por quê?
+
+]
+, 
+title: 
+[
+Para praticar
+]
+, 
+background_color: 
+rgb("#dae6fb")
+, 
+icon_color: 
+rgb("#0758E5")
+, 
+icon: 
+none
+, 
+body_background_color: 
+white
+)
+]
+= Preparando os dados: do caos ao #emph[tidy]
+<preparando-os-dados-do-caos-ao-tidy>
+Ou: como transformar uma planilha larga e teimosa em dados prontos para analisar
+
+\
+#block[
+#callout(
+body: 
+[
+Você baixou a planilha do desembarque pesqueiro e abriu cheio de esperança. Aí veio o balde de água fria: dezenas de colunas com nomes como #NormalTok("2021 - Captura_t");, #NormalTok("2021 - Receita_mil");, #NormalTok("2022 - Captura_t");… uma coluna nova para cada ano e cada medida. Você quer só fazer um gráfico da captura ao longo do tempo, mas o R não entende essa bagunça. E agora?
+
+]
+, 
+title: 
+[
+Já passou por isso?
+]
+, 
+background_color: 
+rgb("#dae6fb")
+, 
+icon_color: 
+rgb("#0758E5")
+, 
+icon: 
+none
+, 
+body_background_color: 
+white
+)
+]
+A boa notícia é que essa dor tem cura, e a cura é rápida. No fim deste capítulo, aquela planilha teimosa vai virar um conjunto de dados organizado --- e a receita que fez isso caberá em três linhas de código que você pode guardar e reusar todo ano. Melhor: você vai montar essa receita #strong[no mouse], dentro da CatalyseR, e sair com o script #NormalTok(".R"); pronto.
+
+Antes de qualquer teste, antes de qualquer gráfico bonito, existe uma etapa que quase ninguém conta nos livros: #strong[arrumar os dados]. É a parte silenciosa do trabalho, a que dá menos glória e toma mais tempo. Mas é também onde as boas análises começam. Uma planilha bem arrumada chega #strong[pronta] para o teste; uma planilha bagunçada contamina tudo que vem depois. Este capítulo é sobre transformar a primeira na segunda, com método.
+
+O preparo completo tem cinco passos, sempre nesta ordem: #strong[importar → arrumar → filtrar → tipar → recodificar] --- a mesma sequência do menu #emph[Preparando Dados] da CatalyseR. Os extremos você já conhece do Capítulo 3: importar os dados e dar-lhes os tipos certos. Aqui a gente foca no #strong[coração]: #emph[arrumar], ou seja, dar aos dados a forma que a análise espera --- e na ferramenta que faz isso brilhar, as #strong[expressões regulares] (regex). A #ref(<fig-preparo>, supplement: [Figura]) resume o percurso: da planilha larga e teimosa até os dados #emph[tidy], prontos para analisar.
+
+#figure([
+#box(image("capitulos\\capitulo05/../../images/preparo_dados_tidy.png", width: 85.0%))
+], caption: figure.caption(
+position: bottom, 
+[
+Da planilha larga e bagunçada aos dados #emph[tidy]: empilhar tira o ano/medida do cabeçalho, alargar deixa cada medida em sua coluna, e separar quebra uma coluna composta. Fonte: elaborado pelo autor.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-preparo>
+
+
+== Os dados de treino
+<os-dados-de-treino>
+Para aprender a arrumar, nada de dados perfeitos. Precisamos de dados com os defeitos típicos do mundo real --- só que pequenos e previsíveis, para você conseguir seguir cada passo com os olhos. Por isso o #NormalTok("EAPADados"); traz dois conjuntos com o prefixo #NormalTok("treino_");, sintéticos e propositalmente "mal-arrumados", cada um treinando um tipo de arrumação.
+
+O primeiro, #NormalTok("treino_desembarque");, imita um relatório de produção pesqueira em #strong[formato largo]: cada ano vira duas colunas (captura e receita).
+
+#block[
+#Skylighting(([#FunctionTok("glimpse");#NormalTok("(treino_desembarque)");],));
+#block[
+#Skylighting(([#NormalTok("Rows: 12");],
+[#NormalTok("Columns: 8");],
+[#NormalTok("$ Porto                <chr> \"Bragança\", \"Bragança\", \"Bragança\", \"Vigia\", \"Vig…");],
+[#NormalTok("$ Especie              <chr> \"Pargo\", \"Serra\", \"Pescada\", \"Pargo\", \"Serra\", \"P…");],
+[#NormalTok("$ `2021 - Captura_t`   <dbl> 172.6, 150.2, 101.0, 89.1, 61.5, 113.6, 46.8, 111…");],
+[#NormalTok("$ `2021 - Receita_mil` <dbl> 2449.3, 1795.4, 1404.8, 1014.1, 701.6, 1255.5, 49…");],
+[#NormalTok("$ `2022 - Captura_t`   <dbl> 184.8, 145.6, 89.0, 69.6, 58.8, 147.3, 53.0, 96.9…");],
+[#NormalTok("$ `2022 - Receita_mil` <dbl> 1843.7, 1533.2, 1080.9, 1092.8, 547.1, 2238.7, 50…");],
+[#NormalTok("$ `2023 - Captura_t`   <dbl> 171.8, 183.9, 83.3, 76.1, 64.4, 130.9, 51.6, 122.…");],
+[#NormalTok("$ `2023 - Receita_mil` <dbl> 2436.9, 1689.3, 1256.6, 734.3, 635.9, 1354.3, 500…");],));
+]
+]
+Repare no problema: o #strong[ano] e a #strong[medida] estão escondidos no #emph[nome] da coluna, não nos dados. Para o R, #NormalTok("2021 - Captura_t"); é apenas um rótulo --- ele não sabe que ali dentro moram um ano (2021) e uma variável (captura em toneladas). Enquanto essa informação estiver presa no cabeçalho, você não consegue filtrar por ano nem plotar a captura contra o tempo.
+
+O segundo, #NormalTok("treino_coletas");, tem o defeito oposto: a informação está #strong[espremida dentro de uma célula].
+
+#block[
+#Skylighting(([#FunctionTok("glimpse");#NormalTok("(treino_coletas)");],));
+#block[
+#Skylighting(([#NormalTok("Rows: 15");],
+[#NormalTok("Columns: 5");],
+[#NormalTok("$ id              <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15");],
+[#NormalTok("$ codigo_coleta   <chr> \"SERRA-2023-AUG\", \"PESCADA-2021-AUG\", \"PESCADA-2023-AU…");],
+[#NormalTok("$ estacao_periodo <chr> \"E04_Chuvosa\", \"E01_Seca\", \"E01_Chuvosa\", \"E01_Seca\", …");],
+[#NormalTok("$ comprimento_cm  <dbl> 26.1, 23.7, 32.1, 43.2, 23.9, 50.2, 38.0, 18.7, 21.2, …");],
+[#NormalTok("$ peso_g          <dbl> 213.2, 115.0, 396.4, 818.1, 109.4, 1163.1, 609.9, 76.6…");],));
+]
+]
+A coluna #NormalTok("codigo_coleta"); guarda três coisas grudadas --- espécie, ano e porto --- num código como #NormalTok("PARGO-2023-BRA");. É prático para quem anota no campo, mas inútil para analisar: você não consegue agrupar por espécie nem comparar anos enquanto tudo estiver colado.
+
+Dois defeitos, duas soluções. Vamos a elas --- mas primeiro, à ideia que guia todas.
+
+== Largo, longo e o princípio #emph[tidy]
+<largo-longo-e-o-princípio-tidy>
+No Capítulo 3 você conheceu a régua dos dados #emph[tidy] (arrumados): cada variável em uma coluna, cada observação em uma linha, um valor por célula. É a organização "chata de propósito" que deixa somar, filtrar e comparar sem sofrimento --- e que o #NormalTok("ggplot2");, o #NormalTok("dplyr"); e a CatalyseR esperam receber.
+
+Os dois defeitos dos nossos conjuntos de treino são, no fundo, violações dessa régua. No #NormalTok("treino_desembarque");, uma mesma variável (a captura) está espalhada por várias colunas --- uma para cada ano. No #NormalTok("treino_coletas");, várias variáveis (espécie, ano, porto) estão amontoadas numa célula só. E é justamente aqui que este capítulo se separa do anterior: lá você aprendeu a #strong[limpar] os dados (padronizar nomes, acertar tipos, caçar espaços fantasmas); aqui você aprende a #strong[reformatá-los] --- mudar a forma da tabela inteira.
+
+Para reformatar, um par de palavras novo. Dados em formato #strong[largo] (#emph[wide]) têm muitas colunas e poucas linhas --- uma coluna por ano, por exemplo. Dados em formato #strong[longo] (#emph[long]) empilham essa informação: menos colunas, mais linhas, uma linha por combinação. Arrumar dados de pesquisa é, quase sempre, ir do largo para o longo --- e, às vezes, voltar um pouco. É esse vaivém que os próximos passos ensinam. E vale a intuição que guia tudo: #strong[arrumar já é preparar a análise] --- com os dados #emph[tidy], o gráfico e o teste vêm quase de graça.
+
+== Do mouse ao código: os cinco passos
+<do-mouse-ao-código-os-cinco-passos>
+Agora a parte prática. Vamos percorrer os cinco passos na CatalyseR e ver o R que corresponde a cada clique.
+
+=== Importar
+<importar>
+Este passo você já domina do Capítulo 3: #NormalTok("read_csv()");, #NormalTok("read_excel()"); ou #NormalTok("rio::import()");, sempre com #NormalTok("here::here()"); para o caminho não quebrar. Na CatalyseR, é o menu #emph[Importação e Visualização]. Como aqui os dados já chegam prontos do #NormalTok("EAPADados"); --- #NormalTok("data(treino_desembarque)"); ---, seguimos direto para a parte nova. Só um lembrete que economiza horas: se a planilha já chega #emph[tidy] da origem, os passos seguintes quase somem.
+
+=== Empilhar: do largo para o longo
+<empilhar-do-largo-para-o-longo>
+Aqui está o coração do capítulo. Empilhar é pegar aquele monte de colunas de ano e transformá-las em duas colunas: uma que diz #strong[qual] ano/medida, outra que guarda o #strong[valor]. A função que faz isso é #NormalTok("pivot_longer()");, e ela tem um truque elegante: consegue, no mesmo passo, #strong[extrair] o ano e a medida de dentro do nome da coluna.
+
+#block[
+#Skylighting(([#NormalTok("longo ");#OtherTok("<-");#NormalTok(" treino_desembarque ");#SpecialCharTok("|>");],
+[#NormalTok("  ");#FunctionTok("pivot_longer");#NormalTok("(");],
+[#NormalTok("    ");#AttributeTok("cols =");#NormalTok(" ");#FunctionTok("matches");#NormalTok("(");#StringTok("\"^[0-9]{4} - \"");#NormalTok("),        ");#CommentTok("# as colunas que começam com um ano");],
+[#NormalTok("    ");#AttributeTok("names_to =");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#StringTok("\"ano\"");#NormalTok(", ");#StringTok("\"metrica\"");#NormalTok("),         ");#CommentTok("# dois pedaços a extrair do nome");],
+[#NormalTok("    ");#AttributeTok("names_pattern =");#NormalTok(" ");#StringTok("\"^([0-9]{4}) - (.*)$\"");#NormalTok(",  ");#CommentTok("# a regra que separa ano e medida");],
+[#NormalTok("    ");#AttributeTok("values_to =");#NormalTok(" ");#StringTok("\"valor\"");#NormalTok(",");],
+[#NormalTok("    ");#AttributeTok("values_transform =");#NormalTok(" ");#FunctionTok("list");#NormalTok("(");#AttributeTok("valor =");#NormalTok(" as.numeric)");],
+[#NormalTok("  )");],
+[],
+[#FunctionTok("head");#NormalTok("(longo)");],));
+#block[
+#Skylighting(([#NormalTok("# A tibble: 6 × 5");],
+[#NormalTok("  Porto    Especie ano   metrica     valor");],
+[#NormalTok("  <chr>    <chr>   <chr> <chr>       <dbl>");],
+[#NormalTok("1 Bragança Pargo   2021  Captura_t    173.");],
+[#NormalTok("2 Bragança Pargo   2021  Receita_mil 2449.");],
+[#NormalTok("3 Bragança Pargo   2022  Captura_t    185.");],
+[#NormalTok("4 Bragança Pargo   2022  Receita_mil 1844.");],
+[#NormalTok("5 Bragança Pargo   2023  Captura_t    172.");],
+[#NormalTok("6 Bragança Pargo   2023  Receita_mil 2437.");],));
+]
+]
+Olhe o que aconteceu: o #NormalTok("ano"); e a #NormalTok("metrica");, antes presos no cabeçalho, agora são colunas de verdade. Aquele #NormalTok("names_pattern"); é uma #strong[expressão regular] (regex) --- o padrão que ensina o R a fatiar o nome da coluna. Não se assuste com ela; a próxima seção a destrincha. Por ora, guarde a intuição: cada pedaço entre parênteses #NormalTok("( )"); no padrão vira uma coluna nova. Dois parênteses, dois nomes (#NormalTok("ano"); e #NormalTok("metrica");).
+
+Na CatalyseR, esse passo é o menu #emph[Empilhar Colunas (Largo → Longo)]: você clica em "Detectar automaticamente" para marcar as colunas de ano, escolhe o padrão de extração numa lista e vê o resultado na hora --- sem escrever a regex à mão.
+
+=== Alargar: uma medida em cada coluna
+<alargar-uma-medida-em-cada-coluna>
+O formato longo já é analisável, mas às vezes queremos um meio-termo: uma linha por porto-espécie-ano, com a #strong[captura] e a #strong[receita] lado a lado, em colunas separadas. Isso é #emph[alargar] --- o caminho de volta, com #NormalTok("pivot_wider()");:
+
+#block[
+#Skylighting(([#NormalTok("tidy_final ");#OtherTok("<-");#NormalTok(" longo ");#SpecialCharTok("|>");],
+[#NormalTok("  ");#FunctionTok("pivot_wider");#NormalTok("(");#AttributeTok("names_from =");#NormalTok(" metrica, ");#AttributeTok("values_from =");#NormalTok(" valor)");],
+[],
+[#FunctionTok("head");#NormalTok("(tidy_final)");],));
+#block[
+#Skylighting(([#NormalTok("# A tibble: 6 × 5");],
+[#NormalTok("  Porto    Especie ano   Captura_t Receita_mil");],
+[#NormalTok("  <chr>    <chr>   <chr>     <dbl>       <dbl>");],
+[#NormalTok("1 Bragança Pargo   2021       173.       2449.");],
+[#NormalTok("2 Bragança Pargo   2022       185.       1844.");],
+[#NormalTok("3 Bragança Pargo   2023       172.       2437.");],
+[#NormalTok("4 Bragança Serra   2021       150.       1795.");],
+[#NormalTok("5 Bragança Serra   2022       146.       1533.");],
+[#NormalTok("6 Bragança Serra   2023       184.       1689.");],));
+]
+]
+Agora sim: cada linha é uma observação (porto, espécie, ano) e cada medida tem sua coluna. Este é o formato #emph[tidy] que a maioria das análises espera. Repare que empilhar e alargar são movimentos opostos e complementares --- empilhamos para extrair o que estava no cabeçalho, e alargamos para deixar cada medida em sua coluna.
+
+=== Separar: quebrar uma coluna composta
+<separar-quebrar-uma-coluna-composta>
+E quando o problema não está no cabeçalho, mas #strong[dentro] de uma célula? É o caso do #NormalTok("treino_coletas");, com aquele #NormalTok("codigo_coleta"); no formato #NormalTok("PARGO-2023-BRA");. Aqui não há o que empilhar --- só o que #strong[separar]. A função #NormalTok("extract()"); quebra uma coluna em várias usando a mesma ideia de regex com parênteses:
+
+#block[
+#Skylighting(([#NormalTok("coletas ");#OtherTok("<-");#NormalTok(" treino_coletas ");#SpecialCharTok("|>");],
+[#NormalTok("  ");#FunctionTok("extract");#NormalTok("(");],
+[#NormalTok("    ");#AttributeTok("col =");#NormalTok(" codigo_coleta,");],
+[#NormalTok("    ");#AttributeTok("into =");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#StringTok("\"especie\"");#NormalTok(", ");#StringTok("\"ano\"");#NormalTok(", ");#StringTok("\"porto\"");#NormalTok("),");],
+[#NormalTok("    ");#AttributeTok("regex =");#NormalTok(" ");#StringTok("\"^(.*)-([0-9]{4})-(.*)$\"");#NormalTok(",   ");#CommentTok("# três pedaços: espécie, ano, porto");],
+[#NormalTok("    ");#AttributeTok("remove =");#NormalTok(" ");#ConstantTok("FALSE");#NormalTok("                       ");#CommentTok("# mantém o código original, por segurança");],
+[#NormalTok("  )");],
+[],
+[#FunctionTok("head");#NormalTok("(coletas)");],));
+#block[
+#Skylighting(([#NormalTok("  id    codigo_coleta especie  ano porto estacao_periodo comprimento_cm peso_g");],
+[#NormalTok("1  1   SERRA-2023-AUG   SERRA 2023   AUG     E04_Chuvosa           26.1  213.2");],
+[#NormalTok("2  2 PESCADA-2021-AUG PESCADA 2021   AUG        E01_Seca           23.7  115.0");],
+[#NormalTok("3  3 PESCADA-2023-AUG PESCADA 2023   AUG     E01_Chuvosa           32.1  396.4");],
+[#NormalTok("4  4 PESCADA-2023-BEL PESCADA 2023   BEL        E01_Seca           43.2  818.1");],
+[#NormalTok("5  5   SERRA-2021-BEL   SERRA 2021   BEL     E03_Chuvosa           23.9  109.4");],
+[#NormalTok("6  6 PESCADA-2023-BEL PESCADA 2023   BEL        E02_Seca           50.2 1163.1");],));
+]
+]
+Três parênteses no padrão, três colunas novas. A coluna #NormalTok("estacao_periodo");, com valores como #NormalTok("E03_Seca");, pediria uma quebra ainda mais simples (#NormalTok("^(.*)_(.*)$");). Na CatalyseR, este é o menu #emph[Separar Coluna em Colunas]: você escolhe a coluna, define o padrão e cada grupo vira uma coluna --- de novo, sem digitar código.
+
+=== Filtrar e recodificar (e um lembrete de tipagem)
+<filtrar-e-recodificar-e-um-lembrete-de-tipagem>
+Com os dados empilhados e separados, faltam os retoques finais. #strong[Filtrar] é ficar só com o que interessa --- os anos mais recentes, uma espécie específica. #strong[Recodificar] é agrupar ou renomear níveis: juntar portos vizinhos numa região, padronizar grafias. E a #strong[tipagem] --- dizer ao R que #NormalTok("ano"); é número e #NormalTok("Especie"); é fator --- você já viu a fundo no Capítulo 3; aqui ela entra só como acabamento.
+
+#block[
+#Skylighting(([#NormalTok("analise ");#OtherTok("<-");#NormalTok(" tidy_final ");#SpecialCharTok("|>");],
+[#NormalTok("  ");#FunctionTok("filter");#NormalTok("(ano ");#SpecialCharTok(">=");#NormalTok(" ");#StringTok("\"2022\"");#NormalTok(") ");#SpecialCharTok("|>");#NormalTok("                          ");#CommentTok("# filtrar: só anos recentes");],
+[#NormalTok("  ");#FunctionTok("mutate");#NormalTok("(");],
+[#NormalTok("    ");#AttributeTok("ano     =");#NormalTok(" ");#FunctionTok("as.integer");#NormalTok("(ano),                       ");#CommentTok("# tipar (revisão do Cap. 3)");],
+[#NormalTok("    ");#AttributeTok("Especie =");#NormalTok(" ");#FunctionTok("factor");#NormalTok("(Especie)");],
+[#NormalTok("  )");],
+[],
+[#FunctionTok("glimpse");#NormalTok("(analise)");],));
+#block[
+#Skylighting(([#NormalTok("Rows: 24");],
+[#NormalTok("Columns: 5");],
+[#NormalTok("$ Porto       <chr> \"Bragança\", \"Bragança\", \"Bragança\", \"Bragança\", \"Bragança\"…");],
+[#NormalTok("$ Especie     <fct> Pargo, Pargo, Serra, Serra, Pescada, Pescada, Pargo, Pargo…");],
+[#NormalTok("$ ano         <int> 2022, 2023, 2022, 2023, 2022, 2023, 2022, 2023, 2022, 2023…");],
+[#NormalTok("$ Captura_t   <dbl> 184.8, 171.8, 145.6, 183.9, 89.0, 83.3, 69.6, 76.1, 58.8, …");],
+[#NormalTok("$ Receita_mil <dbl> 1843.7, 2436.9, 1533.2, 1689.3, 1080.9, 1256.6, 1092.8, 73…");],));
+]
+]
+Na CatalyseR, tudo isso vive na tela de importação --- os filtros de faixa e de nível, a tipagem de cada coluna e o botão #emph[Renomear Colunas] para trocar #NormalTok("2021 - Captura_t"); por algo limpo como #NormalTok("captura_t");. Cada ajuste no mouse entra no script.
+
+=== E o código sai pronto
+<e-o-código-sai-pronto>
+Este é o ponto que amarra o capítulo à filosofia do livro. A cada passo que você faz no mouse, a CatalyseR #strong[monta o script #NormalTok(".R"); correspondente] e o entrega para download. Você arruma clicando, entende a lógica, e leva para casa um código reproduzível --- que roda igual no ano que vem, com a planilha nova, sem repetir o trabalho manual. É o "do mouse ao código" na etapa mais ingrata do fluxo, justamente a que mais se beneficia de virar código.
+
+== Regex sem susto
+<regex-sem-susto>
+Aquele #NormalTok("names_pattern"); e o #NormalTok("regex"); do #NormalTok("extract()"); assustam à primeira vista, mas a lógica é simples. Uma #strong[expressão regular] (regex) é só um padrão que descreve um texto, lido da esquerda para a direita. Você não precisa decorar tudo --- precisa reconhecer meia dúzia de peças.
+
+#Skylighting(([#NormalTok("regex_guia ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("data.frame");#NormalTok("(");],
+[#NormalTok("  Peça ");#OtherTok("=");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#StringTok("\"^\"");#NormalTok(", ");#StringTok("\"$\"");#NormalTok(", ");#StringTok("\"");#SpecialCharTok("\\\\");#StringTok("d\"");#NormalTok(", ");#StringTok("\"{4}\"");#NormalTok(", ");#StringTok("\".\"");#NormalTok(", ");#StringTok("\"*\"");#NormalTok(", ");#StringTok("\"( )\"");#NormalTok("),");],
+[#NormalTok("  ");#StringTok("`");#AttributeTok("O que faz");#StringTok("`");#NormalTok(" ");#OtherTok("=");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");],
+[#NormalTok("    ");#StringTok("\"começo do texto\"");#NormalTok(",");],
+[#NormalTok("    ");#StringTok("\"fim do texto\"");#NormalTok(",");],
+[#NormalTok("    ");#StringTok("\"um dígito (0 a 9)\"");#NormalTok(",");],
+[#NormalTok("    ");#StringTok("\"exatamente 4 vezes do anterior\"");#NormalTok(",");],
+[#NormalTok("    ");#StringTok("\"qualquer caractere\"");#NormalTok(",");],
+[#NormalTok("    ");#StringTok("\"zero ou mais do anterior\"");#NormalTok(",");],
+[#NormalTok("    ");#StringTok("\"grupo de captura — vira uma coluna\"");],
+[#NormalTok("  ),");],
+[#NormalTok("  ");#AttributeTok("check.names =");#NormalTok(" ");#ConstantTok("FALSE");],
+[#NormalTok(")");],
+[#FunctionTok("flextable_ocean");#NormalTok("(regex_guia)");],));
+#figure([
+#box(image("capitulos\\capitulo05/preparando_os_dados_files/figure-typst/tbl-regex-1.png"))
+
+], caption: figure.caption(
+position: top, 
+[
+As peças de regex mais usadas na arrumação de dados.
+]), 
+kind: "quarto-float-tbl", 
+supplement: "Tabela", 
+)
+<tbl-regex>
+
+
+Com essas peças, o padrão #NormalTok("^([0-9]{4}) - (.*)$"); lido sobre #NormalTok("2025 - Valor US$ FOB"); diz: "no começo, quatro dígitos (capture como grupo 1: #NormalTok("2025");), depois um espaço-traço-espaço, depois qualquer coisa até o fim (capture como grupo 2: #NormalTok("Valor US$ FOB");)". Os dois grupos viram as colunas #NormalTok("ano"); e #NormalTok("metrica");.
+
+Há só uma regra de ouro para não errar: #strong[o número de grupos #NormalTok("( )"); tem de ser igual ao número de nomes que você dá]. Dois parênteses, dois nomes. E um sinal claro de que a regex não casou: a coluna extraída sai #strong[toda vazia] (#NormalTok("NA");) --- aí é conferir o padrão e tentar de novo. Na CatalyseR, o botão "?" ao lado do seletor traz esse mesmo guia, e a interface avisa quando os números não batem.
+
+== Armadilhas comuns
+<armadilhas-comuns>
+Arrumar dados tem seus tropeços clássicos. Conhecê-los de antemão economiza cabelo branco.
+
+O primeiro é a #strong[coerção que vira #NormalTok("NA");]. Ao converter texto em número, qualquer valor que não seja numérico --- um "s/d", uma vírgula fora do lugar --- vira #NormalTok("NA"); silenciosamente. Sempre confira quantos #NormalTok("NA"); surgiram depois de um #NormalTok("as.numeric()");.
+
+O segundo aparece ao #strong[alargar com chaves duplicadas]. Se as colunas de identificação não distinguem cada linha de forma única, o #NormalTok("pivot_wider()"); não sabe qual valor colocar em cada célula e devolve listas em vez de números, com um aviso de que "os valores não estão unicamente identificados". A solução é garantir que os identificadores sejam, de fato, únicos.
+
+O terceiro é a #strong[regex que não casa], que já mencionamos: coluna nova toda vazia. Em geral é um detalhe no padrão --- um espaço a mais, uma barra invertida faltando.
+
+E o quarto, mais estético que grave: #strong[nomes não sintáticos]. Colunas como #NormalTok("Valor US$ FOB"); funcionam, mas exigem crases toda vez que você as chama. Vale renomear para #NormalTok("valor_usd");, #NormalTok("massa_kg"); --- nomes curtos, sem espaço nem símbolo. Seu "eu do futuro" agradece.
+
+== Da arrumação à análise
+<da-arrumação-à-análise>
+Repare no que ganhamos. O #NormalTok("analise");, agora #emph[tidy], está pronto para o próximo capítulo: uma coluna #NormalTok("ano"); no eixo x, #NormalTok("Captura_t"); no eixo y, e o gráfico de série temporal sai num piscar. Se quiséssemos comparar a captura entre portos, um boxplot com #NormalTok("Porto"); no eixo x já estaria a um passo. Cada arrumação que fizemos foi, no fundo, o rascunho de uma análise adiante.
+
+Essa é a lição que atravessa a Unidade II: #strong[preparar não é perder tempo antes do trabalho --- é onde o trabalho começa]. Um boxplot pede grupos bem definidos (que a tipagem garante); uma regressão pede duas colunas numéricas limpas (que a arrumação entrega); um teste de qui-quadrado pede uma tabela cruzada (que nasce de dados #emph[tidy]). Coletar bem, arrumar bem, e então analisar bem --- nessa ordem.
+
+#quote(block: true)[
+#strong[Resumo do capítulo.] (1) Dados #emph[tidy] têm uma linha por observação, uma coluna por variável, um valor por célula; (2) empilhe (#NormalTok("pivot_longer");) para tirar o ano/medida do cabeçalho, e alargue (#NormalTok("pivot_wider");) para deixar cada medida em sua coluna; (3) separe (#NormalTok("extract");) quando a informação está grudada dentro de uma célula; (4) finalize com filtro, tipagem e recodificação; (5) a regex é só um padrão de texto --- cada grupo #NormalTok("( )"); vira uma coluna. Na CatalyseR, cada passo no mouse gera o script #NormalTok(".R"); reproduzível.
+]
+
+== Para praticar
+<para-praticar-3>
++ Com o #NormalTok("treino_desembarque");, empilhe as colunas de ano e #strong[pare no formato longo] (sem alargar). Compare o número de linhas antes e depois --- de onde vieram as linhas novas?
++ No #NormalTok("treino_coletas");, separe a coluna #NormalTok("estacao_periodo"); (valores como #NormalTok("E03_Seca");) em #NormalTok("estacao"); e #NormalTok("periodo");. Qual regex resolve com dois grupos?
++ Volte ao #NormalTok("tidy_final"); e #strong[renomeie] #NormalTok("Captura_t"); e #NormalTok("Receita_mil"); para nomes bem curtos. Depois filtre só o porto de Bragança e faça um gráfico simples da captura por ano.
+
+= Análise Exploratória de Dados
+<análise-exploratória-de-dados>
+Ou: conhecer os dados já é preparar as análises que vêm depois
 
 \
 #block[
@@ -1055,7 +1857,9 @@ white
 ]
 Estatística começa com curiosidade, não com fórmula. Antes de comparar médias ou ajustar modelos, a gente #strong[olha] os dados: quantas observações há, que variáveis foram medidas, como elas se distribuem, se há buracos (valores ausentes) ou números que destoam. Essa etapa tem nome --- #strong[análise exploratória de dados] --- e ela existe para uma coisa muito prática: descobrir o que os dados #emph[permitem] perguntar. É aqui que a #strong[estatística descritiva] entra, resumindo um monte de números em poucas medidas que cabem na cabeça.
 
-Mais do que descrever, este capítulo ensina a #strong[reconhecer o tipo de cada variável]. Esse conhecimento é o que vai, lá na frente, dizer qual análise é possível, quais pressupostos ela exige e até como os dados deveriam ter sido coletados. Guarde essa ideia: #strong[o tipo da variável é a bússola que aponta o teste]. Voltaremos a ela na Unidade III, quando falarmos de planejamento.
+Mais do que descrever, este capítulo ensina a #strong[reconhecer o tipo de cada variável]. Esse conhecimento é o que vai, lá na frente, dizer qual análise é possível, quais pressupostos ela exige e até como os dados deveriam ter sido coletados. Guarde essa ideia: #strong[o tipo da variável é a bússola que aponta o teste]. Foi ela, aliás, que orientou o capítulo anterior: ao planejar a coleta, é o tipo pretendido de cada variável que já decide, desde o campo, quais análises serão possíveis.
+
+E é aqui que esta etapa faz jus ao nome da unidade: explorar não é enrolação antes do "trabalho de verdade" --- é onde você #strong[prepara], uma a uma, as análises que virão. Cada resumo e cada gráfico daqui já é o rascunho de um teste adiante: o boxplot que insinua um teste #emph[t], a nuvem de pontos que pede uma regressão, a tabela cruzada que chama um qui-quadrado. Na CatalyseR, esse preparo tem um lugar próprio --- você seleciona as variáveis, filtra o que interessa e declara o tipo de cada coluna antes de rodar qualquer análise. E há uma recompensa concreta da disciplina #emph[tidy] que vimos ao planejar a coleta: uma planilha de Excel bem-arrumada --- cada linha uma observação, cada coluna uma variável --- chega #strong[pronta] a esse painel, sem retrabalho; anotada de qualquer jeito, obriga a limpar tudo antes de começar.
 
 == Os dados: caranguejos do mangue de Bragança
 <os-dados-caranguejos-do-mangue-de-bragança>
@@ -1144,7 +1948,7 @@ Comece pela distribuição de uma variável numérica. O #strong[histograma] mos
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Largura da carapaça (mm)\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Frequência\"");#NormalTok(") ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("theme_minimal");#NormalTok("()");],));
 #figure([
-#box(image("capitulos\\capitulo05/analise_exploratoria_statistica_descritiva_files/figure-typst/fig-hist-1.svg"))
+#box(image("capitulos\\capitulo04/analise_exploratoria_statistica_descritiva_files/figure-typst/fig-hist-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -1165,7 +1969,7 @@ Agora cruze a numérica com uma categórica. O #strong[boxplot] da largura por s
 [#NormalTok("  ");#FunctionTok("theme_minimal");#NormalTok("() ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("theme");#NormalTok("(");#AttributeTok("legend.position =");#NormalTok(" ");#StringTok("\"none\"");#NormalTok(")");],));
 #figure([
-#box(image("capitulos\\capitulo05/analise_exploratoria_statistica_descritiva_files/figure-typst/fig-box-1.svg"))
+#box(image("capitulos\\capitulo04/analise_exploratoria_statistica_descritiva_files/figure-typst/fig-box-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -1177,7 +1981,7 @@ supplement: "Figura",
 <fig-box>
 
 
-Por fim, cruze duas numéricas. O #strong[diagrama de dispersão] entre largura e comprimento revela se uma cresce junto com a outra: uma nuvem que sobe em linha é o convite para #strong[correlação e regressão] --- assunto da Unidade V. Colorir por sexo ainda insinua se a relação muda entre grupos.
+Por fim, cruze duas numéricas. O #strong[diagrama de dispersão] entre largura e comprimento revela se uma cresce junto com a outra: uma nuvem que sobe em linha é o convite para #strong[correlação e regressão] --- assunto da Unidade IV. Colorir por sexo ainda insinua se a relação muda entre grupos.
 
 #Skylighting(([#FunctionTok("ggplot");#NormalTok("(caranguejos, ");#FunctionTok("aes");#NormalTok("(");#AttributeTok("x =");#NormalTok(" LC, ");#AttributeTok("y =");#NormalTok(" CC, ");#AttributeTok("color =");#NormalTok(" Sexo)) ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("geom_point");#NormalTok("(");#AttributeTok("alpha =");#NormalTok(" ");#FloatTok("0.5");#NormalTok(") ");#SpecialCharTok("+");],
@@ -1185,7 +1989,7 @@ Por fim, cruze duas numéricas. O #strong[diagrama de dispersão] entre largura 
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Largura da carapaça (mm)\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Comprimento da carapaça (mm)\"");#NormalTok(") ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("theme_minimal");#NormalTok("()");],));
 #figure([
-#box(image("capitulos\\capitulo05/analise_exploratoria_statistica_descritiva_files/figure-typst/fig-disp-1.svg"))
+#box(image("capitulos\\capitulo04/analise_exploratoria_statistica_descritiva_files/figure-typst/fig-disp-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -1223,7 +2027,7 @@ A tabela crua resolve, mas não comunica. Para um relatório ou para o livro, va
 [],
 [#FunctionTok("flextable_ocean");#NormalTok("(tab_df)");],));
 #figure([
-#box(image("capitulos\\capitulo05/analise_exploratoria_statistica_descritiva_files/figure-typst/tbl-contingencia-1.png"))
+#box(image("capitulos\\capitulo04/analise_exploratoria_statistica_descritiva_files/figure-typst/tbl-contingencia-1.png"))
 
 ], caption: figure.caption(
 position: top, 
@@ -1292,23 +2096,27 @@ body_background_color:
 white
 )
 ]
-#part[Unidade III · Planejar a coleta]
-= Planejamento Amostral
-<planejamento-amostral>
-Ou: a análise certa começa muito antes do primeiro número
-
-\
 #block[
 #callout(
 body: 
 [
-O barco está abastecido, a rede a postos, e você prestes a embarcar para uma pescaria de camarão. Mas pare um instante: #emph[você já sabe exatamente o que vai medir lá fora?] Quais variáveis anotar a cada lance, em que unidade pesar a captura, como separar o camarão da fauna acompanhante, onde e quando lançar a rede? Se a resposta não estiver pronta #strong[antes] de soltar as amarras, nenhum software vai consertar depois. O planejamento acontece em terra.
+Fechamos aqui a unidade #strong[Antes da análise]. Antes de virar a página para o primeiro teste, faça as pazes com estas sete perguntas --- se você responde "sim" a todas, dificilmente vai errar o teste por descuido com o básico:
+
++ Minha #strong[pergunta] de pesquisa está clara?
++ Sei qual é a #strong[variável resposta] --- aquilo que quero explicar ou comparar?
++ Sei o #strong[tipo] de cada variável envolvida, numérica ou categórica?
++ Sei se o meu estudo é #strong[observacional] ou #strong[experimental]?
++ A #strong[unidade amostral] (ou experimental) está bem definida --- e não confundi réplica com subamostra?
++ Já #strong[descrevi e visualizei] os dados antes de qualquer teste?
++ O #strong[desenho] da pesquisa combina com o teste que pretendo usar?
+
+Cada "sim" daqui foi construído nesta unidade: os quatro primeiros no planejamento, os três últimos na exploração. Com eles no bolso, os próximos capítulos --- teste #emph[t], ANOVA, qui-quadrado, correlação, regressão --- deixam de ser um cardápio confuso e passam a ser a consequência natural de um bom plano.
 
 ]
 , 
 title: 
 [
-Já passou por isso?
+Checklist: pronto para escolher o teste?
 ]
 , 
 background_color: 
@@ -1324,336 +2132,7 @@ body_background_color:
 white
 )
 ]
-Há uma ordem natural nas coisas, e ela costuma ser invertida. Na Unidade II, aprendemos a reconhecer o #strong[tipo] de cada variável e vimos como ele aponta a análise. Agora damos um passo atrás, para o momento que decide tudo: #strong[o tipo de estudo determina os tipos de dados a coletar, como coletá-los e como organizá-los]. É o estudo que define se você terá categóricas ou numéricas, contagens ou medidas, grupos independentes ou pareados --- e, com isso, quais análises serão possíveis, quais pressupostos elas exigirão e que cuidados a coleta impõe para que esses pressupostos se sustentem.
-
-Organizar os dados desde o início na #strong[filosofia #emph[tidy]] --- cada linha uma observação, cada coluna uma variável --- não é capricho de programador. É o que mantém aberto o leque de análises lá na frente. Um conjunto bem planejado e bem arrumado praticamente se oferece à análise correta; um conjunto coletado no improviso fecha portas que nenhum código reabre. Esta Unidade III trata, portanto, de uma única ideia poderosa: #strong[planejar a coleta é, na prática, escolher antecipadamente o teste].
-
-O planejamento tem dois grandes ramos. Quando observamos a natureza como ela é --- sem intervir ---, fazemos #strong[planejamento amostral]: decidimos #emph[quem] observar e #emph[como sortear] esses indivíduos de uma população. Quando intervimos deliberadamente --- atribuindo tratamentos e controlando condições ---, fazemos #strong[planejamento experimental], tema do próximo capítulo. Este aqui cuida do primeiro ramo, e vamos percorrê-lo com um exemplo real: um estudo de captura de camarão.
-
-== O estudo: captura de camarão por arrasto
-<o-estudo-captura-de-camarão-por-arrasto>
-Imagine que queremos avaliar #strong[quanto camarão se captura] ao longo de diferentes períodos do ano e em locais distintos de um estuário --- informação valiosa para a gestão sustentável do recurso. As perguntas que guiam o estudo são duas: #emph[a captura difere entre os locais?] e #emph[o período do ano afeta a quantidade capturada?] Cada pergunta já é, no fundo, uma hipótese à espera de um teste.
-
-A captura é feita por #strong[arrasto], com a embarcação rebocando a rede pelo fundo (#ref(<fig-barco>, supplement: [Figura])). Reparar nesse desenho não é detalhe: o petrecho, a abertura da boca da rede, o tempo de arrasto e a velocidade definem o #strong[esforço de pesca] --- e é esse esforço que precisaremos registrar para que as capturas sejam comparáveis entre si.
-
-#figure([
-#box(image("capitulos\\capitulo06/../../images/barco_camarao_arrasto.png", width: 85.0%))
-], caption: figure.caption(
-position: bottom, 
-[
-Captura de camarão por arrasto de fundo: a embarcação reboca a rede pelas portas de arrasto, e o camarão se acumula no saco (copo). O esforço de pesca depende do petrecho, da abertura da rede e do tempo de arrasto.
-]), 
-kind: "quarto-float-fig", 
-supplement: "Figura", 
-)
-<fig-barco>
-
-
-== Decidir o que medir --- antes de embarcar
-<decidir-o-que-medir-antes-de-embarcar>
-Aqui está o coração do planejamento: a lista de variáveis não se improvisa no convés, ela se decide na escrivaninha. Para responder às perguntas do estudo, definimos de antemão o que será anotado a cada lance:
-
-- #strong[Quando e em que condições:] data, fase lunar, direção e força do vento --- fatores ambientais que podem influenciar a captura.
-- #strong[Como se pescou:] tipo de petrecho e duração do esforço pesqueiro (em horas) --- para padronizar o esforço.
-- #strong[O que se capturou:] peso de camarão (kg) e peso da fauna acompanhante (kg) --- a resposta de interesse e seu acompanhamento.
-- #strong[Onde:] o local específico de captura.
-
-Note como cada variável já nasce com um #strong[tipo] declarado --- fase lunar e local são #emph[categóricas]\; peso e duração são #emph[numéricas contínuas] --- exatamente a distinção que aprendemos a fazer na Unidade II. Decidir o tipo agora é decidir, desde já, o que se poderá calcular depois.
-
-Tão importante quanto #emph[o que] medir é #emph[como] registrar. A captura é pesada a bordo, logo após cada lance, numa balança digital, sempre na #strong[mesma unidade] (kg) e com o mesmo número de casas decimais. As informações vão primeiro para uma planilha de campo em papel, à prova de respingos, e só depois são digitalizadas. A #ref(<fig-planilha>, supplement: [Figura]) mostra um modelo dessa rotina de bordo --- da conferência da captura ao registro padronizado, lance a lance.
-
-#figure([
-#box(image("capitulos\\capitulo06/../../images/planilha_coleta_camarao.png", width: 95.0%))
-], caption: figure.caption(
-position: bottom, 
-[
-Rotina de arrumação dos dados após cada lance e modelo de planilha de campo: conferir, separar por espécie, pesar, registrar, identificar o lance e conservar. Padronizar unidades e preencher de forma legível garante a rastreabilidade da amostragem.
-]), 
-kind: "quarto-float-fig", 
-supplement: "Figura", 
-)
-<fig-planilha>
-
-
-#block[
-#callout(
-body: 
-[
-Anote os dados ainda a bordo, logo após cada lance; use sempre unidades padronizadas (kg, mm); e revise os registros diariamente, para que nenhuma informação se perca antes de chegar ao computador. Dados consistentes e completos são a matéria-prima de toda análise --- e não há análise que recupere o que não foi registrado.
-
-]
-, 
-title: 
-[
-Boas práticas de bordo
-]
-, 
-background_color: 
-rgb("#ccf1e3")
-, 
-icon_color: 
-rgb("#00A047")
-, 
-icon: 
-none
-, 
-body_background_color: 
-white
-)
-]
-== Da planilha ao formato #emph[tidy]
-<da-planilha-ao-formato-tidy>
-Uma planilha bem desenhada já é quase #emph[tidy]: cada linha é um lance (uma observação) e cada coluna, uma variável. Essa correspondência é o que permite carregar os dados no R e, num só passo, declarar o tipo de cada coluna --- transformando texto em #strong[fatores] com níveis ordenados onde a ordem importa (a força do vento vai de #emph[Fraco] a #emph[Forte]\; a fase lunar segue seu ciclo).
-
-#block[
-#Skylighting(([#FunctionTok("library");#NormalTok("(tidyverse)");],
-[#FunctionTok("library");#NormalTok("(readxl)");],
-[],
-[#NormalTok("dados_camarao ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("read_excel");#NormalTok("(");#StringTok("\"dados/captura_camarao.xlsx\"");#NormalTok(", ");#AttributeTok("sheet =");#NormalTok(" ");#DecValTok("1");#NormalTok(") ");#SpecialCharTok("|>");],
-[#NormalTok("  janitor");#SpecialCharTok("::");#FunctionTok("clean_names");#NormalTok("() ");#SpecialCharTok("|>");],
-[#NormalTok("  ");#FunctionTok("mutate");#NormalTok("(");],
-[#NormalTok("    ");#AttributeTok("data          =");#NormalTok(" lubridate");#SpecialCharTok("::");#FunctionTok("dmy");#NormalTok("(data),");],
-[#NormalTok("    ");#AttributeTok("fase_lunar    =");#NormalTok(" ");#FunctionTok("factor");#NormalTok("(fase_lunar,");],
-[#NormalTok("                           ");#AttributeTok("levels =");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#StringTok("\"Nova\"");#NormalTok(", ");#StringTok("\"Crescente\"");#NormalTok(", ");#StringTok("\"Cheia\"");#NormalTok(", ");#StringTok("\"Minguante\"");#NormalTok(")),");],
-[#NormalTok("    ");#AttributeTok("forca_vento   =");#NormalTok(" ");#FunctionTok("factor");#NormalTok("(forca_vento,");],
-[#NormalTok("                           ");#AttributeTok("levels =");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#StringTok("\"Fraco\"");#NormalTok(", ");#StringTok("\"Moderado\"");#NormalTok(", ");#StringTok("\"Forte\"");#NormalTok(")),");],
-[#NormalTok("    ");#AttributeTok("tipo_petrecho =");#NormalTok(" ");#FunctionTok("as.factor");#NormalTok("(tipo_petrecho),");],
-[#NormalTok("    ");#AttributeTok("direcao_vento =");#NormalTok(" ");#FunctionTok("as.factor");#NormalTok("(direcao_vento),");],
-[#NormalTok("    ");#AttributeTok("local_captura =");#NormalTok(" ");#FunctionTok("as.factor");#NormalTok("(local_captura)");],
-[#NormalTok("  )");],
-[],
-[#FunctionTok("glimpse");#NormalTok("(dados_camarao)");],));
-]
-Repare que declarar #NormalTok("levels"); numa variável ordinal não é detalhe estético: é o que faz o R (e os gráficos) respeitarem a sequência natural #emph[Fraco \< Moderado \< Forte] em vez da ordem alfabética. De novo, o tipo da variável comanda o que vem depois.
-
-== Onde e quando amostrar
-<onde-e-quando-amostrar>
-Definidas as variáveis, falta o essencial do planejamento amostral: #emph[quem] observar e #emph[como sortear]. Raramente conseguimos cobrir o estuário inteiro --- não há tempo, combustível nem tripulação para isso. Então #strong[amostramos]: tomamos uma parte para inferir sobre o todo. E a única defesa honesta contra o viés é o #strong[acaso]: é o sorteio, não a conveniência do "lugar onde sempre pesco", que torna a amostra representativa.
-
-No nosso estudo, o desenho amostral combina cuidado no espaço e no tempo. No #strong[espaço], escolhem-se três áreas principais separadas por pelo menos 5 km --- para que sejam de fato distintas --- e, dentro de cada uma, sub-pontos num raio de 50 m, garantindo representatividade local. No #strong[tempo], cada ponto é visitado em quatro momentos (T1 a T4), #strong[distribuídos aleatoriamente] ao longo do estudo, para que nenhuma fase do ano fique sobre ou sub-representada. Esse arranjo é, na prática, uma amostragem #strong[estratificada] (as áreas são os estratos) com #strong[casualização] temporal.
-
-Vale conhecer os três métodos probabilísticos que sustentam desenhos como esse. Na #strong[amostragem aleatória simples (AAS)], todo indivíduo tem a mesma chance de ser sorteado, como tirar nomes de um chapéu --- é a base de tudo. Sortear, por exemplo, quais 4 dos 16 dias possíveis de defeso aberto sairão para coleta:
-
-#block[
-#Skylighting(([#FunctionTok("set.seed");#NormalTok("(");#DecValTok("2026");#NormalTok(")");],
-[#NormalTok("dias_possiveis ");#OtherTok("<-");#NormalTok(" ");#DecValTok("1");#SpecialCharTok(":");#DecValTok("16");],
-[#NormalTok("dias_coleta ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("sample");#NormalTok("(dias_possiveis, ");#AttributeTok("size =");#NormalTok(" ");#DecValTok("4");#NormalTok(")   ");#CommentTok("# sorteio sem reposição");],
-[#FunctionTok("sort");#NormalTok("(dias_coleta)");],));
-#block[
-#Skylighting(([#NormalTok("[1]  1  6  9 13");],));
-]
-]
-Na #strong[amostragem sistemática], sorteia-se só o ponto de partida e seguem-se intervalos fixos --- útil quando há uma fila natural (lances ao longo do dia), mas arriscada se a lista tiver um padrão cíclico. Na #strong[amostragem estratificada], divide-se a população em subgrupos homogêneos --- os #strong[estratos], como as três áreas --- e amostra-se dentro de cada um, em geral por #strong[alocação proporcional] ao tamanho do estrato. É a escolha certa quando sabemos que um fator (local, período) influencia fortemente a resposta: garante que nenhum subgrupo importante fique de fora.
-
-A escolha do método não é estética: ela molda a estrutura dos dados e, com ela, a análise. Estratificar por área já entrega os grupos prontos para comparar capturas entre locais; casualizar os tempos protege a comparação entre períodos. Eis, de novo, o fio condutor da unidade --- #strong[a forma de coletar decide a forma de analisar].
-
-== A ponte para a análise
-<a-ponte-para-a-análise>
-Quando essa planilha estiver preenchida, ela alimentará exatamente as comparações que motivaram o estudo: a #strong[captura por unidade de esforço (CPUE)] entre locais e entre períodos. Como CPUE é uma contagem, costuma fugir da normalidade --- e aí entram os testes que veremos na Unidade IV, como o #strong[Kruskal-Wallis] para comparar três ou mais áreas. O conjunto #NormalTok("captura_petrechos");, do pacote #NormalTok("EAPADados");, traz justamente esse tipo de dado de captura por aparelho de pesca, e será o nosso campo de prática lá adiante. O planejamento que fizemos aqui é o que torna aquela análise possível.
-
-#block[
-#callout(
-body: 
-[
-O estudo vem antes do dado, e o planejamento amostral é onde se decide #emph[o que] medir, #emph[como] medir e #emph[quem] observar --- tudo antes de embarcar. No exemplo do camarão, isso significou definir as variáveis (ambientais, de esforço e de captura) e seus tipos, padronizar a pesagem a bordo, registrar lance a lance numa planilha já no formato #emph[tidy], e sortear áreas e tempos com o auxílio do #strong[acaso]: AAS quando todos têm a mesma chance, sistemática quando há uma sequência, estratificada para garantir cada subgrupo. Coletar com método é o que mantém abertas as portas para a análise correta --- e, no fim, é o que decide o teste.
-
-]
-, 
-title: 
-[
-Resumo do capítulo
-]
-, 
-background_color: 
-rgb("#ccf1e3")
-, 
-icon_color: 
-rgb("#00A047")
-, 
-icon: 
-none
-, 
-body_background_color: 
-white
-)
-]
-#block[
-#callout(
-body: 
-[
-+ Liste as variáveis do estudo do camarão e classifique cada uma como nominal, ordinal, discreta ou contínua. Quais permitiriam uma comparação de médias? Quais, uma tabela de contingência?
-+ Sorteie, por AAS, 5 dias de coleta entre 20 dias possíveis. Mude a semente (#NormalTok("set.seed");) e observe como o sorteio muda.
-+ Pense num estudo seu (ou de um colega): que desenho amostral ele usou --- ou deveria ter usado --- e que análises esse desenho tornou possíveis?
-
-]
-, 
-title: 
-[
-Para praticar
-]
-, 
-background_color: 
-rgb("#dae6fb")
-, 
-icon_color: 
-rgb("#0758E5")
-, 
-icon: 
-none
-, 
-body_background_color: 
-white
-)
-]
-= Planejamento Experimental
-<planejamento-experimental>
-Ou: quando observar não basta e é preciso intervir
-
-\
-#block[
-#callout(
-body: 
-[
-Você quer saber se uma ração nova faz o peixe crescer mais. Coloca a ração num tanque, a antiga em outro, pesa tudo no fim e --- surpresa --- o tanque da ração nova rendeu mais. Conclusão: ração nova é melhor? Talvez. Ou talvez aquele tanque pegasse mais sol, tivesse água melhor, peixes de outra origem. Sem #strong[planejar o experimento], você nunca saberá se mediu a ração ou o acaso.
-
-]
-, 
-title: 
-[
-Já passou por isso?
-]
-, 
-background_color: 
-rgb("#dae6fb")
-, 
-icon_color: 
-rgb("#0758E5")
-, 
-icon: 
-none
-, 
-body_background_color: 
-white
-)
-]
-No capítulo anterior, observamos a natureza sem tocá-la. Agora #strong[intervimos]: atribuímos tratamentos, controlamos condições e medimos a resposta. Essa é a essência do #strong[experimento] --- e é o que permite falar em #strong[causa], não apenas em associação. Mas intervir tem regras. Um experimento mal planejado produz dados que nenhuma análise salva; um bem planejado entrega, de bandeja, a ANOVA que veremos na Unidade IV.
-
-Três princípios sustentam todo bom experimento. A #strong[repetição] (réplicas) nos dá uma medida do acaso, sem a qual não há como julgar se um efeito é real. A #strong[casualização] (sortear quem recebe cada tratamento) protege contra vieses que não controlamos. E o #strong[controle local] (blocos) isola fontes de variação conhecidas, como a posição no viveiro ou o dia da medição. Os delineamentos clássicos são apenas combinações inteligentes desses três princípios.
-
-== A armadilha da pseudo-replicação
-<a-armadilha-da-pseudo-replicação>
-Antes dos delineamentos, um aviso que vale por um capítulo inteiro. Réplica de verdade é a #strong[unidade experimental independente] --- aquela que recebeu o tratamento de forma autônoma. Se você aplica uma ração a #strong[um] tanque e depois pesa 50 peixes desse tanque, você #strong[não] tem 50 réplicas: tem uma só. Os 50 peixes compartilham a mesma água, a mesma temperatura, a mesma história. Tratá-los como independentes é cometer #strong[pseudo-replicação] --- um erro tão comum quanto grave, que infla artificialmente o tamanho da amostra e produz significâncias falsas.
-
-A pergunta que desarma a armadilha é simples: #emph[o que, exatamente, recebeu o tratamento de forma independente?] A resposta é a sua unidade experimental --- e é ela que você conta como réplica.
-
-== Os delineamentos clássicos
-<os-delineamentos-clássicos>
-O #strong[Delineamento Inteiramente Casualizado (DIC)] é o mais simples: os tratamentos são sorteados livremente entre as unidades experimentais, sem restrição. Exige condições homogêneas --- faz sentido num laboratório ou num conjunto de gaiolas idênticas num mesmo tanque. É o desenho do experimento das rações iso-proteicas para bagres que analisaremos por ANOVA na Unidade IV.
-
-#block[
-#Skylighting(([#CommentTok("# esqueleto de um DIC: 4 tratamentos (rações), 5 réplicas, sorteio aleatório");],
-[#FunctionTok("set.seed");#NormalTok("(");#DecValTok("2026");#NormalTok(")");],
-[#NormalTok("tratamentos ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("rep");#NormalTok("(");#FunctionTok("c");#NormalTok("(");#StringTok("\"A\"");#NormalTok(", ");#StringTok("\"B\"");#NormalTok(", ");#StringTok("\"C\"");#NormalTok(", ");#StringTok("\"D\"");#NormalTok("), ");#AttributeTok("each =");#NormalTok(" ");#DecValTok("5");#NormalTok(")");],
-[#NormalTok("plano_dic ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("data.frame");#NormalTok("(");],
-[#NormalTok("  ");#AttributeTok("gaiola    =");#NormalTok(" ");#DecValTok("1");#SpecialCharTok(":");#DecValTok("20");#NormalTok(",");],
-[#NormalTok("  ");#AttributeTok("racao     =");#NormalTok(" ");#FunctionTok("sample");#NormalTok("(tratamentos)   ");#CommentTok("# casualização");],
-[#NormalTok(")");],
-[#FunctionTok("head");#NormalTok("(plano_dic)");],));
-#block[
-#Skylighting(([#NormalTok("  gaiola racao");],
-[#NormalTok("1      1     A");],
-[#NormalTok("2      2     B");],
-[#NormalTok("3      3     C");],
-[#NormalTok("4      4     C");],
-[#NormalTok("5      5     C");],
-[#NormalTok("6      6     C");],));
-]
-]
-O #strong[Delineamento em Blocos Casualizados (DBC)] entra quando há uma fonte de variação conhecida que não queremos confundir com o tratamento --- uma corrente que varia ao longo do viveiro, lotes de animais de idades diferentes. Agrupamos as unidades em #strong[blocos] homogêneos e, dentro de cada bloco, sorteamos todos os tratamentos. Assim, a variação entre blocos é isolada e removida da comparação.
-
-O #strong[Delineamento em Quadrado Latino (DQL)] controla #strong[duas] fontes de variação ao mesmo tempo (por exemplo, linha e coluna de uma bancada), dispondo os tratamentos de modo que cada um apareça uma vez em cada linha e em cada coluna. E os #strong[delineamentos fatoriais (DF)] estudam #strong[mais de um fator de uma vez] --- ração #emph[e] densidade de estocagem, por exemplo --- revelando não só o efeito de cada um, mas a #strong[interação] entre eles, algo que experimentos separados jamais capturariam.
-
-#block[
-#callout(
-body: 
-[
-Esta seção receberá, na sequência da redação do livro, o estudo de caso do #strong[projeto camarão] (dados de captura de camarões trabalhados em sala com a turma de 2022) como exemplo aplicado de delineamento, ligando o planejamento aqui descrito à análise por ANOVA da Unidade IV.
-
-]
-, 
-title: 
-[
-Em construção
-]
-, 
-background_color: 
-rgb("#dae6fb")
-, 
-icon_color: 
-rgb("#0758E5")
-, 
-icon: 
-none
-, 
-body_background_color: 
-white
-)
-]
-#block[
-#callout(
-body: 
-[
-Experimentar é intervir para falar de causa, e isso só funciona sob três princípios: #strong[repetição], #strong[casualização] e #strong[controle local]. A maior cilada é a #strong[pseudo-replicação] --- confundir subamostras com réplicas verdadeiras; a unidade experimental é o que recebeu o tratamento de forma independente. Os delineamentos clássicos combinam os três princípios: o #strong[DIC] para condições homogêneas, o #strong[DBC] para isolar uma fonte de variação, o #strong[DQL] para isolar duas, e os #strong[fatoriais] para estudar vários fatores e suas interações. Todo experimento bem planejado já nasce pedindo a ANOVA que veremos a seguir.
-
-]
-, 
-title: 
-[
-Resumo do capítulo
-]
-, 
-background_color: 
-rgb("#ccf1e3")
-, 
-icon_color: 
-rgb("#00A047")
-, 
-icon: 
-none
-, 
-body_background_color: 
-white
-)
-]
-#block[
-#callout(
-body: 
-[
-+ Num cultivo, você testa 3 dietas em 12 tanques. Monte, em R, o plano de um DIC com casualização.
-+ Explique, com suas palavras, por que pesar 30 peixes de um único tanque tratado não gera 30 réplicas.
-+ Você suspeita que a posição no galpão (fundo x entrada) afeta o crescimento. Qual delineamento usaria, e por quê?
-
-]
-, 
-title: 
-[
-Para praticar
-]
-, 
-background_color: 
-rgb("#dae6fb")
-, 
-icon_color: 
-rgb("#0758E5")
-, 
-icon: 
-none
-, 
-body_background_color: 
-white
-)
-]
-#part[Unidade IV · Comparar grupos — inferência]
+#part[Unidade III · Comparar grupos — inferência]
 = Testes Paramétricos para Uma e Duas Amostras
 <testes-paramétricos-para-uma-e-duas-amostras>
 Ou: a ração da propaganda faz mesmo a Artemia crescer mais?
@@ -1757,40 +2236,14 @@ Os dois #emph[p]-valores ficam acima de 0,05: não há evidência contra a norma
 
 == O teste #emph[t]
 <o-teste-t>
-#block[
-#Skylighting(([#FunctionTok("t.test");#NormalTok("(taxa_crescimento_mg_dia ");#SpecialCharTok("~");#NormalTok(" racao, ");#AttributeTok("data =");#NormalTok(" artemia, ");#AttributeTok("var.equal =");#NormalTok(" ");#ConstantTok("TRUE");#NormalTok(")");],));
-#block[
-#Skylighting(([],
-[#NormalTok("    Two Sample t-test");],
-[],
-[#NormalTok("data:  taxa_crescimento_mg_dia by racao");],
-[#NormalTok("t = 2.8561, df = 12, p-value = 0.01446");],
-[#NormalTok("alternative hypothesis: true difference in means between group A and group B is not equal to 0");],
-[#NormalTok("95 percent confidence interval:");],
-[#NormalTok(" 0.1456712 1.0829002");],
-[#NormalTok("sample estimates:");],
-[#NormalTok("mean in group A mean in group B ");],
-[#NormalTok("       4.085714        3.471429 ");],));
-]
-]
-E aqui está a ponte #strong[do mouse ao código]: a mesma análise sai pronta, em tabela e em frase, com as funções canônicas do ecossistema EAPA --- exatamente as que a IDE CatalyseR usa para gerar o relatório #NormalTok(".docx");.
+Rodamos o teste e apresentamos o resultado com #NormalTok("exibir_teste_t()");, do #NormalTok("EAPADados");: ela arruma a saída do #NormalTok("t.test()"); num formato enxuto e em português (médias, diferença, intervalo num campo só, #emph[t], gl, #emph[p], método e hipótese alternativa, já traduzidos) e ainda deixa a tabela apresentável --- com cara de console, mas organizada: fonte monoespaçada, centralizada, fundo verde acinzentado e sem linhas de grade. Por baixo, é o atalho de #NormalTok("arrumar_teste_t() |> flextable_cinza()"); numa chamada só.
 
-#Skylighting(([#FunctionTok("mostrar_teste_t_ind");#NormalTok("(taxa_crescimento_mg_dia ");#SpecialCharTok("~");#NormalTok(" racao,");],
-[#NormalTok("                    ");#AttributeTok("data =");#NormalTok(" artemia, ");#AttributeTok("equal_var =");#NormalTok(" ");#ConstantTok("TRUE");#NormalTok(") ");#SpecialCharTok("|>");],
-[#NormalTok("  ");#FunctionTok("flextable_ocean");#NormalTok("()");],));
-#figure([
-#box(image("capitulos\\capitulo07/testes_parametricos_uma_duas_amostras_files/figure-typst/tbl-teste-t-1.png"))
+#Skylighting(([#NormalTok("teste ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("t.test");#NormalTok("(taxa_crescimento_mg_dia ");#SpecialCharTok("~");#NormalTok(" racao, ");#AttributeTok("data =");#NormalTok(" artemia, ");#AttributeTok("var.equal =");#NormalTok(" ");#ConstantTok("TRUE");#NormalTok(")");],
+[#FunctionTok("exibir_teste_t");#NormalTok("(teste)");],));
+#box(image("capitulos\\capitulo07/testes_parametricos_uma_duas_amostras_files/figure-typst/teste-t-1.png"))
 
-], caption: figure.caption(
-position: top, 
-[
-Resultado do teste t para a taxa de crescimento da Artemia entre as duas rações.
-]), 
-kind: "quarto-float-tbl", 
-supplement: "Tabela", 
-)
-<tbl-teste-t>
-
+#v(0.8em)
+E aqui está a ponte #strong[do mouse ao código]: a leitura em uma frase sai pronta com a função canônica #NormalTok("relatar_teste_t_ind()"); --- a mesma que a IDE CatalyseR usa para montar o relatório #NormalTok(".docx");, onde a tabela é renderizada no tema Ocean por #NormalTok("flextable_ocean()");.
 
 #quote(block: true)[
 Foi conduzido um teste #emph[t] de Student para duas amostras independentes para variâncias iguais para comparar a variável a taxa de crescimento (mg/dia) entre os grupos definidos por o tipo de ração (A vs B). A média no grupo A foi de 4,09 e a média no grupo B foi de 3,47 (IC 95% da diferença \[0,15; 1,08\]). Os resultados indicaram uma diferença estatisticamente significativa entre as médias dos grupos, #emph[t]\(12,0) = 2,856, p = 0,014, sendo a média amostral do grupo A superior à média do grupo B. O tamanho do efeito, estimado pelo #emph[d] de Cohen, foi de 1,53, correspondendo a um efeito grande.
@@ -1954,7 +2407,7 @@ supplement: "Figura",
 [#NormalTok("    Kruskal-Wallis rank sum test");],
 [],
 [#NormalTok("data:  CPUE by Petrecho");],
-[#NormalTok("Kruskal-Wallis chi-squared = 0.22425, df = 2, p-value = 0.8939");],));
+[#NormalTok("Kruskal-Wallis chi-squared = 2.9985, df = 2, p-value = 0.2233");],));
 ]
 ]
 Se o #emph[p]-valor for pequeno, concluímos que #strong[pelo menos um aparelho] difere dos outros na captura --- e o passo seguinte seria uma comparação múltipla de postos (por exemplo, o teste de Dunn) para descobrir #emph[quais] pares diferem, assim como o Tukey faz depois da ANOVA.
@@ -2117,7 +2570,7 @@ Nas ciências da pesca e aquicultura, a ANOVA está em toda parte: comparar diet
 Vamos usar um conjunto de dados clássico, disponível no pacote #NormalTok("EAPADados"); como #NormalTok("isoproteica_bagre");, reproduzido de #cite(<bhujel2011>, form: "prose") (Tabela 7.4). Quatro #strong[rações comerciais iso-proteicas] (mesmo teor de proteína, mas níveis diferentes de lipídio) foram comparadas. Em um único tanque grande, instalaram-se gaiolas com 50 peixes cada; cada ração teve 5 gaiolas (réplicas). Durante o manejo, os peixes de #strong[uma] gaiola da ração #strong[C] escaparam --- por isso esse nível tem só 4 réplicas, e o experimento fica #strong[desbalanceado] (19 observações no total). Cada valor é o #strong[peso médio final (g)] dos peixes de uma gaiola. A #ref(<fig-experimento>, supplement: [Figura]) resume todo o desenho do experimento.
 
 #figure([
-#box(image("capitulos\\capitulo11/../../images/experimento_anova_bagres.png", width: 85.0%))
+#box(image("capitulos\\capitulo09/../../images/experimento_anova_bagres.png", width: 85.0%))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -2161,7 +2614,7 @@ Sempre #strong[veja] os dados antes de testar. Médias e dispersão por ração:
 [#FunctionTok("names");#NormalTok("(resumo) ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#StringTok("\"Ração\"");#NormalTok(", ");#StringTok("\"n\"");#NormalTok(", ");#StringTok("\"Total (g)\"");#NormalTok(", ");#StringTok("\"Média (g)\"");#NormalTok(")");],
 [#FunctionTok("flextable_ocean");#NormalTok("(resumo)");],));
 #figure([
-#box(image("capitulos\\capitulo11/anova_estudos_observacionais_experimentais_files/figure-typst/tbl-medias-1.png"))
+#box(image("capitulos\\capitulo09/anova_estudos_observacionais_experimentais_files/figure-typst/tbl-medias-1.png"))
 
 ], caption: figure.caption(
 position: top, 
@@ -2182,7 +2635,7 @@ supplement: "Tabela",
 [#NormalTok("  ");#FunctionTok("theme_minimal");#NormalTok("() ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("theme");#NormalTok("(");#AttributeTok("legend.position =");#NormalTok(" ");#StringTok("\"none\"");#NormalTok(")");],));
 #figure([
-#box(image("capitulos\\capitulo11/anova_estudos_observacionais_experimentais_files/figure-typst/fig-boxplot-1.svg"))
+#box(image("capitulos\\capitulo09/anova_estudos_observacionais_experimentais_files/figure-typst/fig-boxplot-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -2264,7 +2717,7 @@ A tabela de ANOVA formatada na identidade #strong[Ocean Gradient]:
 
 #Skylighting(([#FunctionTok("flextable_ocean");#NormalTok("(");#FunctionTok("mostrar_anova");#NormalTok("(r))");],));
 #figure([
-#box(image("capitulos\\capitulo11/anova_estudos_observacionais_experimentais_files/figure-typst/tbl-anova-1.png"))
+#box(image("capitulos\\capitulo09/anova_estudos_observacionais_experimentais_files/figure-typst/tbl-anova-1.png"))
 
 ], caption: figure.caption(
 position: top, 
@@ -2283,7 +2736,7 @@ Uma ANOVA só é confiável se os #strong[resíduos] forem aproximadamente norma
 
 #Skylighting(([#FunctionTok("flextable_ocean");#NormalTok("(");#FunctionTok("mostrar_pressupostos");#NormalTok("(r))");],));
 #figure([
-#box(image("capitulos\\capitulo11/anova_estudos_observacionais_experimentais_files/figure-typst/tbl-pressupostos-1.png"))
+#box(image("capitulos\\capitulo09/anova_estudos_observacionais_experimentais_files/figure-typst/tbl-pressupostos-1.png"))
 
 ], caption: figure.caption(
 position: top, 
@@ -2303,7 +2756,7 @@ supplement: "Tabela",
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Quantis teóricos\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Resíduos\"");#NormalTok(") ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("theme_minimal");#NormalTok("()");],));
 #figure([
-#box(image("capitulos\\capitulo11/anova_estudos_observacionais_experimentais_files/figure-typst/fig-qq-1.svg"))
+#box(image("capitulos\\capitulo09/anova_estudos_observacionais_experimentais_files/figure-typst/fig-qq-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -2321,7 +2774,7 @@ supplement: "Figura",
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Valores ajustados\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Resíduos\"");#NormalTok(") ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("theme_minimal");#NormalTok("()");],));
 #figure([
-#box(image("capitulos\\capitulo11/anova_estudos_observacionais_experimentais_files/figure-typst/fig-residuos-1.svg"))
+#box(image("capitulos\\capitulo09/anova_estudos_observacionais_experimentais_files/figure-typst/fig-residuos-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -2343,7 +2796,7 @@ A ANOVA diz #strong[que existe] diferença, mas não #strong[onde]. Para descobr
 
 #Skylighting(([#FunctionTok("flextable_ocean");#NormalTok("(");#FunctionTok("mostrar_tukey");#NormalTok("(r))");],));
 #figure([
-#box(image("capitulos\\capitulo11/anova_estudos_observacionais_experimentais_files/figure-typst/tbl-tukey-1.png"))
+#box(image("capitulos\\capitulo09/anova_estudos_observacionais_experimentais_files/figure-typst/tbl-tukey-1.png"))
 
 ], caption: figure.caption(
 position: top, 
@@ -2366,7 +2819,7 @@ supplement: "Tabela",
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Diferença de médias (g)\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Comparação\"");#NormalTok(") ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("theme_minimal");#NormalTok("()");],));
 #figure([
-#box(image("capitulos\\capitulo11/anova_estudos_observacionais_experimentais_files/figure-typst/fig-tukey-1.svg"))
+#box(image("capitulos\\capitulo09/anova_estudos_observacionais_experimentais_files/figure-typst/fig-tukey-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -2400,13 +2853,286 @@ Estatística é meio, não fim. #cite(<bhujel2011>, form: "prose") faz uma ressa
 + O que aconteceria com a tabela de pressupostos se um valor de C fosse, digamos, 130 g (um #emph[outlier])? Teste e interprete.
 + Troque o pós-teste de Tukey por comparações com #NormalTok("pairwise.t.test()"); e compare as conclusões.
 
-#heading(level: 2, numbering: none)[Referências]
-<referências>
+#part[Unidade IV · Relações entre variáveis]
+= Análise de Correlação e Associação entre Variáveis
+<análise-de-correlação-e-associação-entre-variáveis>
+Ou: quando duas medidas andam de mãos dadas --- e como saber se isso é real
+
+\
 #block[
-] <refs>
-#part[Unidade V · Relações entre variáveis]
-= Análise de Correlação e Associação entre váriáveis
-<análise-de-correlação-e-associação-entre-váriáveis>
+#callout(
+body: 
+[
+Você tem uma planilha cheia de colunas --- concentrações de íons na água, tamanhos de animais, sexo, estação do ano --- e bate aquela pergunta: #strong[o que tem a ver com o quê?] Será que, quando um íon sobe, outro acompanha? A proporção de machos e fêmeas muda entre as estações? Olhar coluna por coluna não revela essas ligações. Precisamos de ferramentas que meçam #strong[o quanto duas variáveis caminham juntas].
+
+]
+, 
+title: 
+[
+Já passou por isso?
+]
+, 
+background_color: 
+rgb("#dae6fb")
+, 
+icon_color: 
+rgb("#0758E5")
+, 
+icon: 
+none
+, 
+body_background_color: 
+white
+)
+]
+Há duas perguntas parecidas, mas diferentes, escondidas aqui. A primeira é sobre #strong[correlação]: quando duas variáveis #strong[numéricas] sobem e descem juntas (ou em sentidos opostos). A segunda é sobre #strong[associação]: quando duas variáveis #strong[categóricas] aparecem juntas mais (ou menos) do que o acaso explicaria. A ferramenta muda conforme o tipo de variável --- e é fácil escolher errado. Vamos às duas.
+
+== Parte 1 --- Correlação entre variáveis numéricas
+<parte-1-correlação-entre-variáveis-numéricas>
+=== Os dados: a química das salmouras
+<os-dados-a-química-das-salmouras>
+Para correlação, queremos variáveis que #strong[não] estejam todas amarradas pela mesma causa. Medidas de tamanho de um animal, por exemplo, sobem quase todas juntas (um bicho grande é grande em tudo) --- e a correlação fica monótona, tudo perto de 1. Já um conjunto de #strong[concentrações químicas] é mais interessante: alguns componentes se associam, outros se opõem.
+
+Usaremos o #NormalTok("brine_carbonatos"); do #NormalTok("EAPADados");: 19 amostras de #strong[salmouras] de unidades carbonáticas, com a concentração (em ppm) de seis íons --- bicarbonato (#NormalTok("HCO3");), sulfato (#NormalTok("SO4");), cloreto (#NormalTok("Cl");), cálcio (#NormalTok("Ca");), magnésio (#NormalTok("Mg");) e sódio (#NormalTok("Na");) --- além do grupo geológico de origem. É um conjunto #strong[multivariado] que você reencontrará nos capítulos de PCA e agrupamento; aqui ele serve para enxergar como variáveis de um mesmo sistema se correlacionam.
+
+#block[
+#Skylighting(([#FunctionTok("str");#NormalTok("(brine_carbonatos)");],));
+#block[
+#Skylighting(([#NormalTok("'data.frame':   19 obs. of  8 variables:");],
+[#NormalTok(" $ amostra: chr  \"E01\" \"E02\" \"E03\" \"E04\" ...");],
+[#NormalTok(" $ grupo  : Factor w/ 3 levels \"Ellenburger_Dolomite\",..: 1 1 1 1 1 1 1 2 2 2 ...");],
+[#NormalTok(" $ HCO3   : num  10.4 6.2 2.1 8.5 6.7 3.8 1.5 25.6 12 9 ...");],
+[#NormalTok(" $ SO4    : num  30 29.6 11.4 22.5 32.8 ...");],
+[#NormalTok(" $ Cl     : num  967 1175 2387 2186 2016 ...");],
+[#NormalTok(" $ Ca     : num  95.9 111.7 348.3 339.6 287.6 ...");],
+[#NormalTok(" $ Mg     : num  53.7 43.9 119.3 73.6 75.1 ...");],
+[#NormalTok(" $ Na     : num  858 1055 1932 1803 1692 ...");],));
+]
+]
+=== Por dentro da conta: o que é correlação
+<por-dentro-da-conta-o-que-é-correlação>
+Imagine duas medidas dançando. Se, quando uma sobe, a outra #strong[também] sobe, elas dançam no mesmo compasso --- correlação #strong[positiva]. Se uma sobe enquanto a outra desce, dançam em sentidos opostos --- correlação #strong[negativa]. Se cada uma vai para um lado sem ligar para a outra, não há correlação.
+
+O #strong[coeficiente de correlação de Pearson] ($r$) põe número nessa dança. Ele nasce da #strong[covariância] (o quanto as duas variam juntas), só que padronizada para ficar sempre entre $- 1$ e $+ 1$:
+
+$ r = frac(sum \( x_i - macron(x) \) \( y_i - macron(y) \), sqrt(sum \( x_i - macron(x) \)^2) #h(0em) sqrt(sum \( y_i - macron(y) \)^2)) $
+
+O sinal diz a #strong[direção] (positiva ou negativa); o valor absoluto diz a #strong[força]: perto de $1$ (ou $- 1$), as duas medidas andam quase coladas; perto de $0$, andam soltas. Um lembrete que vale ouro: #strong[correlação não é causalidade]. Duas variáveis podem subir juntas porque uma causa a outra, porque uma terceira causa as duas, ou por pura coincidência.
+
+=== A matriz de correlação no R
+<a-matriz-de-correlação-no-r>
+Com várias variáveis numéricas, calculamos a correlação de #strong[todos os pares de uma vez] --- a #emph[matriz de correlação]. Primeiro separamos só as colunas dos íons:
+
+#block[
+#Skylighting(([#NormalTok("ions ");#OtherTok("<-");#NormalTok(" brine_carbonatos[, ");#FunctionTok("c");#NormalTok("(");#StringTok("\"HCO3\"");#NormalTok(", ");#StringTok("\"SO4\"");#NormalTok(", ");#StringTok("\"Cl\"");#NormalTok(", ");#StringTok("\"Ca\"");#NormalTok(", ");#StringTok("\"Mg\"");#NormalTok(", ");#StringTok("\"Na\"");#NormalTok(")]");],
+[],
+[#NormalTok("M ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("cor");#NormalTok("(ions, ");#AttributeTok("use =");#NormalTok(" ");#StringTok("\"complete.obs\"");#NormalTok(")   ");#CommentTok("# método de Pearson (padrão)");],));
+]
+#Skylighting(([#NormalTok("Mtab ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("round");#NormalTok("(M, ");#DecValTok("2");#NormalTok(")");],
+[#NormalTok("tab  ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("data.frame");#NormalTok("(Í");#AttributeTok("on =");#NormalTok(" ");#FunctionTok("rownames");#NormalTok("(Mtab), Mtab, ");#AttributeTok("check.names =");#NormalTok(" ");#ConstantTok("FALSE");#NormalTok(", ");#AttributeTok("row.names =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(")");],
+[#FunctionTok("flextable_ocean");#NormalTok("(tab)");],));
+#figure([
+#box(image("capitulos\\capitulo10/analise_correlacao_associacao_variaveis_files/figure-typst/tbl-correlacao-1.png"))
+
+], caption: figure.caption(
+position: top, 
+[
+Matriz de correlação de Pearson entre as seis concentrações iônicas das salmouras.
+]), 
+kind: "quarto-float-tbl", 
+supplement: "Tabela", 
+)
+<tbl-correlacao>
+
+
+Os números variam bastante --- alguns pares quase colados, outros frouxos, e há sinais negativos. Mas tabela de correlação cansa o olho. É aí que entra o #strong[#NormalTok("corrplot");]: ele transforma a matriz num mapa de cores, onde a intensidade e o sentido da cor mostram, num relance, quem anda com quem (azul = positivo, coral = negativo).
+
+#Skylighting(([#CommentTok("# Escala coral (negativo) -> branco -> teal (positivo). Uso o teal (ocean[2]) no");],
+[#CommentTok("# topo, e nao o navy quase preto, para o numero escuro permanecer legivel mesmo");],
+[#CommentTok("# nas correlacoes fortes.");],
+[#NormalTok("cores ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("colorRampPalette");#NormalTok("(");#FunctionTok("c");#NormalTok("(ocean[");#DecValTok("5");#NormalTok("], ");#StringTok("\"white\"");#NormalTok(", ocean[");#DecValTok("2");#NormalTok("]))(");#DecValTok("200");#NormalTok(")");],
+[#FunctionTok("corrplot");#NormalTok("(M, ");#AttributeTok("method =");#NormalTok(" ");#StringTok("\"color\"");#NormalTok(", ");#AttributeTok("col =");#NormalTok(" cores, ");#AttributeTok("col.lim =");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#SpecialCharTok("-");#DecValTok("1");#NormalTok(", ");#DecValTok("1");#NormalTok("),");],
+[#NormalTok("         ");#AttributeTok("type =");#NormalTok(" ");#StringTok("\"upper\"");#NormalTok(", ");#AttributeTok("addCoef.col =");#NormalTok(" ");#StringTok("\"grey15\"");#NormalTok(",");],
+[#NormalTok("         ");#AttributeTok("tl.col =");#NormalTok(" ocean[");#DecValTok("1");#NormalTok("], ");#AttributeTok("tl.srt =");#NormalTok(" ");#DecValTok("45");#NormalTok(", ");#AttributeTok("tl.cex =");#NormalTok(" ");#FloatTok("0.9");#NormalTok(",");],
+[#NormalTok("         ");#AttributeTok("number.cex =");#NormalTok(" ");#FloatTok("0.8");#NormalTok(", ");#AttributeTok("diag =");#NormalTok(" ");#ConstantTok("FALSE");#NormalTok(",");],
+[#NormalTok("         ");#AttributeTok("mar =");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#DecValTok("0");#NormalTok(", ");#DecValTok("0");#NormalTok(", ");#DecValTok("0");#NormalTok(", ");#DecValTok("0");#NormalTok("))");],));
+#figure([
+#box(image("capitulos\\capitulo10/analise_correlacao_associacao_variaveis_files/figure-typst/fig-corrplot-1.svg"))
+], caption: figure.caption(
+position: bottom, 
+[
+Mapa de correlação dos íons. Tons de teal = correlação positiva; coral = negativa; a intensidade indica a força. Os números repetem o coeficiente de Pearson.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-corrplot>
+
+
+#block[
+#callout(
+body: 
+[
+#strong[Do mouse ao código (e o que vem por aí).] Hoje o livro usa #NormalTok("cor()"); e #NormalTok("corrplot()"); diretamente. A correlação ainda #strong[não é uma análise canônica da CatalyseR] (a IDE usa matriz de correlação por dentro da PCA, e faz a correlação bivariada dentro da regressão). Está no backlog transformá-la numa família canônica do #NormalTok("EAPADados"); --- algo como #NormalTok("calcular_correlacao()");, #NormalTok("mostrar_correlacao()"); e #NormalTok("grafico_correlacao()"); ---, para que a IDE, o relatório #NormalTok(".docx"); e este capítulo derivem do mesmo código. Por ora, #NormalTok("corrplot()"); resolve.
+
+]
+, 
+title: 
+[
+Nota
+]
+, 
+background_color: 
+rgb("#dae6fb")
+, 
+icon_color: 
+rgb("#0758E5")
+, 
+icon: 
+fa-info()
+, 
+body_background_color: 
+white
+)
+]
+=== Um par de perto, com teste
+<um-par-de-perto-com-teste>
+A matriz mostra o panorama; para #strong[um] par, o #NormalTok("cor.test()"); dá o coeficiente #strong[e] testa se ele é diferente de zero. Veja a relação entre sódio e cloreto, dois íons que costumam caminhar juntos nas salmouras:
+
+#block[
+#Skylighting(([#NormalTok("ct ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("cor.test");#NormalTok("(brine_carbonatos");#SpecialCharTok("$");#NormalTok("Na, brine_carbonatos");#SpecialCharTok("$");#NormalTok("Cl)");],
+[#NormalTok("ct");],));
+#block[
+#Skylighting(([],
+[#NormalTok("    Pearson's product-moment correlation");],
+[],
+[#NormalTok("data:  brine_carbonatos$Na and brine_carbonatos$Cl");],
+[#NormalTok("t = 24.339, df = 17, p-value = 1.183e-14");],
+[#NormalTok("alternative hypothesis: true correlation is not equal to 0");],
+[#NormalTok("95 percent confidence interval:");],
+[#NormalTok(" 0.9630053 0.9947046");],
+[#NormalTok("sample estimates:");],
+[#NormalTok("      cor ");],
+[#NormalTok("0.9859529 ");],));
+]
+]
+#quote(block: true)[
+A correlação entre o sódio (Na) e o cloreto (Cl) foi de #emph[r] = 0.986 (IC 95% \[0.963; 0.995\]), p \< 0,001 --- uma correlação muito forte e positiva: as duas concentrações tendem a subir juntas.
+]
+
+#Skylighting(([#FunctionTok("ggplot");#NormalTok("(brine_carbonatos, ");#FunctionTok("aes");#NormalTok("(Na, Cl, ");#AttributeTok("colour =");#NormalTok(" grupo)) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("geom_point");#NormalTok("(");#AttributeTok("size =");#NormalTok(" ");#FloatTok("2.5");#NormalTok(", ");#AttributeTok("alpha =");#NormalTok(" ");#FloatTok("0.8");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("geom_smooth");#NormalTok("(");#AttributeTok("method =");#NormalTok(" ");#StringTok("\"lm\"");#NormalTok(", ");#AttributeTok("se =");#NormalTok(" ");#ConstantTok("FALSE");#NormalTok(", ");#AttributeTok("colour =");#NormalTok(" ocean[");#DecValTok("1");#NormalTok("], ");#AttributeTok("linewidth =");#NormalTok(" ");#FloatTok("0.8");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("scale_colour_manual");#NormalTok("(");#AttributeTok("values =");#NormalTok(" ocean[");#SpecialCharTok("-");#DecValTok("1");#NormalTok("], ");#AttributeTok("name =");#NormalTok(" ");#StringTok("\"Grupo\"");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Sódio (ppm)\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Cloreto (ppm)\"");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("theme_minimal");#NormalTok("()");],));
+#figure([
+#box(image("capitulos\\capitulo10/analise_correlacao_associacao_variaveis_files/figure-typst/fig-dispersao-1.svg"))
+], caption: figure.caption(
+position: bottom, 
+[
+Sódio vs.~cloreto nas salmouras, por grupo geológico. A reta resume a tendência linear.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-dispersao>
+
+
+=== As letras miúdas: Pearson tem pressupostos
+<as-letras-miúdas-pearson-tem-pressupostos>
+O $r$ de Pearson mede a relação #strong[linear] e é sensível a #emph[outliers] e a relações curvas. Sempre olhe o gráfico de dispersão #strong[antes] de confiar no número: um $r$ baixo pode esconder uma relação forte, porém curva; um $r$ alto pode ser obra de um único ponto extremo. Quando a relação é monotônica mas não linear, ou há valores discrepantes, a alternativa é a correlação de #strong[Spearman] (sobre os postos), que se pede com #NormalTok("method = \"spearman\"");:
+
+#block[
+#Skylighting(([#FunctionTok("cor");#NormalTok("(brine_carbonatos");#SpecialCharTok("$");#NormalTok("Na, brine_carbonatos");#SpecialCharTok("$");#NormalTok("Cl, ");#AttributeTok("method =");#NormalTok(" ");#StringTok("\"spearman\"");#NormalTok(")");],));
+#block[
+#Skylighting(([#NormalTok("[1] 0.9684211");],));
+]
+]
+== Parte 2 --- Associação entre variáveis categóricas
+<parte-2-associação-entre-variáveis-categóricas>
+Correlação é para número. Quando as variáveis são #strong[categóricas] --- sexo, local, estação ---, a pergunta vira: as categorias de uma se distribuem de forma #strong[dependente] das categorias da outra? A ferramenta é a #strong[tabela de contingência] e o #strong[teste qui-quadrado ($chi^2$) de independência].
+
+=== Os dados: caranguejos de Bragança (PA)
+<os-dados-caranguejos-de-bragança-pa>
+O #NormalTok("biometria_caranguejos"); traz 993 caranguejos capturados em Bragança, no Pará, com sexo, local e estação anotados. Vamos perguntar: #strong[a proporção de machos e fêmeas depende da estação do ano?] (Uma pergunta com sentido biológico --- épocas reprodutivas mudam quem é capturado.)
+
+#Skylighting(([#NormalTok("tab_cont ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("table");#NormalTok("(Estação ");#OtherTok("=");#NormalTok(" biometria_caranguejos");#SpecialCharTok("$");#NormalTok("Estacao,");],
+[#NormalTok("                  ");#AttributeTok("Sexo    =");#NormalTok(" biometria_caranguejos");#SpecialCharTok("$");#NormalTok("Sexo)");],
+[#NormalTok("cont_df ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("as.data.frame.matrix");#NormalTok("(tab_cont)");],
+[#NormalTok("cont_df ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("data.frame");#NormalTok("(Estação ");#OtherTok("=");#NormalTok(" ");#FunctionTok("rownames");#NormalTok("(cont_df), cont_df,");],
+[#NormalTok("                     ");#AttributeTok("check.names =");#NormalTok(" ");#ConstantTok("FALSE");#NormalTok(", ");#AttributeTok("row.names =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(")");],
+[#FunctionTok("flextable_ocean");#NormalTok("(cont_df)");],));
+#figure([
+#box(image("capitulos\\capitulo10/analise_correlacao_associacao_variaveis_files/figure-typst/tbl-contingencia-1.png"))
+
+], caption: figure.caption(
+position: top, 
+[
+Tabela de contingência: número de caranguejos por estação e sexo.
+]), 
+kind: "quarto-float-tbl", 
+supplement: "Tabela", 
+)
+<tbl-contingencia>
+
+
+=== Por dentro da conta: o que o qui-quadrado compara
+<por-dentro-da-conta-o-que-o-qui-quadrado-compara>
+A ideia é simples e elegante. O teste calcula quantos caranguejos #strong[esperaríamos] em cada célula #strong[se] sexo e estação fossem independentes (isto é, se a proporção de machos fosse a mesma nas duas estações). Depois compara esse #strong[esperado] com o que de fato foi #strong[observado]. Quanto maior a distância entre observado e esperado, maior o $chi^2$ --- e mais difícil de explicar pelo acaso.
+
+#block[
+#Skylighting(([#NormalTok("qui ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("chisq.test");#NormalTok("(tab_cont)");],
+[#NormalTok("qui");],));
+#block[
+#Skylighting(([],
+[#NormalTok("    Pearson's Chi-squared test with Yates' continuity correction");],
+[],
+[#NormalTok("data:  tab_cont");],
+[#NormalTok("X-squared = 112.44, df = 1, p-value < 2.2e-16");],));
+]
+]
+#Skylighting(([#FunctionTok("ggplot");#NormalTok("(biometria_caranguejos, ");#FunctionTok("aes");#NormalTok("(Estacao, ");#AttributeTok("fill =");#NormalTok(" Sexo)) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("geom_bar");#NormalTok("(");#AttributeTok("position =");#NormalTok(" ");#StringTok("\"fill\"");#NormalTok(", ");#AttributeTok("alpha =");#NormalTok(" ");#FloatTok("0.9");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("scale_fill_manual");#NormalTok("(");#AttributeTok("values =");#NormalTok(" ocean[");#FunctionTok("c");#NormalTok("(");#DecValTok("2");#NormalTok(", ");#DecValTok("4");#NormalTok(")]) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("scale_y_continuous");#NormalTok("(");#AttributeTok("labels =");#NormalTok(" scales");#SpecialCharTok("::");#NormalTok("percent) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Estação\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Proporção\"");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("theme_minimal");#NormalTok("()");],));
+#figure([
+#box(image("capitulos\\capitulo10/analise_correlacao_associacao_variaveis_files/figure-typst/fig-associacao-1.svg"))
+], caption: figure.caption(
+position: bottom, 
+[
+Proporção de sexos em cada estação. Barras parecidas entre estações indicam pouca associação.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-associacao>
+
+
+#quote(block: true)[
+Aplicou-se o teste qui-quadrado de independência entre estação e sexo, $chi^2$\(1) = 112.44, p \< 0,001. O tamanho do efeito (V de Cramér) foi de 0.337, indicando uma associação moderada entre as duas variáveis.
+]
+
+#quote(block: true)[
+#strong[Como ler.] Um $p$ pequeno (\< 0,05) diz que sexo e estação #strong[não] são independentes --- a composição de sexos muda conforme a estação. Um $p$ grande diz que não há evidência de associação. Mas atenção: com amostras grandes (aqui são quase mil), até diferenças minúsculas viram "significativas". Por isso reportamos também o #strong[V de Cramér], que mede a #strong[força] da associação numa escala de 0 a 1 --- o complemento do "tem efeito?" com o "quão grande é?".
+]
+
+== E daí? Da significância à decisão
+<e-daí-da-significância-à-decisão-1>
+Correlação e associação são pontos de partida, não de chegada. Uma correlação forte entre íons sugere uma origem geoquímica comum --- e adianta o que a PCA vai condensar em poucos eixos lá na frente. Já uma associação entre sexo e estação, se real, tem leitura de manejo: pode sinalizar época reprodutiva e orientar regras de defeso. Em ambos os casos, o número abre a conversa --- quem fecha é o conhecimento do sistema, da biologia e da pesca.
+
+#quote(block: true)[
+#strong[Resumo do capítulo.] (1) Variáveis #strong[numéricas] → #strong[correlação] (Pearson, ou Spearman quando a relação não é linear); a matriz vira mapa com #NormalTok("corrplot()");. (2) Variáveis #strong[categóricas] → #strong[associação] pela tabela de contingência e pelo #strong[qui-quadrado], com o #strong[V de Cramér] medindo a força. (3) Sempre #strong[veja o gráfico] antes de confiar no coeficiente. (4) Correlação e associação #strong[não são causalidade].
+]
+
+== Para praticar
+<para-praticar-8>
++ Refaça a matriz de correlação #strong[sem] o íon #NormalTok("Na"); e veja se as relações entre os demais mudam de força.
++ Troque o par do #NormalTok("cor.test()"); por cálcio (#NormalTok("Ca");) e magnésio (#NormalTok("Mg");). A correlação é tão forte quanto a do par sódio-cloreto?
++ Monte uma nova tabela de contingência entre #strong[local] e #strong[sexo] (#NormalTok("biometria_caranguejos$Local");) e teste a associação. O que muda na conclusão?
+
 = Regressão Linear Simples
 <regressão-linear-simples>
 Ou: traçando a reta que melhor resume a relação entre duas medidas
@@ -2449,7 +3175,7 @@ em que $beta_0$ é o #strong[intercepto] (o valor de CC quando LC = 0) e $beta_1
 Antes dos cálculos, vale ver de onde vêm os números. Em cada caranguejo-uçá capturado, mediram-se, com a ajuda de paquímetro digital, duas dimensões da carapaça --- a #strong[largura] (LC) e o #strong[comprimento] (CC), em milímetros ---, anotando ainda o #strong[local], a #strong[estação] e o #strong[sexo] (#ref(<fig-medicao>, supplement: [Figura])). Foi um estudo planejado: dois locais, duas estações e os dois sexos, com cada indivíduo virando uma linha no formato #emph[tidy].
 
 #figure([
-#box(image("capitulos\\capitulo09/../../images/esquema_medicao_caranguejo.png", width: 100.0%))
+#box(image("capitulos\\capitulo11/../../images/esquema_medicao_caranguejo.png", width: 100.0%))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -2522,7 +3248,7 @@ A leitura da saída:
 [#FunctionTok("rownames");#NormalTok("(coefs) ");#OtherTok("<-");#NormalTok(" ");#ConstantTok("NULL");],
 [#FunctionTok("flextable_ocean");#NormalTok("(coefs)");],));
 #figure([
-#box(image("capitulos\\capitulo09/regressao_linear_simples_multipla_files/figure-typst/tbl-coef-1.png"))
+#box(image("capitulos\\capitulo11/regressao_linear_simples_multipla_files/figure-typst/tbl-coef-1.png"))
 
 ], caption: figure.caption(
 position: top, 
@@ -2555,7 +3281,7 @@ A regressão linear confia em alguns pressupostos sobre os #strong[resíduos] --
 [#NormalTok("  ");#FunctionTok("stat_qq_line");#NormalTok("(");#AttributeTok("color =");#NormalTok(" ocean[");#StringTok("\"CORAL\"");#NormalTok("]) ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Quantis teóricos\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Quantis dos resíduos\"");#NormalTok(")");],));
 #figure([
-#box(image("capitulos\\capitulo09/regressao_linear_simples_multipla_files/figure-typst/fig-qq-1.svg"))
+#box(image("capitulos\\capitulo11/regressao_linear_simples_multipla_files/figure-typst/fig-qq-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -2582,7 +3308,7 @@ Por fim, a imagem que resume tudo: a nuvem de pontos, a reta ajustada e o #stron
 [#NormalTok("           ");#AttributeTok("hjust =");#NormalTok(" ");#DecValTok("0");#NormalTok(", ");#AttributeTok("vjust =");#NormalTok(" ");#DecValTok("1");#NormalTok(", ");#AttributeTok("label =");#NormalTok(" eq, ");#AttributeTok("color =");#NormalTok(" ocean[");#StringTok("\"NAVY\"");#NormalTok("], ");#AttributeTok("size =");#NormalTok(" ");#DecValTok("4");#NormalTok(") ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Largura da carapaça (mm)\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Comprimento da carapaça (mm)\"");#NormalTok(")");],));
 #figure([
-#box(image("capitulos\\capitulo09/regressao_linear_simples_multipla_files/figure-typst/fig-reta-1.svg"))
+#box(image("capitulos\\capitulo11/regressao_linear_simples_multipla_files/figure-typst/fig-reta-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -2650,7 +3376,7 @@ E se machos e fêmeas tiverem retas diferentes? Basta colorir os pontos por #str
 [#NormalTok("           ");#AttributeTok("label =");#NormalTok(" eqs");#SpecialCharTok("$");#NormalTok("rotulo[");#DecValTok("2");#NormalTok("], ");#AttributeTok("color =");#NormalTok(" ");#FunctionTok("unname");#NormalTok("(ocean[");#StringTok("\"CORAL\"");#NormalTok("]), ");#AttributeTok("size =");#NormalTok(" ");#FloatTok("3.5");#NormalTok(") ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Largura da carapaça (mm)\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Comprimento da carapaça (mm)\"");#NormalTok(")");],));
 #figure([
-#box(image("capitulos\\capitulo09/regressao_linear_simples_multipla_files/figure-typst/fig-sexo-1.svg"))
+#box(image("capitulos\\capitulo11/regressao_linear_simples_multipla_files/figure-typst/fig-sexo-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -2737,7 +3463,7 @@ O conjunto #NormalTok("cangulo_crescimento");, do pacote #NormalTok("EAPADados")
 [#NormalTok("  ");#FunctionTok("geom_point");#NormalTok("(");#AttributeTok("color =");#NormalTok(" ocean[");#StringTok("\"TEAL\"");#NormalTok("], ");#AttributeTok("size =");#NormalTok(" ");#DecValTok("2");#NormalTok(") ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Comprimento (cm)\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Peso (g)\"");#NormalTok(")");],));
 #figure([
-#box(image("capitulos\\capitulo13/analise_regressao_nao_linear_files/figure-typst/fig-nuvem-1.svg"))
+#box(image("capitulos\\capitulo12/analise_regressao_nao_linear_files/figure-typst/fig-nuvem-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -2844,7 +3570,7 @@ Ajustar não é o fim: é preciso checar se o modelo "sobrou" algum padrão. Os 
 [#NormalTok("  ");#FunctionTok("geom_point");#NormalTok("(");#AttributeTok("color =");#NormalTok(" ocean[");#StringTok("\"NAVY\"");#NormalTok("]) ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Peso ajustado (g)\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Resíduo (g)\"");#NormalTok(")");],));
 #figure([
-#box(image("capitulos\\capitulo13/analise_regressao_nao_linear_files/figure-typst/fig-residuos-1.svg"))
+#box(image("capitulos\\capitulo12/analise_regressao_nao_linear_files/figure-typst/fig-residuos-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -2873,7 +3599,7 @@ Por fim, vale ver o ajuste desenhado sobre a nuvem original --- a prova visual d
 [#NormalTok("           ");#AttributeTok("label =");#NormalTok(" eq, ");#AttributeTok("color =");#NormalTok(" ocean[");#StringTok("\"NAVY\"");#NormalTok("], ");#AttributeTok("size =");#NormalTok(" ");#DecValTok("4");#NormalTok(") ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Comprimento (cm)\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Peso (g)\"");#NormalTok(")");],));
 #figure([
-#box(image("capitulos\\capitulo13/analise_regressao_nao_linear_files/figure-typst/fig-ajuste-1.svg"))
+#box(image("capitulos\\capitulo12/analise_regressao_nao_linear_files/figure-typst/fig-ajuste-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -2893,11 +3619,312 @@ O modelo de potência ajustado foi $hat(W) = 0.0295 dot.op L^2.913$, com pseudo-
 <da-linearização-ao-ajuste-por-que-não-usar-só-os-logaritmos>
 Você pode estar pensando: se a linearização já dá uma reta, por que não parar nela? Porque os dois caminhos #strong[minimizam coisas diferentes]. A regressão sobre os logaritmos minimiza o erro na escala #emph[log] --- tratando proporcionalmente igual um peixe de 40 g e um de 1500 g. O #NormalTok("nls"); minimiza o erro na escala #strong[original], em gramas, dando mais peso aos peixes grandes. Para a relação peso-comprimento, a versão log-linear (com a correção de viés de Baskerville) é tradicional e perfeitamente válida; o #NormalTok("nls"); é a abordagem direta quando você quer a curva que melhor prevê o peso em gramas. Conhecer as duas --- e saber que podem diferir um pouco nos parâmetros --- é o que separa quem aplica a fórmula de quem entende o que ela faz.
 
+== Do peso à idade: o crescimento de von Bertalanffy
+<do-peso-à-idade-o-crescimento-de-von-bertalanffy>
+Até aqui perguntamos #emph[quanto pesa] um peixe de determinado comprimento. Falta a outra metade da história: #emph[quanto ele mede a cada idade]. E aqui o gráfico volta a encurvar --- só que por um motivo diferente.
+
+Pense numa poupança que rende juros, mas da qual você saca um pouco mais a cada ano. No começo, o saldo dispara; depois, a retirada come quase todo o rendimento e o saldo quase para de crescer. O peixe faz algo parecido com a energia: quando jovem, investe quase tudo em ficar maior; quando adulto, divide essa energia com manutenção e reprodução, e o crescimento desacelera. O resultado é uma curva que sobe rápido, vai perdendo o fôlego e se aproxima de um teto. É exatamente isso que a função de crescimento de #strong[von Bertalanffy] descreve:
+
+$ L_t = L_oo (1 - e^(- K thin \( t - t_0 \))) $
+
+em que $L_t$ é o comprimento esperado na idade $t$, $L_oo$ é o #strong[comprimento assintótico] (o tamanho médio máximo para o qual a espécie tende), $K$ é o #strong[coeficiente de crescimento] e $t_0$ é a idade teórica em que o comprimento seria zero --- um ajuste de posição da curva, não um fato biológico.
+
+Vale insistir num ponto que confunde muita gente: $K$ #strong[não] é a "velocidade" do crescimento. Ele mede a #strong[rapidez com que o peixe se aproxima de $L_oo$]. Espécies com $K$ alto chegam logo perto do teto; com $K$ baixo, crescem devagar e por mais tempo. A FAO resume bem: a curva de comprimento por idade tem inclinação cada vez menor à medida que a idade avança, encostando numa assíntota superior.#footnote[FAO --- #emph[Fitting a von Bertalanffy growth model to length-at-age data]: #link("https://www.fao.org/4/v2648e/V2648E06.htm").] E há um motivo prático para tanto cuidado com esses três números: eles alimentam modelos de avaliação de estoques, como o rendimento por recruta de Beverton e Holt --- errar o crescimento se propaga como erro na decisão de manejo.#footnote[A VBGF é base da equação de rendimento por recruta de Beverton--Holt; suposições sobre $L_oo$ afetam fortemente as estimativas de manejo. Ver verbete #emph[Von Bertalanffy function], Wikipedia: #link("https://en.wikipedia.org/wiki/Von_Bertalanffy_function").]
+
 #block[
 #callout(
 body: 
 [
-Nem toda relação é uma reta. A relação peso-comprimento dos peixes é uma #strong[potência], $W = a thin L^b$, em que o expoente $b$ revela a estratégia de crescimento (perto de 3, isométrico). Ajustamos modelos assim com #NormalTok("nls()");, que é iterativo e por isso pede valores iniciais --- obtidos com elegância pela #strong[linearização log-log]. Depois do ajuste, lemos os parâmetros, calculamos um pseudo-$R^2$ e, sobretudo, #strong[olhamos os resíduos] para confirmar que nenhum padrão ficou de fora. No cangulo, o modelo explicou quase toda a variação do peso, com $b$ pertinho de 3.
+Use quando a pergunta for #emph["como o comprimento muda com a idade (ou o tempo)?"] e os dados tiverem #strong[idade e comprimento]. Ele brilha quando o crescimento é rápido no início, desacelera com a idade e tende a um tamanho máximo --- e quando você quer #strong[comparar] crescimento entre sexos, áreas, anos ou populações. Ele é menos indicado quando a curva é fortemente #strong[sigmoide] (fases larvais, engordas curtas): aí modelos como Gompertz ou logístico costumam encaixar melhor. Nenhum modelo simples descreve todas as fases da vida de um peixe --- e tudo bem.
+
+]
+, 
+title: 
+[
+Quando usar von Bertalanffy?
+]
+, 
+background_color: 
+rgb("#ccf1e3")
+, 
+icon_color: 
+rgb("#00A047")
+, 
+icon: 
+none
+, 
+body_background_color: 
+white
+)
+]
+=== Os dados: idade e comprimento do walleye
+<os-dados-idade-e-comprimento-do-walleye>
+Para ajustar a curva precisamos de uma coisa nem sempre trivial: a #strong[idade] de cada peixe. Ela costuma vir de estruturas calcificadas --- os #strong[otólitos], pequenas "pedras" de carbonato de cálcio no ouvido interno dos peixes ósseos. Eles crescem a vida toda e depositam camadas sazonais; contar esses anéis é como contar os anéis de uma árvore.#footnote[NOAA Fisheries --- #emph[Age and Growth]: os otólitos são a estrutura mais usada para idade de peixes ósseos, com anéis (annuli) anuais como os de uma árvore: #link("https://www.fisheries.noaa.gov/national/science-data/age-and-growth"). Sobre a microestrutura e incrementos diários, ver FAO: #link("https://www.fao.org/4/t0529e/T0529E09.htm").] Há ainda escamas, espinhos e raios de nadadeira, além de estudos de marcação e recaptura.
+
+O conjunto #NormalTok("walleye_erie");, do #NormalTok("EAPADados");, traz dados biológicos #strong[reais] de walleye (#emph[Sander vitreus]) do Lago Erie, com idade atribuída por otólitos, comprimento e peso --- preparado a partir de #NormalTok("FSAdata::WalleyeErie2");. É um material e tanto: permite ajustar a curva de crescimento e, depois, reaproveitar a relação peso-comprimento que vimos com o cangulo.
+
+#Skylighting(([#NormalTok("peixes ");#OtherTok("<-");#NormalTok(" walleye_erie ");#SpecialCharTok("|>");],
+[#NormalTok("  dplyr");#SpecialCharTok("::");#FunctionTok("filter");#NormalTok("(");#SpecialCharTok("!");#FunctionTok("is.na");#NormalTok("(idade_anos), ");#SpecialCharTok("!");#FunctionTok("is.na");#NormalTok("(comprimento_total_mm))");],
+[],
+[#FunctionTok("ggplot");#NormalTok("(peixes, ");#FunctionTok("aes");#NormalTok("(idade_anos, comprimento_total_mm)) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("geom_point");#NormalTok("(");#AttributeTok("alpha =");#NormalTok(" ");#FloatTok("0.15");#NormalTok(", ");#AttributeTok("colour =");#NormalTok(" ocean[");#StringTok("\"TEAL\"");#NormalTok("]) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Idade (anos)\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Comprimento total (mm)\"");#NormalTok(")");],));
+#figure([
+#box(image("capitulos\\capitulo12/analise_regressao_nao_linear_files/figure-typst/fig-vb-nuvem-1.svg"))
+], caption: figure.caption(
+position: bottom, 
+[
+Comprimento por idade no walleye do Lago Erie. A nuvem sobe rápido nas idades jovens e vai achatando --- a assinatura de von Bertalanffy.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-vb-nuvem>
+
+
+=== Ajustando a curva no R (e na CatalyseR)
+<ajustando-a-curva-no-r-e-na-catalyser>
+Como o modelo é #strong[não linear nos parâmetros], o ajuste é por mínimos quadrados não lineares, com #NormalTok("nls()"); --- a mesma família de função que a CatalyseR aciona quando você escolhe "crescimento de von Bertalanffy" no menu. O #NormalTok("nls()"); precisa de #strong[chutes iniciais]\; valores razoáveis vêm da própria biologia: $L_oo$ perto do maior comprimento observado, $K$ em torno de 0,3 por ano e $t_0$ próximo de zero.
+
+#block[
+#Skylighting(([#NormalTok("ajuste_vb ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("nls");#NormalTok("(");],
+[#NormalTok("  comprimento_total_mm ");#SpecialCharTok("~");#NormalTok(" Linf ");#SpecialCharTok("*");#NormalTok(" (");#DecValTok("1");#NormalTok(" ");#SpecialCharTok("-");#NormalTok(" ");#FunctionTok("exp");#NormalTok("(");#SpecialCharTok("-");#NormalTok("K ");#SpecialCharTok("*");#NormalTok(" (idade_anos ");#SpecialCharTok("-");#NormalTok(" t0))),");],
+[#NormalTok("  ");#AttributeTok("data  =");#NormalTok(" peixes,");],
+[#NormalTok("  ");#AttributeTok("start =");#NormalTok(" ");#FunctionTok("list");#NormalTok("(");#AttributeTok("Linf =");#NormalTok(" ");#DecValTok("650");#NormalTok(", ");#AttributeTok("K =");#NormalTok(" ");#FloatTok("0.30");#NormalTok(", ");#AttributeTok("t0 =");#NormalTok(" ");#SpecialCharTok("-");#FloatTok("0.5");#NormalTok(")");],
+[#NormalTok(")");],
+[],
+[#FunctionTok("coef");#NormalTok("(ajuste_vb)");],));
+#block[
+#Skylighting(([#NormalTok("       Linf           K          t0 ");],
+[#NormalTok("592.6578526   0.3612994  -1.5724805 ");],));
+]
+]
+O ajuste estima um comprimento assintótico de cerca de 593 mm e um $K$ de aproximadamente 0,36 por ano. Em palavras: o walleye tende a um teto perto de 59 cm e se aproxima dele a um ritmo moderado. A curva sobre os pontos conta a história melhor que qualquer tabela:
+
+#Skylighting(([#NormalTok("idades ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("data.frame");#NormalTok("(");#AttributeTok("idade_anos =");#NormalTok(" ");#FunctionTok("seq");#NormalTok("(");#FunctionTok("min");#NormalTok("(peixes");#SpecialCharTok("$");#NormalTok("idade_anos),");],
+[#NormalTok("                                      ");#FunctionTok("max");#NormalTok("(peixes");#SpecialCharTok("$");#NormalTok("idade_anos), ");#AttributeTok("length.out =");#NormalTok(" ");#DecValTok("200");#NormalTok("))");],
+[#NormalTok("idades");#SpecialCharTok("$");#NormalTok("ajuste ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("predict");#NormalTok("(ajuste_vb, ");#AttributeTok("newdata =");#NormalTok(" idades)");],
+[],
+[#FunctionTok("ggplot");#NormalTok("(peixes, ");#FunctionTok("aes");#NormalTok("(idade_anos, comprimento_total_mm)) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("geom_point");#NormalTok("(");#AttributeTok("alpha =");#NormalTok(" ");#FloatTok("0.12");#NormalTok(", ");#AttributeTok("colour =");#NormalTok(" ocean[");#StringTok("\"SEAFOAM\"");#NormalTok("]) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("geom_line");#NormalTok("(");#AttributeTok("data =");#NormalTok(" idades, ");#FunctionTok("aes");#NormalTok("(idade_anos, ajuste),");],
+[#NormalTok("            ");#AttributeTok("colour =");#NormalTok(" ocean[");#StringTok("\"CORAL\"");#NormalTok("], ");#AttributeTok("linewidth =");#NormalTok(" ");#FloatTok("1.3");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Idade (anos)\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Comprimento total (mm)\"");#NormalTok(")");],));
+#figure([
+#box(image("capitulos\\capitulo12/analise_regressao_nao_linear_files/figure-typst/fig-vb-curva-1.svg"))
+], caption: figure.caption(
+position: bottom, 
+[
+Curva de von Bertalanffy ajustada sobre os comprimentos por idade do walleye.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-vb-curva>
+
+
+=== Como sair a campo: o esquema de coleta
+<como-sair-a-campo-o-esquema-de-coleta>
+Antes do #NormalTok("nls");, vem o trabalho de obter os dados --- e o #strong[desenho] dessa coleta muda o que você pode concluir. Há dois caminhos típicos.
+
+#figure([
+#box(image("capitulos\\capitulo12/../../images/anchoveta.png", width: 100.0%))
+], caption: figure.caption(
+position: bottom, 
+[
+Da pergunta ao banco de dados: a anatomia de um estudo de crescimento, tomando a anchoveta-do-pacífico (#emph[Engraulis ringens]) das águas centrais do Chile como exemplo real. O esquema percorre o objetivo do estudo, a origem dos dados (conjunto #NormalTok("AnchovetaChile");, do pacote #NormalTok("FSAdata");, com 207 peixes), a coleta e organização em formato #emph[tidy] --- leitura de idade, medição e uma linha por peixe ---, as variáveis resultantes (idade em meses, comprimento total e coorte) e a aplicação analítica: ajustar a curva de von Bertalanffy ao comprimento por idade. Dados de #cite(<cubillos2001>, form: "prose").
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-esquema-anchoveta>
+
+
+O #strong[caminho amostral], o mais comum em biologia pesqueira, observa uma população natural ou explorada --- é o caminho que a #ref(<fig-esquema-anchoveta>, supplement: [Figura]) resume de ponta a ponta. Você amostra peixes em diferentes locais, meses ou artes de pesca; para cada um, registra comprimento, peso, sexo e maturidade, e estima a idade pelos otólitos. O fluxo é: #emph[área de estudo → amostragem em locais/meses/artes → medições + leitura de idade → banco tidy (idade | comprimento | peso | sexo | local | ano) → ajuste de von Bertalanffy]. A força aqui é o realismo; o cuidado é com a #strong[representatividade] --- se você só pega peixe grande na rede, a curva mente sobre os jovens.
+
+O #strong[caminho experimental] é para quando você controla o ambiente --- em aquicultura, por exemplo, comparando rações, densidades ou temperaturas. Você parte de juvenis de tamanho parecido, distribui ao acaso entre as unidades, aplica os tratamentos e faz #strong[biometrias periódicas]: #emph[juvenis homogêneos → casualização nas unidades → tratamentos (ração A, B, C…) → biometria a cada 15--30 dias → banco (tanque | tempo | comprimento | peso | tratamento) → curva de crescimento ou modelo misto]. Aqui mora uma armadilha clássica: medir o mesmo tanque repetidas vezes #strong[não] gera observações independentes. Quando a ração é aplicada ao tanque inteiro, é o #strong[tanque] --- não o peixe --- que é a unidade experimental. O #NormalTok("tilapia_crescimento"); do #NormalTok("EAPADados"); ilustra justamente esse formato de peso por semana e tratamento.
+
+=== von Bertalanffy ou modelo de potência?
+<von-bertalanffy-ou-modelo-de-potência>
+É comum confundir os dois, então vale fixar a diferença num quadro. O ponto-chave é que eles respondem a #strong[perguntas distintas]: von Bertalanffy descreve o crescimento #strong[no tempo]\; o modelo de potência descreve a relação #strong[peso-comprimento] num instante.
+
+#figure([
+#table(
+  columns: (26%, 37%, 37%),
+  align: (left,left,left,),
+  table.header([Aspecto], [von Bertalanffy], [Modelo de potência],),
+  table.hline(),
+  [Equação], [$L_t = L_oo thin \( 1 - e^(- K \( t - t_0 \)) \)$], [$W = a thin L^(thin b)$],
+  [Resposta ($y$)], [comprimento], [peso],
+  [Preditora ($x$)], [idade / tempo], [comprimento],
+  [Pergunta], [como cresce com a idade?], [quanto pesa em dado comprimento?],
+  [Forma da curva], [assintótica], [alométrica],
+  [Uso típico], [crescimento, idade, estoques], [condição corporal, biomassa],
+)
+], caption: figure.caption(
+position: top, 
+[
+Dois modelos não lineares para o crescimento de peixes --- quando o eixo é a idade, von Bertalanffy; quando é o comprimento, potência.
+]), 
+kind: "quarto-float-tbl", 
+supplement: "Tabela", 
+)
+<tbl-vb-potencia>
+
+
+A melhor parte é que os dois se encaixam num #strong[encadeamento]. Primeiro, a idade prevê o comprimento (von Bertalanffy); depois, o comprimento prevê o peso (potência). Juntando as peças, vamos da #emph[idade] à #emph[biomassa]:
+
+$ upright("idade") #h(0em) arrow.r^(upright("von Bertalanffy")) #h(0em) upright("comprimento") #h(0em) arrow.r^(upright("potência")) #h(0em) upright("peso") $
+
+Não precisamos modelar o peso direto pela idade: modelamos o comprimento pela idade e usamos a relação peso-comprimento para chegar ao peso. É o tipo de raciocínio que sustenta uma avaliação de estoque inteira.
+
+#block[
+#callout(
+body: 
+[
+Para a curva idade-comprimento, o #NormalTok("EAPADados"); já traz dois conjuntos #strong[reais], com procedência: #NormalTok("walleye_erie"); (#emph[Sander vitreus], Lago Erie, de #NormalTok("FSAdata::WalleyeErie2");) e #NormalTok("snapper_hg"); (#emph[Pagrus auratus], idade por otólitos, de #NormalTok("FSAdata::SnapperHG1");). Para a relação peso-comprimento, use o #NormalTok("cangulo_crescimento"); (#emph[Balistes vetula]). E quando precisar de #strong[parâmetros já publicados] ($L_oo$, $K$, $t_0$) para comparar espécies, o #link("https://www.fishbase.se")[FishBase] reúne estimativas da literatura --- ótimo para conferir se o seu ajuste faz sentido biológico, ainda que traga os parâmetros prontos, não os dados brutos de idade-comprimento.
+
+]
+, 
+title: 
+[
+Dados confiáveis para praticar
+]
+, 
+background_color: 
+rgb("#dae6fb")
+, 
+icon_color: 
+rgb("#0758E5")
+, 
+icon: 
+none
+, 
+body_background_color: 
+white
+)
+]
+== Do tamanho à maturidade: a regressão logística
+<do-tamanho-à-maturidade-a-regressão-logística>
+As duas curvas anteriores respondiam com #strong[números]: quantos centímetros a cada idade, quantos gramas a cada comprimento. Mas há uma pergunta de manejo igualmente importante cuja resposta é um #strong[sim ou não]: este peixe já se reproduz? Abaixo de certo tamanho, quase nenhuma fêmea desovou; acima dele, quase todas. No meio, é uma transição. E a pergunta que interessa não é sobre um indivíduo, e sim sobre a população: #emph[a partir de que comprimento metade das fêmeas já está madura?] Esse comprimento tem nome --- $L_50$ --- e é um dos números mais usados para regular a pesca.#footnote[O comprimento de primeira maturação ($L_50$) é base para definir tamanho mínimo de captura e malha de rede, deixando o peixe desovar ao menos uma vez antes de ser capturado. Ver King, M. (2007). #emph[Fisheries Biology, Assessment and Management], 2ª ed., Blackwell.]
+
+O problema é que não dá para traçar uma reta --- nem uma curva de crescimento --- por cima de uma coluna de zeros e uns. Precisamos de uma curva que viva entre 0 e 1, porque o que ela devolve é uma #strong[probabilidade]: a chance de o peixe estar maduro em cada comprimento. Essa curva é a #strong[logística]:
+
+$ p \( L \) = frac(1, 1 + e^(- \( beta_0 + beta_1 L \))) $
+
+em que $p \( L \)$ é a probabilidade de estar maduro no comprimento $L$. Repare que ela é parente próxima da reta: por dentro mora $beta_0 + beta_1 L$, uma equação linear, que a função logística "amassa" para dentro do intervalo de 0 a 1. Por isso a logística pertence à família dos #strong[modelos lineares generalizados] (os GLM) --- é uma reta vista através de uma lente que a curva em #strong[S].
+
+Pense num #strong[dimmer] de luz. No fundo, escuro: probabilidade quase zero de estar maduro. No topo, luz plena: quase certeza. No meio do giro, a luz muda depressa de fraca para forte --- e é nesse meio que está a informação. O $beta_1$ diz quão abrupta é a virada: alto, a transição de imaturo para maduro acontece numa faixa estreita de comprimento; baixo, ela se espalha. E o ponto em que a luz está exatamente pela metade --- probabilidade 0,5 --- é o $L_50$, que sai direto dos coeficientes:
+
+$ L_50 = - beta_0 / beta_1 $
+
+=== Os dados: maturidade do walleye
+<os-dados-maturidade-do-walleye>
+Não precisamos de um conjunto novo: o mesmo #NormalTok("walleye_erie"); que ajustou a curva de von Bertalanffy traz, para cada peixe, a condição de maturidade (#NormalTok("maturidade");, com os níveis #emph[imaturo] e #emph[maduro]). Criamos uma coluna binária --- 1 para maduro, 0 para imaturo --- e olhamos a proporção de maduros por faixa de comprimento. O #strong[S] aparece sozinho.
+
+#Skylighting(([#NormalTok("props ");#OtherTok("<-");#NormalTok(" peixes_mat ");#SpecialCharTok("|>");],
+[#NormalTok("  dplyr");#SpecialCharTok("::");#FunctionTok("mutate");#NormalTok("(");#AttributeTok("faixa =");#NormalTok(" ggplot2");#SpecialCharTok("::");#FunctionTok("cut_width");#NormalTok("(comprimento_total_mm, ");#AttributeTok("width =");#NormalTok(" ");#DecValTok("30");#NormalTok(")) ");#SpecialCharTok("|>");],
+[#NormalTok("  dplyr");#SpecialCharTok("::");#FunctionTok("group_by");#NormalTok("(faixa) ");#SpecialCharTok("|>");],
+[#NormalTok("  dplyr");#SpecialCharTok("::");#FunctionTok("summarise");#NormalTok("(");#AttributeTok("centro =");#NormalTok(" ");#FunctionTok("mean");#NormalTok("(comprimento_total_mm),");],
+[#NormalTok("                   ");#AttributeTok("prop   =");#NormalTok(" ");#FunctionTok("mean");#NormalTok("(madura),");],
+[#NormalTok("                   ");#AttributeTok("n      =");#NormalTok(" dplyr");#SpecialCharTok("::");#FunctionTok("n");#NormalTok("(), ");#AttributeTok(".groups =");#NormalTok(" ");#StringTok("\"drop\"");#NormalTok(")");],
+[],
+[#FunctionTok("ggplot");#NormalTok("(props, ");#FunctionTok("aes");#NormalTok("(centro, prop)) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("geom_point");#NormalTok("(");#FunctionTok("aes");#NormalTok("(");#AttributeTok("size =");#NormalTok(" n), ");#AttributeTok("colour =");#NormalTok(" ocean[");#StringTok("\"TEAL\"");#NormalTok("]) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Comprimento total (mm)\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Proporção de maduros\"");#NormalTok(", ");#AttributeTok("size =");#NormalTok(" ");#StringTok("\"n\"");#NormalTok(")");],));
+#figure([
+#box(image("capitulos\\capitulo12/analise_regressao_nao_linear_files/figure-typst/fig-prop-mat-1.svg"))
+], caption: figure.caption(
+position: bottom, 
+[
+Proporção de walleyes maduros por faixa de comprimento. A subida em S é a assinatura da resposta binária.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-prop-mat>
+
+
+=== Ajustando a ogiva no R (e na CatalyseR)
+<ajustando-a-ogiva-no-r-e-na-catalyser>
+Como a resposta é sim/não, o ajuste não é com #NormalTok("nls()");, e sim com #NormalTok("glm()"); na família #strong[binomial] --- a mesma rotina que a CatalyseR aciona quando você pede a "ogiva de maturidade". O #NormalTok("family = binomial"); é o que diz ao R: ajuste a curva em S, não uma reta.
+
+#block[
+#Skylighting(([#NormalTok("ajuste_log ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("glm");#NormalTok("(madura ");#SpecialCharTok("~");#NormalTok(" comprimento_total_mm,");],
+[#NormalTok("                  ");#AttributeTok("data =");#NormalTok(" peixes_mat, ");#AttributeTok("family =");#NormalTok(" binomial)");],
+[],
+[#FunctionTok("coef");#NormalTok("(ajuste_log)");],));
+#block[
+#Skylighting(([#NormalTok("         (Intercept) comprimento_total_mm ");],
+[#NormalTok("         -8.23660862           0.02166089 ");],));
+]
+]
+Os coeficientes, sozinhos, dizem pouco. O que se lê é o $L_50 = - beta_0 \/ beta_1$, que aqui dá cerca de #strong[380 mm] (uns 38,0 cm): abaixo desse comprimento, a maioria dos walleyes ainda não se reproduziu; acima, a maioria já. Por simetria, em torno de #strong[516 mm] praticamente todos já estão maduros. A curva sobre as proporções observadas confirma o ajuste:
+
+#Skylighting(([#NormalTok("grade ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("data.frame");#NormalTok("(");#AttributeTok("comprimento_total_mm =");],
+[#NormalTok("                      ");#FunctionTok("seq");#NormalTok("(");#FunctionTok("min");#NormalTok("(peixes_mat");#SpecialCharTok("$");#NormalTok("comprimento_total_mm),");],
+[#NormalTok("                          ");#FunctionTok("max");#NormalTok("(peixes_mat");#SpecialCharTok("$");#NormalTok("comprimento_total_mm), ");#AttributeTok("length.out =");#NormalTok(" ");#DecValTok("200");#NormalTok("))");],
+[#NormalTok("grade");#SpecialCharTok("$");#NormalTok("prob ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("predict");#NormalTok("(ajuste_log, ");#AttributeTok("newdata =");#NormalTok(" grade, ");#AttributeTok("type =");#NormalTok(" ");#StringTok("\"response\"");#NormalTok(")");],
+[],
+[#FunctionTok("ggplot");#NormalTok("(props, ");#FunctionTok("aes");#NormalTok("(centro, prop)) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("geom_point");#NormalTok("(");#FunctionTok("aes");#NormalTok("(");#AttributeTok("size =");#NormalTok(" n), ");#AttributeTok("colour =");#NormalTok(" ocean[");#StringTok("\"SEAFOAM\"");#NormalTok("]) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("geom_line");#NormalTok("(");#AttributeTok("data =");#NormalTok(" grade, ");#FunctionTok("aes");#NormalTok("(comprimento_total_mm, prob),");],
+[#NormalTok("            ");#AttributeTok("colour =");#NormalTok(" ocean[");#StringTok("\"CORAL\"");#NormalTok("], ");#AttributeTok("linewidth =");#NormalTok(" ");#FloatTok("1.3");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("geom_vline");#NormalTok("(");#AttributeTok("xintercept =");#NormalTok(" L50, ");#AttributeTok("linetype =");#NormalTok(" ");#DecValTok("2");#NormalTok(", ");#AttributeTok("colour =");#NormalTok(" ocean[");#StringTok("\"AMBER\"");#NormalTok("]) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("annotate");#NormalTok("(");#StringTok("\"text\"");#NormalTok(", ");#AttributeTok("x =");#NormalTok(" L50, ");#AttributeTok("y =");#NormalTok(" ");#FloatTok("0.1");#NormalTok(", ");#AttributeTok("hjust =");#NormalTok(" ");#SpecialCharTok("-");#FloatTok("0.1");#NormalTok(",");],
+[#NormalTok("           ");#AttributeTok("label =");#NormalTok(" ");#FunctionTok("sprintf");#NormalTok("(");#StringTok("\"L50 = %.0f mm\"");#NormalTok(", L50), ");#AttributeTok("colour =");#NormalTok(" ocean[");#StringTok("\"NAVY\"");#NormalTok("]) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Comprimento total (mm)\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Proporção / probabilidade de maduro\"");#NormalTok(",");],
+[#NormalTok("       ");#AttributeTok("size =");#NormalTok(" ");#StringTok("\"n\"");#NormalTok(")");],));
+#figure([
+#box(image("capitulos\\capitulo12/analise_regressao_nao_linear_files/figure-typst/fig-ogiva-1.svg"))
+], caption: figure.caption(
+position: bottom, 
+[
+Ogiva de maturidade ajustada (curva logística) sobre as proporções observadas, com o L50 destacado.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-ogiva>
+
+
+#quote(block: true)[
+A ogiva de maturidade estimou um $L_50$ de aproximadamente 380 mm (cerca de 38,0 cm) para o walleye --- o comprimento em que metade da população já se reproduziu.
+]
+
+#block[
+#callout(
+body: 
+[
+Use sempre que a resposta for #strong[binária] --- maduro/imaturo, presente/ausente, recapturado/não --- e a pergunta for #emph["qual a probabilidade de acontecer isto, dado o tamanho (ou a idade)?"]. Um cuidado decisivo: a amostra precisa ter peixes #strong[dos dois lados] da transição, pequenos e grandes; se só houver adultos, a curva não enxerga a subida e o $L_50$ vira chute. E não confunda significância com efeito --- o que move o manejo é o #strong[valor] do $L_50$ (e seu intervalo), não o #emph[p] do coeficiente. Trocando o comprimento pela idade (#NormalTok("madura ~ idade_anos");), a mesma curva entrega o $A_50$, a idade de primeira maturação.
+
+]
+, 
+title: 
+[
+Quando usar a logística?
+]
+, 
+background_color: 
+rgb("#ccf1e3")
+, 
+icon_color: 
+rgb("#00A047")
+, 
+icon: 
+none
+, 
+body_background_color: 
+white
+)
+]
+A logística fecha a trinca de modelos não lineares deste capítulo. Da idade ao comprimento (von Bertalanffy), do comprimento ao peso (potência) e, agora, do comprimento à probabilidade de já estar reproduzindo (logística) --- três perguntas, três curvas, o mesmo peixe.
+
+#block[
+#callout(
+body: 
+[
+Nem toda relação é uma reta. A relação peso-comprimento dos peixes é uma #strong[potência], $W = a thin L^b$, em que o expoente $b$ revela a estratégia de crescimento (perto de 3, isométrico). Ajustamos modelos assim com #NormalTok("nls()");, que é iterativo e por isso pede valores iniciais --- obtidos com elegância pela #strong[linearização log-log]. Depois do ajuste, lemos os parâmetros, calculamos um pseudo-$R^2$ e, sobretudo, #strong[olhamos os resíduos] para confirmar que nenhum padrão ficou de fora. No cangulo, o modelo explicou quase toda a variação do peso, com $b$ pertinho de 3. E conhecemos um segundo modelo não linear --- a curva de #strong[von Bertalanffy], $L_t = L_oo \( 1 - e^(- K \( t - t_0 \)) \)$ ---, que descreve o comprimento ao longo da #strong[idade] e se encadeia com a potência: a idade prevê o comprimento, e o comprimento prevê o peso. Por fim, quando a resposta é um #strong[sim ou não] --- maduro ou imaturo ---, a régua é a #strong[regressão logística], uma curva em S ajustada com #NormalTok("glm(..., family = binomial)");, da qual lemos o $L_50$, o comprimento de primeira maturação que ancora o tamanho mínimo de captura.
 
 ]
 , 
@@ -2926,6 +3953,8 @@ body:
 + Compare os parâmetros do #NormalTok("nls"); com os da linearização (#NormalTok("lm(log(peso_g) ~ log(comprimento_cm))");). Quão diferentes ficaram $a$ e $b$?
 + Use o modelo ajustado para prever o peso de um cangulo de 25 cm. Confira com #NormalTok("predict(ajuste, newdata = data.frame(comprimento_cm = 25))");.
 + Ajuste um modelo de potência separado para cada réplica de peso (#NormalTok("p1");, #NormalTok("p2");, #NormalTok("p3");). Os expoentes $b$ ficam parecidos?
++ Ajuste a curva de von Bertalanffy ao #NormalTok("snapper_hg"); (#NormalTok("comprimento_cm ~ idade_anos");) e compare o $L_oo$ com o do walleye. Qual espécie tende ao maior tamanho?
++ Ajuste a ogiva de maturidade do walleye usando a #strong[idade] (#NormalTok("madura ~ idade_anos");) e obtenha o $A_50$. Compare a distribuição de comprimentos da amostra com o $L_50$: a rede estaria capturando peixes abaixo do comprimento de primeira maturação?
 
 ]
 , 
@@ -2949,7 +3978,223 @@ white
 ]
 = Análise Multivariada de Dados
 <análise-multivariada-de-dados>
-#part[Unidade VI · Visualização e comunicação de dados]
+Componentes principais (PCA) e agrupamento hierárquico --- enxergar o padrão em muitas variáveis de uma vez
+
+\
+#block[
+#callout(
+body: 
+[
+No capítulo anterior você viu que os íons das salmouras se correlacionam de formas diferentes --- alguns sobem juntos, outros se opõem. Mas correlação é coisa de #strong[par a par]. E quando você quer enxergar o padrão de #strong[todas as seis variáveis ao mesmo tempo], e ainda descobrir quais amostras se parecem entre si? Olhar seis colunas de números não resolve. Precisamos condensar e agrupar.
+
+]
+, 
+title: 
+[
+Já passou por isso?
+]
+, 
+background_color: 
+rgb("#dae6fb")
+, 
+icon_color: 
+rgb("#0758E5")
+, 
+icon: 
+none
+, 
+body_background_color: 
+white
+)
+]
+Quando há muitas variáveis numéricas correlacionadas, duas perguntas se impõem. A primeira: dá para #strong[resumir] essas seis colunas em dois ou três "eixos" que guardem quase toda a informação? É a #strong[Análise de Componentes Principais (PCA)]. A segunda: dá para #strong[agrupar] as amostras parecidas em famílias? É a #strong[Análise de Agrupamento Hierárquico (AAH/HCA)], que termina num #strong[dendrograma]. As duas são análises do menu da CatalyseR (módulos PCA e HCA) --- aqui o livro as reproduz com os pacotes #strong[FactoMineR] @le2008 e #strong[factoextra] @kassambara2017, que entregam gráficos bonitos e didáticos.
+
+== Os dados: a química das salmouras (de novo)
+<os-dados-a-química-das-salmouras-de-novo>
+Retomamos o #NormalTok("brine_carbonatos"); @davis2002: 19 amostras de salmouras de #strong[três] unidades carbonáticas (Ellenburger Dolomite, Grayburg Dolomite e Viola Limestone), descritas por seis íons em ppm. É o mesmo conjunto da correlação --- e a documentação do dado o aproxima de algo bem familiar à aquicultura: #strong[monitoramento de qualidade de água], onde também medimos vários íons por ponto de coleta.
+
+Há um detalhe que decide tudo na PCA: os íons estão em #strong[escalas muito diferentes].
+
+#block[
+#Skylighting(([#FunctionTok("round");#NormalTok("(");#FunctionTok("sapply");#NormalTok("(ions, sd), ");#DecValTok("1");#NormalTok(")   ");#CommentTok("# desvios-padrão por íon");],));
+#block[
+#Skylighting(([#NormalTok(" HCO3   SO4    Cl    Ca    Mg    Na ");],
+[#NormalTok("  6.4  37.7 995.3 151.7  54.6 856.6 ");],));
+]
+]
+O cloreto e o sódio variam em centenas; o sulfato, em poucas unidades. Se rodássemos a PCA sobre os números crus, ela enxergaria quase só o Cl e o Na --- os de maior magnitude. Por isso vamos #strong[padronizar] (cada variável com média 0 e desvio 1), o que equivale a rodar a PCA sobre a #strong[matriz de correlação].
+
+== Parte 1 --- Componentes Principais (PCA)
+<parte-1-componentes-principais-pca>
+=== Por dentro da conta
+<por-dentro-da-conta>
+Imagine a nuvem de 19 amostras flutuando num espaço de seis dimensões --- uma por íon. Impossível de visualizar. A PCA procura o #strong[melhor ângulo de fotografia] dessa nuvem: a direção em que os pontos mais se espalham vira o #strong[primeiro componente] (PC1); a melhor direção perpendicular a ela, o #strong[segundo] (PC2); e assim por diante. Cada componente é uma combinação das variáveis originais, e a cada um corresponde um #strong[autovalor] --- quanto da variação total ele captura.
+
+Em geral bastam os primeiros componentes para resumir quase tudo. Para decidir quantos manter, usamos dois critérios clássicos: o #strong[critério de Kaiser] (ficar com componentes de autovalor maior que 1, sobre dados padronizados) e a #strong[proporção acumulada] de variância explicada.
+
+=== A PCA no R, com FactoMineR
+<a-pca-no-r-com-factominer>
+#block[
+#Skylighting(([#NormalTok("res.pca ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("PCA");#NormalTok("(ions, ");#AttributeTok("scale.unit =");#NormalTok(" ");#ConstantTok("TRUE");#NormalTok(", ");#AttributeTok("graph =");#NormalTok(" ");#ConstantTok("FALSE");#NormalTok(")");],));
+]
+O #NormalTok("scale.unit = TRUE"); é a padronização de que falamos --- a #strong[mesma] escolha que o módulo PCA da CatalyseR oferece (a caixinha "Padronizar variáveis"), e que ela usa para montar o relatório #NormalTok(".docx");. Uma definição, vários consumidores.
+
+#Skylighting(([#NormalTok("eig ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("get_eigenvalue");#NormalTok("(res.pca)");],
+[#NormalTok("tab ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("data.frame");#NormalTok("(");],
+[#NormalTok("  ");#AttributeTok("Componente =");#NormalTok(" ");#FunctionTok("rownames");#NormalTok("(eig),");],
+[#NormalTok("  ");#AttributeTok("Autovalor  =");#NormalTok(" ");#FunctionTok("round");#NormalTok("(eig[, ");#StringTok("\"eigenvalue\"");#NormalTok("], ");#DecValTok("3");#NormalTok("),");],
+[#NormalTok("  ");#StringTok("\"Variância (%)\"");#NormalTok(" ");#OtherTok("=");#NormalTok(" ");#FunctionTok("round");#NormalTok("(eig[, ");#StringTok("\"variance.percent\"");#NormalTok("], ");#DecValTok("1");#NormalTok("),");],
+[#NormalTok("  ");#StringTok("\"Acumulada (%)\"");#NormalTok(" ");#OtherTok("=");#NormalTok(" ");#FunctionTok("round");#NormalTok("(eig[, ");#StringTok("\"cumulative.variance.percent\"");#NormalTok("], ");#DecValTok("1");#NormalTok("),");],
+[#NormalTok("  ");#AttributeTok("check.names =");#NormalTok(" ");#ConstantTok("FALSE");#NormalTok(", ");#AttributeTok("row.names =");#NormalTok(" ");#ConstantTok("NULL");],
+[#NormalTok(")");],
+[#FunctionTok("flextable_ocean");#NormalTok("(tab)");],));
+#figure([
+#box(image("capitulos\\capitulo13/analise_multivariada_dados_files/figure-typst/tbl-eigen-1.png"))
+
+], caption: figure.caption(
+position: top, 
+[
+Autovalores e variância explicada por componente. Pelo critério de Kaiser, ficamos com os componentes de autovalor \> 1.
+]), 
+kind: "quarto-float-tbl", 
+supplement: "Tabela", 
+)
+<tbl-eigen>
+
+
+#Skylighting(([#FunctionTok("fviz_eig");#NormalTok("(res.pca, ");#AttributeTok("addlabels =");#NormalTok(" ");#ConstantTok("TRUE");#NormalTok(",");],
+[#NormalTok("         ");#AttributeTok("barfill =");#NormalTok(" ocean[");#DecValTok("3");#NormalTok("], ");#AttributeTok("barcolor =");#NormalTok(" ocean[");#DecValTok("2");#NormalTok("],");],
+[#NormalTok("         ");#AttributeTok("linecolor =");#NormalTok(" ocean[");#DecValTok("5");#NormalTok("]) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("title =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(", ");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Componente principal\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Variância explicada (%)\"");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("theme_minimal");#NormalTok("()");],));
+#figure([
+#box(image("capitulos\\capitulo13/analise_multivariada_dados_files/figure-typst/fig-scree-1.svg"))
+], caption: figure.caption(
+position: bottom, 
+[
+Scree plot: a variância explicada cai rápido após os primeiros componentes --- sinal de que poucos eixos resumem bem os dados.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-scree>
+
+
+=== O que cada componente significa: o círculo de correlações
+<o-que-cada-componente-significa-o-círculo-de-correlações>
+As #strong[cargas] dizem o quanto cada íon "puxa" cada componente. O círculo de correlações mostra isso de um golpe: setas no mesmo sentido indicam variáveis que andam juntas; setas opostas, variáveis que se contrapõem; setas longas (perto da borda) são as bem representadas pelos dois primeiros eixos.
+
+#Skylighting(([#FunctionTok("fviz_pca_var");#NormalTok("(res.pca, ");#AttributeTok("col.var =");#NormalTok(" ");#StringTok("\"cos2\"");#NormalTok(", ");#AttributeTok("repel =");#NormalTok(" ");#ConstantTok("TRUE");#NormalTok(",");],
+[#NormalTok("             ");#AttributeTok("gradient.cols =");#NormalTok(" ");#FunctionTok("c");#NormalTok("(ocean[");#DecValTok("3");#NormalTok("], ocean[");#DecValTok("4");#NormalTok("], ocean[");#DecValTok("5");#NormalTok("])) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("title =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("theme_minimal");#NormalTok("()");],));
+#figure([
+#box(image("capitulos\\capitulo13/analise_multivariada_dados_files/figure-typst/fig-var-1.svg"))
+], caption: figure.caption(
+position: bottom, 
+[
+Círculo de correlações. A cor (cos²) indica a qualidade de representação de cada íon no plano PC1--PC2.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-var>
+
+
+=== O biplot: amostras e variáveis no mesmo gráfico
+<o-biplot-amostras-e-variáveis-no-mesmo-gráfico>
+O #strong[biplot] é o retrato-síntese da PCA: põe as #strong[amostras] (pontos) e as #strong[variáveis] (setas) no mesmo plano. Pontos próximos são amostras parecidas; uma amostra puxada na direção de uma seta tem valor alto naquele íon. Colorimos por unidade geológica para ver se a química separa as rochas.
+
+#Skylighting(([#FunctionTok("fviz_pca_biplot");#NormalTok("(res.pca,");],
+[#NormalTok("                ");#AttributeTok("geom.ind =");#NormalTok(" ");#StringTok("\"point\"");#NormalTok(", ");#AttributeTok("pointshape =");#NormalTok(" ");#DecValTok("21");#NormalTok(", ");#AttributeTok("pointsize =");#NormalTok(" ");#FloatTok("2.8");#NormalTok(",");],
+[#NormalTok("                ");#AttributeTok("fill.ind =");#NormalTok(" grupo, ");#AttributeTok("col.ind =");#NormalTok(" ");#StringTok("\"grey30\"");#NormalTok(",");],
+[#NormalTok("                ");#AttributeTok("addEllipses =");#NormalTok(" ");#ConstantTok("TRUE");#NormalTok(", ");#AttributeTok("ellipse.type =");#NormalTok(" ");#StringTok("\"convex\"");#NormalTok(",");],
+[#NormalTok("                ");#AttributeTok("palette =");#NormalTok(" grupo_cores,");],
+[#NormalTok("                ");#AttributeTok("col.var =");#NormalTok(" ocean[");#DecValTok("1");#NormalTok("], ");#AttributeTok("label =");#NormalTok(" ");#StringTok("\"var\"");#NormalTok(", ");#AttributeTok("repel =");#NormalTok(" ");#ConstantTok("TRUE");#NormalTok(",");],
+[#NormalTok("                ");#AttributeTok("legend.title =");#NormalTok(" ");#StringTok("\"Unidade\"");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("title =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("theme_minimal");#NormalTok("()");],));
+#figure([
+#box(image("capitulos\\capitulo13/analise_multivariada_dados_files/figure-typst/fig-biplot-1.svg"))
+], caption: figure.caption(
+position: bottom, 
+[
+Biplot da PCA (PC1 × PC2). Pontos = amostras (por unidade); setas = íons. Os envoltórios agrupam cada unidade geológica.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-biplot>
+
+
+Repare como os dois primeiros componentes já contam boa parte da história: as unidades ocupam regiões distintas do plano, e as setas mostram #strong[quais] íons puxam cada grupo. É a "fotografia" de seis dimensões reduzida a uma folha de papel.
+
+== Parte 2 --- Agrupamento Hierárquico (dendrograma)
+<parte-2-agrupamento-hierárquico-dendrograma>
+A PCA resume as variáveis; a #strong[AAH] organiza as #strong[amostras]. A ideia é começar com cada amostra sozinha e ir juntando, passo a passo, as mais parecidas, até formar uma única família --- registrando a história num #strong[dendrograma] (uma árvore). Onde cortamos a árvore define quantos grupos teremos.
+
+Medimos a "parecença" pela #strong[distância euclidiana] sobre os dados #strong[padronizados] (a mesma padronização da PCA), e juntamos os grupos pelo método de #strong[Ward], que tende a formar grupos compactos.
+
+#block[
+#Skylighting(([#NormalTok("d  ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("dist");#NormalTok("(");#FunctionTok("scale");#NormalTok("(ions))               ");#CommentTok("# distâncias sobre dados padronizados");],
+[#NormalTok("hc ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("hclust");#NormalTok("(d, ");#AttributeTok("method =");#NormalTok(" ");#StringTok("\"ward.D2\"");#NormalTok(")   ");#CommentTok("# agrupamento de Ward");],));
+]
+#Skylighting(([#FunctionTok("fviz_dend");#NormalTok("(hc, ");#AttributeTok("k =");#NormalTok(" ");#DecValTok("3");#NormalTok(", ");#AttributeTok("cex =");#NormalTok(" ");#FloatTok("0.7");#NormalTok(",");],
+[#NormalTok("          ");#AttributeTok("k_colors =");#NormalTok(" grupo_cores,");],
+[#NormalTok("          ");#AttributeTok("color_labels_by_k =");#NormalTok(" ");#ConstantTok("TRUE");#NormalTok(",");],
+[#NormalTok("          ");#AttributeTok("rect =");#NormalTok(" ");#ConstantTok("TRUE");#NormalTok(", ");#AttributeTok("rect_fill =");#NormalTok(" ");#ConstantTok("TRUE");#NormalTok(", ");#AttributeTok("rect_border =");#NormalTok(" grupo_cores,");],
+[#NormalTok("          ");#AttributeTok("main =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(", ");#AttributeTok("ylab =");#NormalTok(" ");#StringTok("\"Distância (Ward)\"");#NormalTok(")");],));
+#figure([
+#box(image("capitulos\\capitulo13/analise_multivariada_dados_files/figure-typst/fig-dendrograma-1.svg"))
+], caption: figure.caption(
+position: bottom, 
+[
+Dendrograma das salmouras (distância euclidiana, ligação de Ward). O corte em três grupos é destacado pelos retângulos.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-dendrograma>
+
+
+O dendrograma sugere três famílias naturais. Será que elas correspondem às três unidades geológicas? A tabela cruza o grupo do corte com a unidade real:
+
+#Skylighting(([#NormalTok("clusters ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("cutree");#NormalTok("(hc, ");#AttributeTok("k =");#NormalTok(" ");#DecValTok("3");#NormalTok(")");],
+[#NormalTok("cl ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("table");#NormalTok("(");#AttributeTok("Grupo =");#NormalTok(" clusters, ");#AttributeTok("Unidade =");#NormalTok(" grupo)");],
+[#NormalTok("cl_df ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("as.data.frame.matrix");#NormalTok("(cl)");],
+[#NormalTok("cl_df ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("data.frame");#NormalTok("(");#AttributeTok("Grupo =");#NormalTok(" ");#FunctionTok("rownames");#NormalTok("(cl_df), cl_df, ");#AttributeTok("check.names =");#NormalTok(" ");#ConstantTok("FALSE");#NormalTok(", ");#AttributeTok("row.names =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(")");],
+[#FunctionTok("flextable_ocean");#NormalTok("(cl_df)");],));
+#figure([
+#box(image("capitulos\\capitulo13/analise_multivariada_dados_files/figure-typst/tbl-clusters-1.png"))
+
+], caption: figure.caption(
+position: top, 
+[
+Grupos do dendrograma (corte em k = 3) versus a unidade geológica real de cada amostra.
+]), 
+kind: "quarto-float-tbl", 
+supplement: "Tabela", 
+)
+<tbl-clusters>
+
+
+Quando os grupos do dendrograma "casam" com as unidades, é um forte sinal de que a química da água carrega a assinatura da rocha de origem --- o tipo de validação que a AAH oferece quando há um rótulo conhecido para conferir.
+
+== E daí? Da multivariada à decisão
+<e-daí-da-multivariada-à-decisão>
+PCA e AAH não são truques de gráfico; são formas de #strong[ver o que muitas variáveis dizem juntas]. Na geoquímica, separam águas por origem. Na aquicultura, o mesmo ferramental ataca dados de #strong[qualidade de água] (oxigênio, pH, amônia, íons): a PCA aponta quais variáveis comandam a variação entre tanques, e a AAH agrupa pontos de coleta com perfis parecidos --- útil para monitorar, comparar e decidir onde intervir. O número condensa; a interpretação, guiada pelo conhecimento do sistema, é que vira manejo.
+
+#quote(block: true)[
+#strong[Resumo do capítulo.] (1) Com muitas variáveis correlacionadas, #strong[padronize] e use a #strong[PCA] para resumir em poucos componentes (critério de Kaiser, variância acumulada). (2) Leia o #strong[círculo de correlações] (o que cada eixo significa) e o #strong[biplot] (amostras + variáveis juntas). (3) Use a #strong[AAH] e o #strong[dendrograma] para agrupar amostras parecidas; valide os grupos contra um rótulo conhecido quando houver. (4) PCA e AAH são canônicas na CatalyseR (módulos PCA e HCA) --- aqui visualizadas com FactoMineR e factoextra @kassambara2017.
+]
+
+== Para praticar
+<para-praticar-11>
++ Rode a PCA #strong[sem padronizar] (#NormalTok("scale.unit = FALSE");) e compare o biplot com o padronizado. Quem domina os eixos agora?
++ Corte o dendrograma em #NormalTok("k = 2"); (#NormalTok("cutree(hc, k = 2)");) e refaça a tabela de grupos. Duas unidades se fundem --- quais?
++ Troque a ligação de Ward por #NormalTok("\"complete\""); em #NormalTok("hclust()"); e veja se o dendrograma conta a mesma história.
+
+#part[Unidade V · Visualização e comunicação de dados]
 = Criando Gráficos: a galeria da visualização
 <criando-gráficos-a-galeria-da-visualização>
 Ou: cada pergunta tem o seu gráfico --- e o R desenha todos
@@ -2995,7 +4240,7 @@ O #strong[histograma] divide a variável em faixas e conta quantas observações
 [#NormalTok("  ");#FunctionTok("geom_histogram");#NormalTok("(");#AttributeTok("bins =");#NormalTok(" ");#DecValTok("30");#NormalTok(", ");#AttributeTok("fill =");#NormalTok(" ocean[");#StringTok("\"TEAL\"");#NormalTok("], ");#AttributeTok("color =");#NormalTok(" ");#StringTok("\"white\"");#NormalTok(") ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Largura da carapaça (mm)\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Frequência\"");#NormalTok(")");],));
 #figure([
-#box(image("capitulos\\capitulo22/criacao_graficos_visualizacao_files/figure-typst/fig-hist-1.svg"))
+#box(image("capitulos\\capitulo14/criacao_graficos_visualizacao_files/figure-typst/fig-hist-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -3014,7 +4259,7 @@ A #strong[curva de densidade] é a versão suavizada do histograma --- boa para 
 [#NormalTok("  ");#FunctionTok("scale_fill_manual");#NormalTok("(");#AttributeTok("values =");#NormalTok(" ");#FunctionTok("unname");#NormalTok("(ocean[");#FunctionTok("c");#NormalTok("(");#StringTok("\"TEAL\"");#NormalTok(", ");#StringTok("\"AMBER\"");#NormalTok(")])) ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Largura da carapaça (mm)\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Densidade\"");#NormalTok(")");],));
 #figure([
-#box(image("capitulos\\capitulo22/criacao_graficos_visualizacao_files/figure-typst/fig-densidade-1.svg"))
+#box(image("capitulos\\capitulo14/criacao_graficos_visualizacao_files/figure-typst/fig-densidade-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -3035,7 +4280,7 @@ O #strong[boxplot] resume a distribuição em cinco números (mínimo, quartis, 
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Largura da carapaça (mm)\"");#NormalTok(") ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("theme");#NormalTok("(");#AttributeTok("legend.position =");#NormalTok(" ");#StringTok("\"none\"");#NormalTok(")");],));
 #figure([
-#box(image("capitulos\\capitulo22/criacao_graficos_visualizacao_files/figure-typst/fig-violino-1.svg"))
+#box(image("capitulos\\capitulo14/criacao_graficos_visualizacao_files/figure-typst/fig-violino-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -3058,7 +4303,7 @@ O #strong[gráfico de dispersão] (o primeiro do menu da IDE) põe uma variável
 [#NormalTok("  ");#FunctionTok("geom_smooth");#NormalTok("(");#AttributeTok("method =");#NormalTok(" ");#StringTok("\"lm\"");#NormalTok(", ");#AttributeTok("se =");#NormalTok(" ");#ConstantTok("FALSE");#NormalTok(", ");#AttributeTok("color =");#NormalTok(" ocean[");#StringTok("\"CORAL\"");#NormalTok("]) ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Largura da carapaça (mm)\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Comprimento da carapaça (mm)\"");#NormalTok(")");],));
 #figure([
-#box(image("capitulos\\capitulo22/criacao_graficos_visualizacao_files/figure-typst/fig-dispersao-1.svg"))
+#box(image("capitulos\\capitulo14/criacao_graficos_visualizacao_files/figure-typst/fig-dispersao-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -3089,7 +4334,7 @@ Quando há #strong[muitas] variáveis numéricas, o #strong[mapa de calor] (#emp
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(", ");#AttributeTok("fill =");#NormalTok(" ");#StringTok("\"r\"");#NormalTok(") ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("theme");#NormalTok("(");#AttributeTok("axis.text.x =");#NormalTok(" ");#FunctionTok("element_text");#NormalTok("(");#AttributeTok("angle =");#NormalTok(" ");#DecValTok("30");#NormalTok(", ");#AttributeTok("hjust =");#NormalTok(" ");#DecValTok("1");#NormalTok("))");],));
 #figure([
-#box(image("capitulos\\capitulo22/criacao_graficos_visualizacao_files/figure-typst/fig-heatmap-1.svg"))
+#box(image("capitulos\\capitulo14/criacao_graficos_visualizacao_files/figure-typst/fig-heatmap-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -3117,7 +4362,7 @@ O #strong[gráfico de linhas] (segundo do menu da IDE) liga os pontos na ordem, 
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"CPUE média\"");#NormalTok(") ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("theme");#NormalTok("(");#AttributeTok("axis.text.x =");#NormalTok(" ");#FunctionTok("element_text");#NormalTok("(");#AttributeTok("angle =");#NormalTok(" ");#DecValTok("30");#NormalTok(", ");#AttributeTok("hjust =");#NormalTok(" ");#DecValTok("1");#NormalTok("))");],));
 #figure([
-#box(image("capitulos\\capitulo22/criacao_graficos_visualizacao_files/figure-typst/fig-linhas-1.svg"))
+#box(image("capitulos\\capitulo14/criacao_graficos_visualizacao_files/figure-typst/fig-linhas-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -3141,7 +4386,7 @@ O #strong[gráfico de área] é uma linha com o "chão" preenchido --- útil par
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Precipitação média (mm)\"");#NormalTok(") ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("theme");#NormalTok("(");#AttributeTok("axis.text.x =");#NormalTok(" ");#FunctionTok("element_text");#NormalTok("(");#AttributeTok("angle =");#NormalTok(" ");#DecValTok("30");#NormalTok(", ");#AttributeTok("hjust =");#NormalTok(" ");#DecValTok("1");#NormalTok("))");],));
 #figure([
-#box(image("capitulos\\capitulo22/criacao_graficos_visualizacao_files/figure-typst/fig-area-1.svg"))
+#box(image("capitulos\\capitulo14/criacao_graficos_visualizacao_files/figure-typst/fig-area-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -3166,7 +4411,7 @@ O #strong[gráfico de barras] (terceiro do menu da IDE) é o cavalo de batalha: 
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Nº de viagens\"");#NormalTok(") ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("theme");#NormalTok("(");#AttributeTok("legend.position =");#NormalTok(" ");#StringTok("\"none\"");#NormalTok(")");],));
 #figure([
-#box(image("capitulos\\capitulo22/criacao_graficos_visualizacao_files/figure-typst/fig-barras-1.svg"))
+#box(image("capitulos\\capitulo14/criacao_graficos_visualizacao_files/figure-typst/fig-barras-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -3193,7 +4438,7 @@ O #strong[gráfico de pizza] mostra #strong[composição] --- a fatia de cada ca
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(", ");#AttributeTok("fill =");#NormalTok(" ");#StringTok("\"Aparelho\"");#NormalTok(") ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("theme_void");#NormalTok("()");],));
 #figure([
-#box(image("capitulos\\capitulo22/criacao_graficos_visualizacao_files/figure-typst/fig-pizza-1.svg"))
+#box(image("capitulos\\capitulo14/criacao_graficos_visualizacao_files/figure-typst/fig-pizza-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -3219,7 +4464,7 @@ Quando a comparação envolve #strong[médias com incerteza], o #strong[gráfico
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Largura média (mm)\"");#NormalTok(") ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("theme");#NormalTok("(");#AttributeTok("legend.position =");#NormalTok(" ");#StringTok("\"none\"");#NormalTok(")");],));
 #figure([
-#box(image("capitulos\\capitulo22/criacao_graficos_visualizacao_files/figure-typst/fig-erro-1.svg"))
+#box(image("capitulos\\capitulo14/criacao_graficos_visualizacao_files/figure-typst/fig-erro-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -3253,7 +4498,7 @@ Quando você quer comparar #strong[vários atributos de uma vez] entre poucos gr
 [#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#ConstantTok("NULL");#NormalTok(", ");#AttributeTok("color =");#NormalTok(" ");#StringTok("\"Espécie\"");#NormalTok(") ");#SpecialCharTok("+");],
 [#NormalTok("  ");#FunctionTok("theme");#NormalTok("(");#AttributeTok("axis.text.y =");#NormalTok(" ");#FunctionTok("element_blank");#NormalTok("())");],));
 #figure([
-#box(image("capitulos\\capitulo22/criacao_graficos_visualizacao_files/figure-typst/fig-radar-1.svg"))
+#box(image("capitulos\\capitulo14/criacao_graficos_visualizacao_files/figure-typst/fig-radar-1.svg"))
 ], caption: figure.caption(
 position: bottom, 
 [
@@ -3354,8 +4599,554 @@ white
 ]
 = Criação de Mapas em R
 <criação-de-mapas-em-r>
-= Relatórios e Comunicação de Dados usando Quarto
-<relatórios-e-comunicação-de-dados-usando-quarto>
+Ou: do dado ao território --- três mapas para ver melhor a pesca e a aquicultura
+
+\
+#block[
+#callout(
+body: 
+[
+Você abre o anuário da piscicultura e encontra uma tabela com a produção de cada estado --- vinte e sete linhas de números. Dá para ler, com paciência, que o Paraná lidera. Mas #emph[onde], no mapa do Brasil, está a força da aquicultura? A tabela não mostra que o Sul e o Norte puxam a produção enquanto boa parte do interior fica pálida. Um número vira território quando entra num #strong[mapa] --- e é aí que a pergunta "quem produz mais?" ganha, de relance, uma resposta geográfica.
+
+]
+, 
+title: 
+[
+Já passou por isso?
+]
+, 
+background_color: 
+rgb("#dae6fb")
+, 
+icon_color: 
+rgb("#0758E5")
+, 
+icon: 
+none
+, 
+body_background_color: 
+white
+)
+]
+Mapa é gráfico, só que com #strong[geografia] embaixo. Em vez de um eixo x e um eixo y, temos a forma real do território, e a posição e a cor de cada elemento contam uma história --- quanto se produziu num estado, onde uma rede foi lançada, qual a captura em cada estação.
+
+== Por que mapas num livro de estatística?
+<por-que-mapas-num-livro-de-estatística>
+Um mapa #strong[não substitui] a análise estatística --- ele a prepara. Antes de comparar médias, ajustar uma regressão ou testar uma associação, vale saber #strong[onde] os dados foram coletados, se há #strong[concentração espacial], se existem #strong[vazios de amostragem] e se o #strong[ambiente] pode explicar parte da variação. É a mesma lógica da unidade "Antes da análise": olhar os dados antes de testá-los, só que agora no espaço. Um bom mapa ajuda a #strong[formular perguntas melhores].
+
+Por isso o menu #strong[Mapas] da CatalyseR --- e este capítulo --- não vira um curso de geoprocessamento. Ficamos com #strong[três] tipos de mapa, e eles se organizam por #strong[propósito]:
+
+#figure([
+#table(
+  columns: (24%, 26%, 50%),
+  align: (left,left,left,),
+  table.header([], [Mapa], [Pergunta que responde],),
+  table.hline(),
+  [#strong[Analisar quantidades]], [Coroplético], [Onde a variável agregada por área é maior ou menor?],
+  [#strong[Analisar quantidades]], [Bolhas proporcionais], [Qual a magnitude (CPUE, biomassa) em cada local?],
+  [#strong[Apoiar a amostragem]], [Pontos / estações], [Onde a coleta aconteceu? A cobertura é boa? Há lacunas?],
+)
+], caption: figure.caption(
+position: top, 
+[
+Os três mapas da primeira edição e o que cada um responde.
+]), 
+kind: "quarto-float-tbl", 
+supplement: "Tabela", 
+)
+<tbl-mapas>
+
+
+Deixamos de fora, por ora, mapas de densidade, rasters ambientais e mapas interativos: úteis, mas fora do foco de um curso introdutório de estatística aplicada. A regra é simples --- #strong[mapa só entra se ajudar a ver melhor os dados, planejar melhor a coleta ou interpretar melhor uma pergunta].
+
+== Dados espaciais: áreas e pontos
+<dados-espaciais-áreas-e-pontos>
+Há duas naturezas de dado espacial neste capítulo. A primeira é o dado #strong[agregado por área] --- a produção de um #emph[estado inteiro] ---, que pinta polígonos (o coroplético). A segunda é o dado de #strong[pontos] --- cada linha tem uma #strong[latitude] e uma #strong[longitude] ---, que marca lugares no mapa (estações e bolhas). Saber de qual tipo é o seu dado já decide qual mapa fazer.
+
+== Mapa 1 --- Coroplético: a produção por estado
+<mapa-1-coroplético-a-produção-por-estado>
+=== Os dados: a aquicultura brasileira
+<os-dados-a-aquicultura-brasileira>
+Vamos trabalhar com o conjunto #NormalTok("aquicultura_br");, do pacote #NormalTok("EAPADados");. São dados públicos dos anuários da #strong[Revista PEIXE BR]: para cada estado e ano (2016 a 2023), a produção da piscicultura em toneladas e a posição no ranking nacional.
+
+#block[
+#Skylighting(([#FunctionTok("glimpse");#NormalTok("(aquicultura_br)");],));
+#block[
+#Skylighting(([#NormalTok("Rows: 216");],
+[#NormalTok("Columns: 5");],
+[#NormalTok("$ uf         <chr> \"PR\", \"SP\", \"MG\", \"RO\", \"SC\", \"MA\", \"MT\", \"MS\", \"BA\", \"PE\",…");],
+[#NormalTok("$ estado     <chr> \"PARANÁ\", \"SÃO PAULO\", \"MINAS GERAIS\", \"RONDÔNIA\", \"SANTA C…");],
+[#NormalTok("$ posicao    <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, …");],
+[#NormalTok("$ producao_t <dbl> 213300, 82400, 61600, 56500, 56100, 49143, 44900, 34100, 34…");],
+[#NormalTok("$ ano        <int> 2023, 2023, 2023, 2023, 2023, 2023, 2023, 2023, 2023, 2023,…");],));
+]
+]
+A coluna que abre as portas do mapa é a #NormalTok("uf"); --- a #strong[sigla] do estado (PR, SP, PA…). Guarde essa ideia: para juntar dados a um mapa de áreas, precisamos de uma coluna que sirva de #strong[chave] entre a tabela e a geometria. A sigla é essa chave.
+
+Antes de mapear, um gráfico de barras já responde à pergunta do começo --- quem lidera em 2023:
+
+#Skylighting(([#NormalTok("aqui23 ");#OtherTok("<-");#NormalTok(" aquicultura_br ");#SpecialCharTok("|>");],
+[#NormalTok("  ");#FunctionTok("filter");#NormalTok("(ano ");#SpecialCharTok("==");#NormalTok(" ");#DecValTok("2023");#NormalTok(") ");#SpecialCharTok("|>");],
+[#NormalTok("  ");#FunctionTok("arrange");#NormalTok("(");#FunctionTok("desc");#NormalTok("(producao_t))");],
+[],
+[#NormalTok("aqui23 ");#SpecialCharTok("|>");],
+[#NormalTok("  ");#FunctionTok("slice_max");#NormalTok("(producao_t, ");#AttributeTok("n =");#NormalTok(" ");#DecValTok("10");#NormalTok(") ");#SpecialCharTok("|>");],
+[#NormalTok("  ");#FunctionTok("ggplot");#NormalTok("(");#FunctionTok("aes");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#FunctionTok("reorder");#NormalTok("(uf, producao_t), ");#AttributeTok("y =");#NormalTok(" producao_t)) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("geom_col");#NormalTok("(");#AttributeTok("fill =");#NormalTok(" ocean[");#StringTok("\"TEAL\"");#NormalTok("]) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("coord_flip");#NormalTok("() ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("title =");#NormalTok(" ");#StringTok("\"Os dez maiores produtores (2023)\"");#NormalTok(",");],
+[#NormalTok("       ");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Estado (UF)\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Produção (t)\"");#NormalTok(")");],));
+#box(image("capitulos\\capitulo15/criacao_mapas_em_R_files/figure-typst/top10-1.svg"))
+
+O gráfico ordena, mas não #strong[localiza]. Paraná, São Paulo, Minas, Rondônia --- onde eles estão? Para responder, precisamos da forma do Brasil.
+
+=== Geometria, dados e junção
+<geometria-dados-e-junção>
+Todo coroplético nasce de três peças: uma #strong[geometria] (os contornos dos estados), uma #strong[tabela de dados] (a produção) e uma #strong[junção] que casa as duas por uma chave comum.
+
+A geometria vem do pacote #strong[#NormalTok("geobr");], mantido pelo IPEA. Ele baixa os limites oficiais do IBGE --- sem você caçar #emph[shapefiles] na mão --- e entrega um objeto #strong[#NormalTok("sf");] (#emph[simple features]), que é um #NormalTok("data.frame"); com uma coluna especial de geometria. O objeto traz a coluna #NormalTok("abbrev_state"); com a sigla de cada estado: a chave da junção.
+
+#block[
+#Skylighting(([#FunctionTok("library");#NormalTok("(geobr)");],
+[#FunctionTok("library");#NormalTok("(sf)");],
+[],
+[#CommentTok("# Geometria dos 27 estados (na 1ª vez precisa de internet; year é obrigatório)");],
+[#NormalTok("estados ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("read_state");#NormalTok("(");#AttributeTok("code_state =");#NormalTok(" ");#StringTok("\"all\"");#NormalTok(", ");#AttributeTok("year =");#NormalTok(" ");#DecValTok("2020");#NormalTok(", ");#AttributeTok("showProgress =");#NormalTok(" ");#ConstantTok("FALSE");#NormalTok(")");],
+[],
+[#CommentTok("# Junta a produção de 2023 pela sigla do estado");],
+[#NormalTok("juntos ");#OtherTok("<-");#NormalTok(" estados ");#SpecialCharTok("|>");],
+[#NormalTok("  ");#FunctionTok("inner_join");#NormalTok("(");#FunctionTok("filter");#NormalTok("(aquicultura_br, ano ");#SpecialCharTok("==");#NormalTok(" ");#DecValTok("2023");#NormalTok("), ");#AttributeTok("by =");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#StringTok("\"abbrev_state\"");#NormalTok(" ");#OtherTok("=");#NormalTok(" ");#StringTok("\"uf\"");#NormalTok("))");],
+[],
+[#CommentTok("# Faixas à mão: a última (\"acima de 100.000\") isola o outlier Paraná");],
+[#NormalTok("juntos");#SpecialCharTok("$");#NormalTok("categoria ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("cut");#NormalTok("(juntos");#SpecialCharTok("$");#NormalTok("producao_t,");],
+[#NormalTok("                        ");#AttributeTok("breaks =");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#DecValTok("0");#NormalTok(", ");#DecValTok("5000");#NormalTok(", ");#DecValTok("15000");#NormalTok(", ");#DecValTok("30000");#NormalTok(", ");#DecValTok("100000");#NormalTok(", ");#ConstantTok("Inf");#NormalTok("),");],
+[#NormalTok("                        ");#AttributeTok("include.lowest =");#NormalTok(" ");#ConstantTok("TRUE");#NormalTok(",");],
+[#NormalTok("                        ");#AttributeTok("labels =");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#StringTok("\"até 5.000\"");#NormalTok(", ");#StringTok("\"5.001 – 15.000\"");#NormalTok(", ");#StringTok("\"15.001 – 30.000\"");#NormalTok(",");],
+[#NormalTok("                                   ");#StringTok("\"30.001 – 100.000\"");#NormalTok(", ");#StringTok("\"acima de 100.000\"");#NormalTok("))");],
+[],
+[#FunctionTok("ggplot");#NormalTok("(juntos) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("geom_sf");#NormalTok("(");#FunctionTok("aes");#NormalTok("(");#AttributeTok("fill =");#NormalTok(" categoria), ");#AttributeTok("color =");#NormalTok(" ");#StringTok("\"white\"");#NormalTok(", ");#AttributeTok("linewidth =");#NormalTok(" ");#FloatTok("0.2");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("scale_fill_brewer");#NormalTok("(");#AttributeTok("palette =");#NormalTok(" ");#StringTok("\"GnBu\"");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("title =");#NormalTok(" ");#StringTok("\"Produção da aquicultura por estado — 2023\"");#NormalTok(", ");#AttributeTok("fill =");#NormalTok(" ");#StringTok("\"Produção (t)\"");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("theme_void");#NormalTok("()");],));
+]
+#figure([
+#box(image("capitulos\\capitulo15/../../images/mapa_aquicultura_2023.png", width: 78.0%))
+], caption: figure.caption(
+position: bottom, 
+[
+Coroplético da produção aquícola por estado em 2023, em faixas --- com o #strong[Paraná] isolado na faixa mais alta (acima de 100.000 t), o que espalha melhor os demais nas faixas inferiores. Gerado por #NormalTok("images/gerar_mapa_cap15.R");. Fonte: Revista PEIXE BR; malha IBGE via #NormalTok("geobr");.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-mapa-aqui>
+
+
+Duas decisões dão o acabamento. A primeira é a #strong[classe]: o olho compara faixas melhor do que tons quase idênticos, e o Paraná, sendo um #strong[valor atípico], achataria uma escala contínua --- por isso reservamos uma faixa só para ele. A segunda são os #strong[enfeites que não são enfeites]: a #strong[barra de escala] e a #strong[rosa-dos-ventos] (do pacote #NormalTok("ggspatial");), que todo mapa científico pede.
+
+== Mapa 2 --- Pontos e estações: onde a coleta aconteceu
+<mapa-2-pontos-e-estações-onde-a-coleta-aconteceu>
+Este é o mapa que #strong[apoia a amostragem]. Ele não fala de quanto, e sim de #strong[onde]: mostra cada estação de coleta no território, para você discutir cobertura espacial, lacunas de amostragem e se todos os ambientes foram contemplados --- a conversa do planejamento amostral, antes de qualquer teste.
+
+Usamos o conjunto de exemplo #NormalTok("estacoes_ictiofauna"); (do #NormalTok("EAPADados");), com estações na costa norte do Pará. Cada linha tem #strong[latitude], #strong[longitude], o #strong[ambiente] e uma medida de captura:
+
+#block[
+#Skylighting(([#FunctionTok("glimpse");#NormalTok("(estacoes_ictiofauna)");],));
+#block[
+#Skylighting(([#NormalTok("Rows: 14");],
+[#NormalTok("Columns: 9");],
+[#NormalTok("$ id_estacao <chr> \"E01\", \"E02\", \"E03\", \"E04\", \"E05\", \"E06\", \"E07\", \"E08\", \"E0…");],
+[#NormalTok("$ latitude   <dbl> -0.8290, -0.8800, -0.7800, -0.9500, -1.0536, -0.6160, -0.77…");],
+[#NormalTok("$ longitude  <dbl> -46.6040, -46.6300, -46.6300, -46.6800, -46.7656, -47.3560,…");],
+[#NormalTok("$ ano        <int> 2023, 2023, 2023, 2023, 2023, 2023, 2023, 2023, 2024, 2024,…");],
+[#NormalTok("$ campanha   <fct> Seca, Seca, Seca, Seca, Seca, Seca, Seca, Seca, Chuvosa, Ch…");],
+[#NormalTok("$ ambiente   <fct> Praia, Manguezal, Estuario, Manguezal, Estuario, Praia, Pla…");],
+[#NormalTok("$ especie    <fct> Pescada-amarela, Bagre, Robalo, Bagre, Pescada-amarela, Rob…");],
+[#NormalTok("$ cpue       <dbl> 12.4, 28.7, 19.1, 22.3, 15.8, 9.6, 33.5, 41.2, 18.9, 35.1, …");],
+[#NormalTok("$ abundancia <int> 31, 64, 40, 51, 37, 22, 70, 88, 44, 79, 52, 49, 95, 110");],));
+]
+]
+Agora os pontos viram um objeto #NormalTok("sf"); (com #NormalTok("st_as_sf()");, informando as colunas de coordenada e o sistema de referência, #strong[CRS 4326] = graus de lat/lon), plotados sobre a base dos estados, recortada na região:
+
+#block[
+#Skylighting(([#FunctionTok("library");#NormalTok("(geobr); ");#FunctionTok("library");#NormalTok("(sf); ");#FunctionTok("library");#NormalTok("(ggplot2)");],
+[],
+[#CommentTok("# Pontos como sf e base recortada na área de estudo");],
+[#NormalTok("pts ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("st_as_sf");#NormalTok("(estacoes_ictiofauna, ");#AttributeTok("coords =");#NormalTok(" ");#FunctionTok("c");#NormalTok("(");#StringTok("\"longitude\"");#NormalTok(", ");#StringTok("\"latitude\"");#NormalTok("), ");#AttributeTok("crs =");#NormalTok(" ");#DecValTok("4326");#NormalTok(")");],
+[#NormalTok("estados ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("st_transform");#NormalTok("(");#FunctionTok("read_state");#NormalTok("(");#AttributeTok("code_state =");#NormalTok(" ");#StringTok("\"all\"");#NormalTok(", ");#AttributeTok("year =");#NormalTok(" ");#DecValTok("2020");#NormalTok(", ");#AttributeTok("showProgress =");#NormalTok(" ");#ConstantTok("FALSE");#NormalTok("), ");#DecValTok("4326");#NormalTok(")");],
+[#NormalTok("bb ");#OtherTok("<-");#NormalTok(" ");#FunctionTok("st_bbox");#NormalTok("(pts)");],
+[],
+[#FunctionTok("ggplot");#NormalTok("() ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("geom_sf");#NormalTok("(");#AttributeTok("data =");#NormalTok(" estados, ");#AttributeTok("fill =");#NormalTok(" ");#StringTok("\"#EAF0F2\"");#NormalTok(", ");#AttributeTok("color =");#NormalTok(" ");#StringTok("\"grey75\"");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("geom_sf");#NormalTok("(");#AttributeTok("data =");#NormalTok(" pts, ");#FunctionTok("aes");#NormalTok("(");#AttributeTok("color =");#NormalTok(" ambiente, ");#AttributeTok("shape =");#NormalTok(" ambiente), ");#AttributeTok("size =");#NormalTok(" ");#DecValTok("3");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ggrepel");#SpecialCharTok("::");#FunctionTok("geom_text_repel");#NormalTok("(");#AttributeTok("data =");#NormalTok(" pts, ");#FunctionTok("aes");#NormalTok("(");#AttributeTok("label =");#NormalTok(" id_estacao, ");#AttributeTok("geometry =");#NormalTok(" geometry),");],
+[#NormalTok("                           ");#AttributeTok("stat =");#NormalTok(" ");#StringTok("\"sf_coordinates\"");#NormalTok(", ");#AttributeTok("size =");#NormalTok(" ");#DecValTok("3");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("coord_sf");#NormalTok("(");#AttributeTok("xlim =");#NormalTok(" ");#FunctionTok("c");#NormalTok("(bb[");#StringTok("\"xmin\"");#NormalTok("], bb[");#StringTok("\"xmax\"");#NormalTok("]), ");#AttributeTok("ylim =");#NormalTok(" ");#FunctionTok("c");#NormalTok("(bb[");#StringTok("\"ymin\"");#NormalTok("], bb[");#StringTok("\"ymax\"");#NormalTok("])) ");#SpecialCharTok("+");],
+[#NormalTok("  ggspatial");#SpecialCharTok("::");#FunctionTok("annotation_scale");#NormalTok("(");#AttributeTok("location =");#NormalTok(" ");#StringTok("\"br\"");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ggspatial");#SpecialCharTok("::");#FunctionTok("annotation_north_arrow");#NormalTok("(");#AttributeTok("location =");#NormalTok(" ");#StringTok("\"tr\"");#NormalTok(",");],
+[#NormalTok("                                    ");#AttributeTok("style =");#NormalTok(" ggspatial");#SpecialCharTok("::");#FunctionTok("north_arrow_fancy_orienteering");#NormalTok("()) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("scale_color_manual");#NormalTok("(");#AttributeTok("values =");#NormalTok(" ");#FunctionTok("unname");#NormalTok("(ocean)) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("title =");#NormalTok(" ");#StringTok("\"Estações de coleta de ictiofauna — costa do Pará\"");#NormalTok(",");],
+[#NormalTok("       ");#AttributeTok("color =");#NormalTok(" ");#StringTok("\"Ambiente\"");#NormalTok(", ");#AttributeTok("shape =");#NormalTok(" ");#StringTok("\"Ambiente\"");#NormalTok(", ");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Longitude\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Latitude\"");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("theme_bw");#NormalTok("()");],));
+]
+#figure([
+#box(image("capitulos\\capitulo15/../../images/mapa_estacoes_pontos.png", width: 88.0%))
+], caption: figure.caption(
+position: bottom, 
+[
+Mapa de estações de coleta na costa do Pará, com rótulos (#NormalTok("ggrepel");), grade de coordenadas, escala e Norte, e um #strong[mapa de localização] (inset) marcando a área de estudo no Brasil --- o formato esperado numa figura de "Material e Métodos" de TCC ou artigo. Dados de exemplo; gerado por #NormalTok("images/gerar_mapa_cap15.R");.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-estacoes>
+
+
+Note os detalhes que transformam um punhado de pontos numa #strong[figura de publicação]: #strong[rótulos] que não se sobrepõem (o #NormalTok("ggrepel"); afasta o texto e puxa uma linha), a #strong[grade de coordenadas] em graus, a #strong[cor e a forma] por ambiente (para o mapa continuar legível impresso em preto e branco) e o #strong[inset] de localização. A CatalyseR liga tudo isso com caixas de seleção no menu #strong[Mapas › Pontos / Estações].
+
+== Mapa 3 --- Bolhas proporcionais: a magnitude em cada local
+<mapa-3-bolhas-proporcionais-a-magnitude-em-cada-local>
+O mapa de pontos diz #emph[onde]\; o de #strong[bolhas] diz #emph[quanto]. É a extensão natural: cada estação vira um círculo cujo #strong[tamanho] representa uma variável numérica --- CPUE, biomassa, abundância. De relance, o leitor vê onde os valores são maiores e se a magnitude se concentra em alguma região.
+
+#block[
+#Skylighting(([#FunctionTok("ggplot");#NormalTok("() ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("geom_sf");#NormalTok("(");#AttributeTok("data =");#NormalTok(" estados, ");#AttributeTok("fill =");#NormalTok(" ");#StringTok("\"#EAF0F2\"");#NormalTok(", ");#AttributeTok("color =");#NormalTok(" ");#StringTok("\"grey75\"");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("geom_sf");#NormalTok("(");#AttributeTok("data =");#NormalTok(" pts, ");#FunctionTok("aes");#NormalTok("(");#AttributeTok("size =");#NormalTok(" cpue, ");#AttributeTok("color =");#NormalTok(" ambiente), ");#AttributeTok("alpha =");#NormalTok(" ");#FloatTok("0.85");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("scale_size_area");#NormalTok("(");#AttributeTok("max_size =");#NormalTok(" ");#DecValTok("11");#NormalTok(", ");#AttributeTok("name =");#NormalTok(" ");#StringTok("\"CPUE\"");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("coord_sf");#NormalTok("(");#AttributeTok("xlim =");#NormalTok(" ");#FunctionTok("c");#NormalTok("(bb[");#StringTok("\"xmin\"");#NormalTok("], bb[");#StringTok("\"xmax\"");#NormalTok("]), ");#AttributeTok("ylim =");#NormalTok(" ");#FunctionTok("c");#NormalTok("(bb[");#StringTok("\"ymin\"");#NormalTok("], bb[");#StringTok("\"ymax\"");#NormalTok("])) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("scale_color_manual");#NormalTok("(");#AttributeTok("values =");#NormalTok(" ");#FunctionTok("unname");#NormalTok("(ocean), ");#AttributeTok("name =");#NormalTok(" ");#StringTok("\"Ambiente\"");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("title =");#NormalTok(" ");#StringTok("\"CPUE por estação — costa do Pará\"");#NormalTok(", ");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Longitude\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Latitude\"");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("theme_minimal");#NormalTok("()");],));
+]
+#figure([
+#box(image("capitulos\\capitulo15/../../images/mapa_estacoes_bolhas.png", width: 88.0%))
+], caption: figure.caption(
+position: bottom, 
+[
+Bolhas proporcionais: o tamanho de cada círculo é a CPUE da estação; a cor indica o ambiente. As maiores capturas aparecem na plataforma. Dados de exemplo; gerado por #NormalTok("images/gerar_mapa_cap15.R");.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-bolhas>
+
+
+O detalhe técnico que importa é o #NormalTok("scale_size_area()");: ele faz a #strong[área] da bolha --- não o raio --- ser proporcional ao valor, que é como o olho compara tamanhos com honestidade. Limite o tamanho máximo e, se houver bolhas demais se sobrepondo, o caminho é agregar por local ou voltar ao mapa de pontos.
+
+#block[
+#callout(
+body: 
+[
+Os três mapas vivem no menu #strong[Mapas] da CatalyseR --- #emph[Coroplético], #emph[Pontos / Estações] e #emph[Bolhas Proporcionais] ---, feitos apontando e clicando: você carrega o conjunto, escolhe as colunas (a sigla do estado, ou a latitude/longitude, ou a variável da bolha), e a IDE desenha o mapa #strong[e exporta o script R] que o reproduz. O mapa que você vê é o mesmo que o código escreve.
+
+]
+, 
+title: 
+[
+Do mouse ao código
+]
+, 
+background_color: 
+rgb("#ccf1e3")
+, 
+icon_color: 
+rgb("#00A047")
+, 
+icon: 
+none
+, 
+body_background_color: 
+white
+)
+]
+#block[
+#callout(
+body: 
+[
+Mapa é gráfico com geografia embaixo, e num livro de estatística ele serve para #strong[ver melhor os dados antes de analisá-los]. Ficamos com três, por propósito. Para #strong[analisar quantidades]: o #strong[coroplético], que pinta áreas conforme um valor (geometria do #NormalTok("geobr"); + dados + #strong[junção] por uma chave --- a sigla #NormalTok("uf"); ↔ #NormalTok("abbrev_state");), com #strong[classes] que isolam #emph[outliers]\; e as #strong[bolhas proporcionais], cujo tamanho (via #NormalTok("scale_size_area()");) mede a magnitude em cada ponto. Para #strong[apoiar a amostragem]: o mapa de #strong[pontos e estações], que mostra onde a coleta aconteceu, com rótulos, grade, escala, Norte e inset --- pronto para um TCC ou artigo. Tudo estático, reprodutível e exportável, espelhando o menu #strong[Mapas] da CatalyseR.
+
+]
+, 
+title: 
+[
+Resumo do capítulo
+]
+, 
+background_color: 
+rgb("#ccf1e3")
+, 
+icon_color: 
+rgb("#00A047")
+, 
+icon: 
+none
+, 
+body_background_color: 
+white
+)
+]
+#block[
+#callout(
+body: 
+[
++ Refaça o coroplético para #strong[2016] e compare com 2023: quais estados mudaram de faixa? (Dica: troque o #NormalTok("filter(ano == 2023)");.)
++ No mapa de #strong[estações], colora os pontos por #NormalTok("campanha"); em vez de #NormalTok("ambiente");. A cobertura muda entre a seca e a chuvosa?
++ No mapa de #strong[bolhas], troque #NormalTok("cpue"); por #NormalTok("abundancia"); no #NormalTok("aes(size = ...)");. A leitura da magnitude muda? E se você #strong[facetar] por #NormalTok("ano"); (#NormalTok("facet_wrap(~ ano)");)?
+
+]
+, 
+title: 
+[
+Para praticar
+]
+, 
+background_color: 
+rgb("#dae6fb")
+, 
+icon_color: 
+rgb("#0758E5")
+, 
+icon: 
+none
+, 
+body_background_color: 
+white
+)
+]
+= Relatórios e Comunicação de Dados com Quarto
+<relatórios-e-comunicação-de-dados-com-quarto>
+Ou: o último passo do mouse ao código --- a análise vira um relatório pronto
+
+\
+#block[
+#callout(
+body: 
+[
+A análise está pronta na tela: o teste deu significativo, o gráfico ficou bom, o número está ali. Aí vem a parte que ninguém ensina --- #strong[transformar isso num relatório] que outra pessoa entenda. E começa o sofrimento: copiar o #emph[p]-valor na mão (e errar uma casa decimal), colar o gráfico que descola na próxima edição, reescrever a mesma frase de conclusão pela milésima vez. Há um jeito melhor: deixar o #strong[relatório nascer da própria análise], com exatamente o que aquela análise precisa mostrar --- nem mais, nem menos.
+
+]
+, 
+title: 
+[
+Já passou por isso?
+]
+, 
+background_color: 
+rgb("#dae6fb")
+, 
+icon_color: 
+rgb("#0758E5")
+, 
+icon: 
+none
+, 
+body_background_color: 
+white
+)
+]
+Este é o último capítulo, e fecha o ciclo do livro: a estatística que começou no #strong[mouse] (na IDE CatalyseR) e passou pelo #strong[código] (no R) termina aqui, num #strong[relatório reproduzível]. A ferramenta é o #strong[Quarto]: um documento único que junta #strong[texto], #strong[código] e #strong[resultados] e os transforma em HTML, PDF ou Word --- sempre atualizados, porque os números e gráficos são gerados na hora, a partir dos dados, e não copiados à mão.
+
+== O relatório certo para cada análise
+<o-relatório-certo-para-cada-análise>
+Aqui está a ideia central deste capítulo, e o princípio que guia a CatalyseR: #strong[cada análise pede uma saída específica]. Um teste #emph[t] não se comunica com as mesmas peças de uma regressão. Comunicar bem é entregar #strong[exatamente os resultados que aquela análise exige] --- e a IDE sabe disso: quando você termina uma análise e pede o relatório, ela gera um #NormalTok(".docx"); #strong[sob medida] para aquele método.
+
+E o que cada análise exige se resume, quase sempre, a #strong[três peças]:
+
++ #strong[O relato] --- uma frase científica em português que conta o resultado (a estatística do teste, os graus de liberdade, o #emph[p]-valor, o intervalo de confiança e o tamanho do efeito), pronta para entrar num artigo ou relatório.
++ #strong[A tabela estruturada] --- os números organizados, no padrão visual do livro (tema #emph[Ocean Gradient], cabeçalho navy).
++ #strong[A figura] --- o gráfico que torna o resultado visível.
+
+A CatalyseR produz essas três peças automaticamente, usando as #strong[funções canônicas] do #NormalTok("EAPADados"); --- as mesmas que você pode chamar no R. Vamos vê-las em ação.
+
+== Anatomia de um relatório de análise
+<anatomia-de-um-relatório-de-análise>
+Retomemos o experimento da #emph[Artemia] (Unidade IV): duas rações comparadas por um teste #emph[t]. O #strong[relato] sai pronto, em uma frase, da função #NormalTok("relatar_teste_t_ind()");:
+
+#quote(block: true)[
+Foi conduzido um teste #emph[t] de Student para duas amostras independentes para variâncias iguais para comparar a variável a taxa de crescimento (mg/dia) entre os grupos definidos por o tipo de ração (A vs B). A média no grupo A foi de 4,09 e a média no grupo B foi de 3,47 (IC 95% da diferença \[0,15; 1,08\]). Os resultados indicaram uma diferença estatisticamente significativa entre as médias dos grupos, #emph[t]\(12,0) = 2,856, p = 0,014, sendo a média amostral do grupo A superior à média do grupo B. O tamanho do efeito, estimado pelo #emph[d] de Cohen, foi de 1,53, correspondendo a um efeito grande.
+]
+
+A #strong[tabela estruturada] vem de #NormalTok("mostrar_teste_t_ind()");, formatada no tema Ocean por #NormalTok("flextable_ocean()"); e citável por número (#ref(<tbl-relatorio>, supplement: [Tabela])):
+
+#Skylighting(([#FunctionTok("mostrar_teste_t_ind");#NormalTok("(taxa_crescimento_mg_dia ");#SpecialCharTok("~");#NormalTok(" racao,");],
+[#NormalTok("                    ");#AttributeTok("data =");#NormalTok(" artemia, ");#AttributeTok("equal_var =");#NormalTok(" ");#ConstantTok("TRUE");#NormalTok(") ");#SpecialCharTok("|>");],
+[#NormalTok("  ");#FunctionTok("flextable_ocean");#NormalTok("()");],));
+#figure([
+#box(image("capitulos\\capitulo16/relatorios_comunicacao_dados_usando_quarto_files/figure-typst/tbl-relatorio-1.png"))
+
+], caption: figure.caption(
+position: top, 
+[
+Saída estruturada do teste t --- a tabela que a CatalyseR insere no relatório.
+]), 
+kind: "quarto-float-tbl", 
+supplement: "Tabela", 
+)
+<tbl-relatorio>
+
+
+E a #strong[figura] --- o boxplot que mostra a diferença:
+
+#Skylighting(([#FunctionTok("ggplot");#NormalTok("(artemia, ");#FunctionTok("aes");#NormalTok("(racao, taxa_crescimento_mg_dia, ");#AttributeTok("fill =");#NormalTok(" racao)) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("geom_boxplot");#NormalTok("(");#AttributeTok("alpha =");#NormalTok(" ");#FloatTok("0.85");#NormalTok(", ");#AttributeTok("width =");#NormalTok(" ");#FloatTok("0.3");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("scale_fill_manual");#NormalTok("(");#AttributeTok("values =");#NormalTok(" ");#FunctionTok("unname");#NormalTok("(ocean[");#FunctionTok("c");#NormalTok("(");#StringTok("\"TEAL\"");#NormalTok(", ");#StringTok("\"AMBER\"");#NormalTok(")])) ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("labs");#NormalTok("(");#AttributeTok("x =");#NormalTok(" ");#StringTok("\"Ração\"");#NormalTok(", ");#AttributeTok("y =");#NormalTok(" ");#StringTok("\"Taxa de crescimento (mg/dia)\"");#NormalTok(") ");#SpecialCharTok("+");],
+[#NormalTok("  ");#FunctionTok("theme");#NormalTok("(");#AttributeTok("legend.position =");#NormalTok(" ");#StringTok("\"none\"");#NormalTok(")");],));
+#figure([
+#box(image("capitulos\\capitulo16/relatorios_comunicacao_dados_usando_quarto_files/figure-typst/fig-relatorio-1.svg"))
+], caption: figure.caption(
+position: bottom, 
+[
+A figura que acompanha o relato e a tabela: taxa de crescimento por ração.
+]), 
+kind: "quarto-float-fig", 
+supplement: "Figura", 
+)
+<fig-relatorio>
+
+
+Repare no ponto-chave: #strong[você não digitou nenhum número]. O #emph[p]-valor da frase, os valores da tabela e a altura das caixas no gráfico vêm todos do mesmo objeto, calculado a partir dos dados. Mude os dados, re-renderize, e o relatório inteiro se atualiza sozinho. É isso que significa um relatório #strong[reproduzível] --- e é exatamente o que a CatalyseR empacota para você.
+
+== Do mouse ao código: o Projeto R que a CatalyseR exporta
+<do-mouse-ao-código-o-projeto-r-que-a-catalyser-exporta>
+Quando você conclui uma análise na IDE e clica em #strong[Exportar Projeto Consolidado], ela não entrega só um arquivo: entrega um #strong[Projeto R] (#NormalTok(".zip");) organizado, pronto para abrir no RStudio e renderizar. Lá dentro estão:
+
+- os #strong[dados] já tratados (em #NormalTok(".rda"););
+- os #strong[scripts] R numerados que reproduzem a análise;
+- um #strong[#NormalTok("relatorio.qmd");] --- o documento Quarto com o texto, o código e as chamadas às funções canônicas (#NormalTok("relatar_*");, #NormalTok("mostrar_*");, #NormalTok("flextable_ocean"););
+- um #strong[#NormalTok("custom-reference.docx");] --- o modelo de formatação para a saída em Word.
+
+Ou seja: a IDE faz a análise no mouse e te entrega o #strong[código que a reproduz] e o #strong[relatório que a comunica]. Você sai com tudo na mão, podendo ajustar o texto, reexecutar e gerar a versão final.
+
+== O motor: Quarto → Word com um modelo ABNT
+<o-motor-quarto-word-com-um-modelo-abnt>
+O coração da exportação é simples. O cabeçalho (YAML) do #NormalTok("relatorio.qmd"); declara o formato Word e aponta para o modelo de estilo:
+
+#Skylighting(([#PreprocessorTok("---");],
+[#FunctionTok("title");#KeywordTok(":");#AttributeTok(" ");#StringTok("\"Relatório de Análise — Comparação de Rações\"");],
+[#FunctionTok("format");#KeywordTok(":");],
+[#AttributeTok("  ");#FunctionTok("docx");#KeywordTok(":");],
+[#AttributeTok("    ");#FunctionTok("reference-doc");#KeywordTok(":");#AttributeTok(" custom-reference.docx");#CommentTok("   # estilos: TNR 12, justificado, A4 ABNT");],
+[#AttributeTok("    ");#FunctionTok("toc");#KeywordTok(":");#AttributeTok(" ");#CharTok("true");#CommentTok("                              # sumário");],
+[#AttributeTok("    ");#FunctionTok("number-sections");#KeywordTok(":");#AttributeTok(" ");#CharTok("true");#CommentTok("                  # títulos numerados");],
+[#FunctionTok("lang");#KeywordTok(":");#AttributeTok(" pt-BR");],
+[#PreprocessorTok("---");],));
+O #NormalTok("custom-reference.docx"); é um documento Word "vazio" que carrega a identidade visual: #strong[Times New Roman 12], parágrafos #strong[justificados], página #strong[A4 com margens ABNT], #strong[sumário], #strong[títulos numerados] e #strong[número de página]. O Quarto aplica esses estilos ao gerar o #NormalTok(".docx");. A renderização é um comando só:
+
+#Skylighting(([#ExtensionTok("quarto");#NormalTok(" render relatorio.qmd ");#AttributeTok("--to");#NormalTok(" docx");],));
+Por baixo dos panos, a IDE monta num diretório temporário o #NormalTok("relatorio.qmd"); + o #NormalTok("custom-reference.docx"); + os dados (#NormalTok(".rda");) + os scripts, substitui as variáveis (qual análise, quais dados, quais rótulos) e roda esse #NormalTok("quarto render");. O resultado é um relatório Word com cara de publicação --- o relato, a tabela Ocean e a figura, na ordem certa, com a formatação certa.
+
+#block[
+#callout(
+body: 
+[
+Nunca digite um resultado à mão. Todo número que aparece no texto deve vir de uma chamada de código (#NormalTok("r relatar_teste_t_ind(...)");), e toda tabela e figura devem ser geradas no próprio documento. Assim, o relatório nunca "mente" --- ele é, por construção, fiel aos dados.
+
+]
+, 
+title: 
+[
+A regra de ouro do relatório reproduzível
+]
+, 
+background_color: 
+rgb("#ccf1e3")
+, 
+icon_color: 
+rgb("#00A047")
+, 
+icon: 
+none
+, 
+body_background_color: 
+white
+)
+]
+== Um relatório para cada análise
+<um-relatório-para-cada-análise>
+A versão 1 do ecossistema cobre as análises que você já domina, e para cada uma há um conjunto mínimo de saídas --- o que a #ref(<tbl-saidas>, supplement: [Tabela]) resume. É esse mapeamento que a CatalyseR usa para montar o relatório certo conforme a análise escolhida.
+
+#figure([
+#table(
+  columns: (25%, 25%, 25%, 25%),
+  align: (left,left,left,left,),
+  table.header([Análise], [Relato (#NormalTok("relatar_*");)], [Tabela (#NormalTok("mostrar_*");)], [Figura típica],),
+  table.hline(),
+  [Estatística descritiva], [resumo das medidas], [medidas de centro e dispersão], [histograma / boxplot],
+  [Teste #emph[t] (1 amostra, independentes, pareadas)], [frase com #emph[t], gl, #emph[p], IC e #emph[d] de Cohen], [médias, diferença, IC, efeito], [boxplot por grupo],
+  [ANOVA], [frase com #emph[F], gl, #emph[p] e pós-teste], [quadro da ANOVA + Tukey], [médias com erro],
+  [Regressão linear simples], [frase com coeficientes, #emph[R²] e #emph[p]], [coeficientes e ajuste], [reta com IC],
+  [Qui-quadrado], [frase de (in)dependência], [tabela de contingência], [barras por categoria],
+)
+], caption: figure.caption(
+position: top, 
+[
+As saídas mínimas de cada análise --- o que entra no relatório que a CatalyseR gera.
+]), 
+kind: "quarto-float-tbl", 
+supplement: "Tabela", 
+)
+<tbl-saidas>
+
+
+A lógica é sempre a mesma: a análise calcula (#NormalTok("calcular_*");), o relatório mostra (#NormalTok("mostrar_*");) e relata (#NormalTok("relatar_*");), e o Quarto empacota. Trocar de análise é trocar de trio de funções --- o motor de exportação é o mesmo.
+
+#block[
+#callout(
+body: 
+[
+Comunicar é o último passo do #emph[mouse ao código]. Com o #strong[Quarto], o relatório nasce da própria análise: texto, código e resultados num só documento, exportável para HTML, PDF ou #strong[Word]. O princípio que guia a CatalyseR é entregar, para #strong[cada análise], exatamente as saídas que ela exige --- o #strong[relato] (#NormalTok("relatar_*");), a #strong[tabela] (#NormalTok("mostrar_*"); + #NormalTok("flextable_ocean");) e a #strong[figura] ---, sem digitar um número sequer. A IDE empacota tudo num #strong[Projeto R] (#NormalTok(".zip");) com o #NormalTok("relatorio.qmd"); e o #NormalTok("custom-reference.docx");, e um #NormalTok("quarto render --to docx"); produz o relatório final no padrão ABNT. Da coleta ao relatório, um fluxo só, reprodutível de ponta a ponta.
+
+]
+, 
+title: 
+[
+Resumo do capítulo
+]
+, 
+background_color: 
+rgb("#ccf1e3")
+, 
+icon_color: 
+rgb("#00A047")
+, 
+icon: 
+none
+, 
+body_background_color: 
+white
+)
+]
+#block[
+#callout(
+body: 
+[
++ Crie um #NormalTok(".qmd"); com #NormalTok("format: html");, escreva um parágrafo e insira um valor calculado com #NormalTok("r mean(artemia$taxa_crescimento_mg_dia)");. Renderize e confirme que o número aparece no texto.
++ Refaça o relatório do teste #emph[t] da #emph[Artemia] trocando #NormalTok("equal_var = TRUE"); por #NormalTok("FALSE"); (Welch). O relato e a tabela mudam sozinhos?
++ Gere o mesmo documento em três formatos (#NormalTok("html");, #NormalTok("pdf");, #NormalTok("docx");) trocando só o #NormalTok("format:"); do YAML. Qual exige o #NormalTok("custom-reference.docx");?
+
+]
+, 
+title: 
+[
+Para praticar
+]
+, 
+background_color: 
+rgb("#dae6fb")
+, 
+icon_color: 
+rgb("#0758E5")
+, 
+icon: 
+none
+, 
+body_background_color: 
+white
+)
+]
 = Considerações Finais
 <considerações-finais>
 Este livro apresentou conceitos fundamentais de estatística aplicada à pesca e aquicultura, com ênfase em métodos descritivos e probabilísticos.
@@ -3374,14 +5165,7 @@ Nos capítulos seguintes, serão incluídas análises inferenciais, regressões 
 
 Agradecemos por acompanhar esta jornada científica!
 
-#heading(level: 1, numbering: none)[References]
-<references>
-#block[
-] <refs>
-
-
-
-#set bibliography(style: "abnt.csl")
+#set bibliography(style: "apa.csl")
 
 #bibliography(("references.bib"))
 
