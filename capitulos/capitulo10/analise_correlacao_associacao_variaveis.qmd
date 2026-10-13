@@ -17,8 +17,13 @@ library(corrplot)    # mapa de correlação (instale com install.packages("corrp
 # Paleta da identidade visual Ocean Gradient
 ocean <- c("#0F3B5F", "#2E7D8F", "#62B6B7", "#E89B3C", "#E76F51")
 
-data(brine_carbonatos)
+data(peixes_nutricao_portugal)
 data(biometria_caranguejos)
+
+# Perfil nutricional que os autores atribuíram a cada espécie, com acento
+perfil <- factor(peixes_nutricao_portugal$perfil_nutricional_autores,
+                 levels = c("magros", "gordos", "atipicos"),
+                 labels = c("magros", "gordos", "atípicos"))
 ```
 
 <!-- TODO (figura de abertura): infográfico Ocean "correlação x associação" no padrão do cap. de ANOVA. -->
@@ -26,22 +31,28 @@ data(biometria_caranguejos)
 ::: {.callout-note .destaque icon=false}
 ## Já passou por isso?
 
-Você tem uma planilha cheia de colunas — concentrações de íons na água, tamanhos de animais, sexo, estação do ano — e bate aquela pergunta: **o que tem a ver com o quê?** Será que, quando um íon sobe, outro acompanha? A proporção de machos e fêmeas muda entre as estações? Olhar coluna por coluna não revela essas ligações. Precisamos de ferramentas que meçam **o quanto duas variáveis caminham juntas**.
+Você tem uma planilha cheia de colunas — gordura e água no filé, tamanhos de animais, sexo, estação do ano — e bate aquela pergunta: **o que tem a ver com o quê?** Será que, quando a gordura do peixe sobe, a água do músculo desce? A proporção de machos e fêmeas muda entre as estações? Olhar coluna por coluna não revela essas ligações. Precisamos de ferramentas que meçam **o quanto duas variáveis caminham juntas**.
 :::
 
 Há duas perguntas parecidas, mas diferentes, escondidas aqui. A primeira é sobre **correlação**: quando duas variáveis **numéricas** sobem e descem juntas (ou em sentidos opostos). A segunda é sobre **associação**: quando duas variáveis **categóricas** aparecem juntas mais (ou menos) do que o acaso explicaria. A ferramenta muda conforme o tipo de variável — e é fácil escolher errado. Vamos às duas.
 
 ## Parte 1 — Correlação entre variáveis numéricas
 
-### Os dados: a química das salmouras
+### Os dados: o que tem dentro de um filé
 
-Para correlação, queremos variáveis que **não** estejam todas amarradas pela mesma causa. Medidas de tamanho de um animal, por exemplo, sobem quase todas juntas (um bicho grande é grande em tudo) — e a correlação fica monótona, tudo perto de 1. Já um conjunto de **concentrações químicas** é mais interessante: alguns componentes se associam, outros se opõem.
+Para correlação, queremos variáveis que **não** estejam todas amarradas pela mesma causa. Medidas de tamanho de um animal, por exemplo, sobem quase todas juntas (um bicho grande é grande em tudo) — e a correlação fica monótona, tudo perto de 1. Já a **composição do pescado** é mais interessante: alguns componentes se associam, outros se opõem, e outros nem se olham.
 
-Usaremos o `brine_carbonatos` do `EAPADados`: 19 amostras de **salmouras** de unidades carbonáticas, com a concentração (em ppm) de seis íons — bicarbonato (`HCO3`), sulfato (`SO4`), cloreto (`Cl`), cálcio (`Ca`), magnésio (`Mg`) e sódio (`Na`) — além do grupo geológico de origem. É um conjunto **multivariado** que você reencontrará nos capítulos de PCA e agrupamento; aqui ele serve para enxergar como variáveis de um mesmo sistema se correlacionam.
+Usaremos o `peixes_nutricao_portugal` do `EAPADados` [@jorge2025]: a composição nutricional de **40 espécies** vendidas em Portugal, do bacalhau ao salmão, por 100 g de parte comestível. Os nomes comuns estão em inglês, como na fonte. Separamos oito medidas em três blocos: os **macronutrientes** (proteína, lipídeos, umidade e cinzas, em g), os dois ácidos graxos **ômega-3** mais famosos (EPA e DHA, em g) e dois **minerais** (ferro e zinco, em mg). É um conjunto **multivariado** que você reencontrará no capítulo de PCA e agrupamento; aqui ele serve para enxergar como as partes de um mesmo alimento se correlacionam.
 
 ```{r}
 #| label: estrutura
-str(brine_carbonatos)
+nutri <- peixes_nutricao_portugal[, c("proteina_g_100g", "lipideos_g_100g",
+                                      "umidade_g_100g", "cinzas_g_100g",
+                                      "epa_g_100g", "dha_g_100g",
+                                      "ferro_mg_100g", "zinco_mg_100g")]
+names(nutri) <- c("Proteína", "Lipídeos", "Umidade", "Cinzas",
+                  "EPA", "DHA", "Ferro", "Zinco")
+str(nutri)
 ```
 
 ### Por dentro da conta: o que é correlação
@@ -58,28 +69,26 @@ O sinal diz a **direção** (positiva ou negativa); o valor absoluto diz a **for
 
 ### A matriz de correlação no R
 
-Com várias variáveis numéricas, calculamos a correlação de **todos os pares de uma vez** — a *matriz de correlação*. Primeiro separamos só as colunas dos íons:
+Com várias variáveis numéricas, calculamos a correlação de **todos os pares de uma vez** — a *matriz de correlação*. As oito colunas já estão separadas em `nutri`:
 
 ```{r}
 #| label: matriz
-ions <- brine_carbonatos[, c("HCO3", "SO4", "Cl", "Ca", "Mg", "Na")]
-
-M <- cor(ions, use = "complete.obs")   # método de Pearson (padrão)
+M <- cor(nutri, use = "complete.obs")   # método de Pearson (padrão)
 ```
 
 ```{r}
 #| label: tbl-correlacao
-#| tbl-cap: "Matriz de correlação de Pearson entre as seis concentrações iônicas das salmouras."
+#| tbl-cap: "Matriz de correlação de Pearson entre oito componentes do filé de 40 espécies de peixes."
 Mtab <- round(M, 2)
-tab  <- data.frame(Íon = rownames(Mtab), Mtab, check.names = FALSE, row.names = NULL)
+tab  <- data.frame(Componente = rownames(Mtab), Mtab, check.names = FALSE, row.names = NULL)
 flextable_ocean(tab)
 ```
 
-Os números variam bastante — alguns pares quase colados, outros frouxos, e há sinais negativos. Mas tabela de correlação cansa o olho. É aí que entra o **`corrplot`**: ele transforma a matriz num mapa de cores, onde a intensidade e o sentido da cor mostram, num relance, quem anda com quem (azul = positivo, coral = negativo).
+Os números variam bastante — alguns pares quase colados, outros frouxos, e há sinais negativos fortes. Mas tabela de correlação cansa o olho. É aí que entra o **`corrplot`**: ele transforma a matriz num mapa de cores, onde a intensidade e o sentido da cor mostram, num relance, quem anda com quem (azul = positivo, coral = negativo).
 
 ```{r}
 #| label: fig-corrplot
-#| fig-cap: "Mapa de correlação dos íons. Tons de teal = correlação positiva; coral = negativa; a intensidade indica a força. Os números repetem o coeficiente de Pearson."
+#| fig-cap: "Mapa de correlação da composição do filé. Tons de teal = correlação positiva; coral = negativa; a intensidade indica a força. Os números repetem o coeficiente de Pearson. Dados: Jorge et al. (2025)."
 #| fig-width: 5.5
 #| fig-height: 5
 # Escala coral (negativo) -> branco -> teal (positivo). Uso o teal (ocean[2]) no
@@ -99,26 +108,30 @@ corrplot(M, method = "color", col = cores, col.lim = c(-1, 1),
 
 ### Um par de perto, com teste
 
-A matriz mostra o panorama; para **um** par, o `cor.test()` dá o coeficiente **e** testa se ele é diferente de zero. Veja a relação entre sódio e cloreto, dois íons que costumam caminhar juntos nas salmouras:
+O mapa conta histórias que qualquer pessoa da tecnologia do pescado reconhece. EPA e DHA andam praticamente juntos: quem tem um, tem o outro. A proteína quase não conversa com ninguém — peixe magro ou gordo, a carne da maioria das espécies tem entre 16 e 20 g de proteína por 100 g. E o par mais marcante é negativo: **lipídeos e umidade**.
+
+A matriz mostra o panorama; para **um** par, o `cor.test()` dá o coeficiente **e** testa se ele é diferente de zero. Vamos olhar de perto esse par de sinais opostos:
 
 ```{r}
 #| label: cortest
-ct <- cor.test(brine_carbonatos$Na, brine_carbonatos$Cl)
+ct <- cor.test(nutri$Lipídeos, nutri$Umidade)
 ct
 ```
 
-> A correlação entre o sódio (Na) e o cloreto (Cl) foi de *r* = `r round(ct$estimate, 3)` (IC 95% [`r round(ct$conf.int[1], 3)`; `r round(ct$conf.int[2], 3)`]), `r if (ct$p.value < 0.001) "p < 0,001" else paste0("p = ", formatC(ct$p.value, format = "f", digits = 3))` — uma correlação `r {a <- abs(ct$estimate); if (a < 0.3) "fraca" else if (a < 0.5) "moderada" else if (a < 0.7) "forte" else "muito forte"}` e `r if (ct$estimate < 0) "negativa" else "positiva"`: as duas concentrações tendem a `r if (ct$estimate > 0) "subir juntas" else "variar em sentidos opostos"`.
+> A correlação entre os lipídeos e a umidade do filé foi de *r* = `r round(ct$estimate, 3)` (IC 95% [`r round(ct$conf.int[1], 3)`; `r round(ct$conf.int[2], 3)`]), `r if (ct$p.value < 0.001) "p < 0,001" else paste0("p = ", formatC(ct$p.value, format = "f", digits = 3))` — uma correlação `r {a <- abs(ct$estimate); if (a < 0.3) "fraca" else if (a < 0.5) "moderada" else if (a < 0.7) "forte" else "muito forte"}` e `r if (ct$estimate < 0) "negativa" else "positiva"`: os dois teores tendem a `r if (ct$estimate > 0) "subir juntos" else "variar em sentidos opostos"`.
+
+A explicação é física: no músculo do peixe, a gordura ocupa o lugar da água. Somados, os dois ficam entre 74 e 85 g a cada 100 g de filé, em todas as espécies, e o que um ganha o outro perde.
 
 ```{r}
 #| label: fig-dispersao
-#| fig-cap: "Sódio vs. cloreto nas salmouras, por grupo geológico. A reta resume a tendência linear."
+#| fig-cap: "Lipídeos vs. umidade no filé de 40 espécies, pelo perfil nutricional que os autores atribuíram. A reta resume a tendência linear. Dados: Jorge et al. (2025)."
 #| fig-width: 6
 #| fig-height: 4
-ggplot(brine_carbonatos, aes(Na, Cl, colour = grupo)) +
+ggplot(nutri, aes(Lipídeos, Umidade, colour = perfil)) +
   geom_point(size = 2.5, alpha = 0.8) +
   geom_smooth(method = "lm", se = FALSE, colour = ocean[1], linewidth = 0.8) +
-  scale_colour_manual(values = ocean[-1], name = "Grupo") +
-  labs(x = "Sódio (ppm)", y = "Cloreto (ppm)") +
+  scale_colour_manual(values = ocean[c(2, 4, 5)], name = "Perfil") +
+  labs(x = "Lipídeos (g/100 g)", y = "Umidade (g/100 g)") +
   theme_minimal()
 ```
 
@@ -128,8 +141,11 @@ O $r$ de Pearson mede a relação **linear** e é sensível a *outliers* e a rel
 
 ```{r}
 #| label: spearman
-cor(brine_carbonatos$Na, brine_carbonatos$Cl, method = "spearman")
+sp <- cor(nutri$Lipídeos, nutri$Umidade, method = "spearman")
+sp
 ```
+
+Repare que o Spearman (`r format(round(sp, 2), decimal.mark = ",")`) saiu mais fraco que o Pearson (`r format(round(unname(ct$estimate), 2), decimal.mark = ",")`). O gráfico explica: a maioria das espécies é magra e se amontoa no canto com menos de 3 g de gordura, onde a ordem entre elas é bagunçada. Quem estica a reta são os poucos peixes gordos, lá longe. O Pearson dá muito peso a esses pontos extremos; o Spearman, que só olha a ordem, não. Os dois contam a mesma história de sinal, mas com ênfases diferentes — e é por isso que se olha o gráfico antes de escolher.
 
 ## Parte 2 — Associação entre variáveis categóricas
 
@@ -186,13 +202,13 @@ V  <- sqrt(as.numeric(qui$statistic) / (n * (min(dim(tab_cont)) - 1)))
 
 ## E daí? Da significância à decisão
 
-Correlação e associação são pontos de partida, não de chegada. Uma correlação forte entre íons sugere uma origem geoquímica comum — e adianta o que a PCA vai condensar em poucos eixos lá na frente. Já uma associação entre sexo e estação, se real, tem leitura de manejo: pode sinalizar época reprodutiva e orientar regras de defeso. Em ambos os casos, o número abre a conversa — quem fecha é o conhecimento do sistema, da biologia e da pesca.
+Correlação e associação são pontos de partida, não de chegada. A correlação quase perfeita entre gordura e água tem uso direto na indústria: medir a umidade é rápido e barato, e dela se estima o teor de gordura de um lote sem a extração demorada de lipídeos. Ela também adianta o que a PCA vai condensar em poucos eixos lá na frente. Já uma associação entre sexo e estação, se real, tem leitura de manejo: pode sinalizar época reprodutiva e orientar regras de defeso. Em ambos os casos, o número abre a conversa — quem fecha é o conhecimento do sistema, da biologia e da pesca.
 
 > **Resumo do capítulo.** (1) Variáveis **numéricas** → **correlação** (Pearson, ou Spearman quando a relação não é linear); a matriz vira mapa com `corrplot()`. (2) Variáveis **categóricas** → **associação** pela tabela de contingência e pelo **qui-quadrado**, com o **V de Cramér** medindo a força. (3) Sempre **veja o gráfico** antes de confiar no coeficiente. (4) Correlação e associação **não são causalidade**.
 
 ## Para praticar
 
-1. Refaça a matriz de correlação **sem** o íon `Na` e veja se as relações entre os demais mudam de força.
-2. Troque o par do `cor.test()` por cálcio (`Ca`) e magnésio (`Mg`). A correlação é tão forte quanto a do par sódio-cloreto?
+1. Refaça a matriz de correlação só com as espécies magras (`nutri[perfil == "magros", ]`). A correlação entre lipídeos e umidade continua tão forte sem os peixes gordos?
+2. Troque o par do `cor.test()` por EPA e DHA. A correlação é tão forte quanto a do par lipídeos-umidade? E o sinal?
 3. Monte uma nova tabela de contingência entre **local** e **sexo** (`biometria_caranguejos$Local`) e teste a associação. O que muda na conclusão?
 
